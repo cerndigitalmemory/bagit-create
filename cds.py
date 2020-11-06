@@ -21,9 +21,11 @@ def getMetadata(record_id, type="xml"):
 
 	payload = {'of': of}
 
+
 	r = requests.get(baseEndpoint, params=payload)
 	#filename = str(record_id) + "_metadata.xml"
-
+	print("Getting",r.url)
+	
 	return r.content
 
 
