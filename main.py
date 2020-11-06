@@ -66,5 +66,5 @@ def process(foldername, method, timestamp=0):
 		my_fs.copy(file, aiufoldername+"/"+fs.path.basename(file))
 
 
-# standardarchive -> transfermode
-process("photoid-2704179", "standardarchive", timestamp=12031239)
+# standardarchive -> 
+process("photoid-2704179", "transfermode", timestamp=12031239)
