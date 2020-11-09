@@ -9,6 +9,7 @@ verify_ssl = true
 fs = "*"
 requests = "*"
 pymarc = "*"
+cernopendata-client = "*"
 
 [requires]
 python_version = "3.8"
