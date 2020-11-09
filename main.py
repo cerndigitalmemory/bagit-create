@@ -20,6 +20,12 @@ def checkunique(id):
 	return True
 
 def generateReferences(filepathslist):
+	"""
+	Given a list of file paths, compute hashes and generate a
+	HASH FILEPATH
+	...
+	file
+	"""
 	references = ""
 	for filename in filepathslist:
 		filehash = getHash(filename)
@@ -29,36 +35,53 @@ def generateReferences(filepathslist):
 	return references
 
 def getHash(filename):
+	"""
+	Compute hash of a given file
+	"""
 	computedhash = my_fs.hash(filename, "md5") + get_random_string(5)
+	# TODO: remove the random part with real payloads
 	return computedhash
 
 
-def process(foldername, method, timestamp=0):
+def process(foldername, method, timestamp=0, requestedFormat="MP4"):
+	# Check if the target name is actually unique
 	checkunique(foldername)
+	
+	# Get current path
 	path = os.getcwd()
+
+	# Prepare the high level folder which will contain the AIC and the AIUs
 	baseexportpath = "bagitexport_"+foldername
+	os.mkdir(path+"/"+baseexportpath)
+	
+	# If we're on CDS1 pipeline, create also the source folder,
+	#  we will need to fetch the raw files, too
 	if method == "cds":
 		os.mkdir(path+'/'+foldername)
-	
-	os.mkdir(path+"/"+baseexportpath)
-	# Create AIC folder
+		
+	# Create the AIC folder
 	if timestamp == 0:
 		print("No timestamp provided. Using 'now'")
 		timestamp = int(time.time())
+
 	aicfoldername = baseexportpath+"/"+foldername+"_"+str(timestamp)
 	print("AIC folder name is", aicfoldername)
 	os.mkdir(path+"/"+aicfoldername)
 	
+	# CDS Pipeline
 	if method == "cds":
-		print("Creating temp folder for CDS Resource", foldername)
+		print("Fetching the CDS Resource", foldername)
+
+		# Get and save metadata
 		metadata = cds.getMetadata(foldername)
 		open(path+'/'+foldername +'/' + "metadata.xml", 'wb').write(metadata)
 		print("Getting source files locations")
+		# From the metadata, extract info about the upstream file sources
 		files = cds.getRawFilesLocs(foldername+"/metadata.xml")
 		print("Got", len(files), "sources")
-		print("Looking for MP4 file..")
+		print("Looking for", requestedFormat ,"file..")
 		for sourcefile in files:
-			if sourcefile["filetype"] == "MP4":
+			if sourcefile["filetype"] == requestedFormat:
 				print("Downloading", sourcefile["url"])
 				# slow connection
 				# cds.downloadRemoteFile(sourcefile["url"], ".")
@@ -75,8 +98,11 @@ def process(foldername, method, timestamp=0):
 	my_fs.writetext(aicfoldername+"/"+'references.txt', references)
 				
 	# Look for high-level metadata and copy it into the AIC
-	if "metadata.json" in my_fs.listdir(foldername):
-		my_fs.copy(foldername + "/"+"metadata.json", aicfoldername+"/metadata.json")
+	metadatafilenames = ["metadata.json", "metadata.xml"]
+
+	for filename in metadatafilenames:
+		if filename in my_fs.listdir(foldername):
+			my_fs.copy(foldername + "/"+filename, aicfoldername+filename)
 
 	# AIUs
 	for file in filelist:
@@ -87,6 +113,6 @@ def process(foldername, method, timestamp=0):
 
 
 # standardarchive -> 
-#process("photoid-2704179", "transfermode", timestamp=12031239)
+# process("photoid-2704179", "transfermode", timestamp=12031239)
 
-process("2272168", "cds", timestamp=12031239)
+#process("2272168", "cds", timestamp=12031239)
