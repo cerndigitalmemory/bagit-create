@@ -10,6 +10,7 @@ fs = "*"
 requests = "*"
 pymarc = "*"
 cernopendata-client = "*"
+click = "*"
 
 [requires]
 python_version = "3.8"

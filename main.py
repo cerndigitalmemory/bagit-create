@@ -9,6 +9,8 @@ import string
 
 import cds
 
+import click
+
 def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
@@ -43,7 +45,11 @@ def getHash(filename):
 	return computedhash
 
 
+@click.command()
+@click.option('--foldername', default="1", help='ID of the resource')
+@click.option('--method', help='Processing method to use')
 def process(foldername, method, timestamp=0, requestedFormat="MP4"):
+	print(foldername, method)
 	# Check if the target name is actually unique
 	checkunique(foldername)
 	
@@ -85,7 +91,7 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
 				print("Downloading", sourcefile["url"])
 				# slow connection
 				# cds.downloadRemoteFile(sourcefile["url"], ".")
-				open(path+'/'+foldername +'/' + foldername +".mp4", 'wb').write("DUMMYDATA")
+				open(path+'/'+foldername +'/' + foldername +".mp4", 'wb').write(b"DUMMYDATA")
 
 	# Prepare AIC
 	filelist = []
@@ -115,4 +121,7 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
 # standardarchive -> 
 # process("photoid-2704179", "transfermode", timestamp=12031239)
 
-#process("2272168", "cds", timestamp=12031239)
+# process("2272168", "cds")
+
+if __name__ == '__main__':
+    process()
