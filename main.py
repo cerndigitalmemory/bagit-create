@@ -54,9 +54,9 @@ def getHash(filename, alg="md5"):
 	return computedhash
 
 
-#@click.command()
-#@click.option('--foldername', default="1", help='ID of the resource')
-#@click.option('--method', help='Processing method to use')
+@click.command()
+@click.option('--foldername', default="1", help='ID of the resource')
+@click.option('--method', help='Processing method to use')
 def process(foldername, method, timestamp=0, requestedFormat="MP4"):
 	# Check if the target name is actually unique
 	checkunique(foldername)
@@ -115,11 +115,7 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
 			filepath = foldername + "/" + el.name
 			filelist.append(filepath)
 
-	print("Filelist:",filelist)
 
-	references = generateReferences(filelist)
-	
-	my_fs.writetext(aicfoldername + "/" + 'references.txt', references)
 
 	# Look for high-level metadata and copy it into the AIC
 	metadatafilenames = ["metadata.json", "metadata.xml"]
@@ -127,6 +123,13 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
 	for filename in metadatafilenames:
 		if filename in my_fs.listdir(foldername):
 			my_fs.copy(foldername + "/" + filename, aicfoldername + '/' + filename)
+			filelist.remove(foldername + "/" + filename)
+
+	print("Filelist:",filelist)
+
+	references = generateReferences(filelist)
+	
+	my_fs.writetext(aicfoldername + "/" + 'references.txt', references)
 
 	# AIUs
 	for file in filelist:
@@ -135,11 +138,5 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
 		os.mkdir(aiufoldername)
 		my_fs.copy(file, aiufoldername + "/" + fs.path.basename(file))
 
-
-# standardarchive ->
-# process("photoid-2704179", "transfermode", timestamp=12031239)
-
-process("2272168", "cds")
-
-#if __name__ == '__main__':
-#	process()
+if __name__ == '__main__':
+	process()
