@@ -5,9 +5,11 @@ import time
 import random
 import string
 import cds
+import cod
 import click
+import json
 
-my_fs = open_fs('.')
+my_fs = open_fs(".")
 
 
 def get_random_string(length):
@@ -15,8 +17,9 @@ def get_random_string(length):
     Get a random string of the desired length
     """
     letters = string.ascii_lowercase
-    result_str = ''.join(random.choice(letters) for i in range(length))
+    result_str = "".join(random.choice(letters) for i in range(length))
     return result_str
+
 
 # Stub
 
@@ -55,8 +58,8 @@ def getHash(filename, alg="md5"):
 
 
 @click.command()
-@click.option('--foldername', default="1", help='ID of the resource')
-@click.option('--method', help='Processing method to use')
+@click.option("--foldername", default="1", help="ID of the resource")
+@click.option("--method", help="Processing method to use")
 def process(foldername, method, timestamp=0, requestedFormat="MP4"):
     # Check if the target name is actually unique
     checkunique(foldername)
@@ -70,8 +73,8 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
 
     # If we're on CDS1 pipeline, create also the source folder,
     #  since we will need to fetch the raw files
-    if method == "cds":
-        os.mkdir(path + '/' + foldername)
+    if method == "cds" or method =="cod":
+        os.mkdir(path + "/" + foldername)
 
     # Create the AIC folder (ResourceID_timestamp)
     if timestamp == 0:
@@ -81,13 +84,13 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
     print("AIC folder name is", aicfoldername)
     os.mkdir(path + "/" + aicfoldername)
 
-    # CDS Pipeline
+    # CERN CDS Pipeline
     if method == "cds":
         print("Fetching the CDS Resource", foldername)
 
         # Get and save metadata
         metadata = cds.getMetadata(foldername)
-        open(path + '/' + foldername + '/' + "metadata.xml", 'wb').write(metadata)
+        open(path + "/" + foldername + "/" + "metadata.xml", "wb").write(metadata)
         print("Getting source files locations")
 
         # From the metadata, extract info about the upstream file sources
@@ -98,16 +101,25 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
             if sourcefile["filetype"] == requestedFormat:
                 print("Downloading", sourcefile["url"])
                 # Slow connection workaround
-                filedata = cds.downloadRemoteFile(sourcefile["url"], path + '/' + foldername + '/' +  foldername + ".mp4")
+                filedata = cds.downloadRemoteFile(
+                    sourcefile["url"],
+                    path + "/" + foldername + "/" + foldername + ".mp4",
+                )
                 # open(path + '/' + foldername + '/' +
                 #    foldername + ".mp4", 'wb').write(filedata)
+
+    # CERN Open Data pipeline
+    if method == "cod":
+        # Get and save metadata about the requested resource
+        metadata = cod.getMetadata(foldername)
+        open(path + "/" + foldername + "/" + "metadata.json", "w").write(json.dumps(metadata))
 
     # Prepare AIC
     filelist = []
 
     for el in my_fs.scandir(foldername):
         if el.is_dir:
-            for file in my_fs.listdir(foldername + '/' + el.name):
+            for file in my_fs.listdir(foldername + "/" + el.name):
                 filepath = foldername + "/" + el.name + "/" + file
                 filelist.append(filepath)
         else:
@@ -119,14 +131,14 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
 
     for filename in metadatafilenames:
         if filename in my_fs.listdir(foldername):
-            my_fs.copy(foldername + "/" + filename, aicfoldername + '/' + filename)
+            my_fs.copy(foldername + "/" + filename, aicfoldername + "/" + filename)
             filelist.remove(foldername + "/" + filename)
 
-    print("Filelist:",filelist)
+    print("Filelist:", filelist)
 
     references = generateReferences(filelist)
-    
-    my_fs.writetext(aicfoldername + "/" + 'references.txt', references)
+
+    my_fs.writetext(aicfoldername + "/" + "references.txt", references)
 
     # AIUs
     for file in filelist:
@@ -135,6 +147,6 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
         os.mkdir(aiufoldername)
         my_fs.copy(file, aiufoldername + "/" + fs.path.basename(file))
 
-        
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     process()
