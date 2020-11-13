@@ -1,6 +1,8 @@
 # bagit-create
 
-Utilities to prepare BagIt files for Archivematica ingestions from various upstream sources, such as CERN CDS and CERN Open Data.
+Proof of concept utilities, scripts and pipelines to prepare BagIt ([RFC](https://tools.ietf.org/html/rfc8493)) files, following the CERN Archival Information Packages (AIP) [specification](https://digital-repositories.web.cern.ch/digital-repositories/dm/oais-platform/cern-aips/), ready for Archivematica ingestions.
+
+Data is taken from various upstream sources, such as CDS (CERN Document Service) and CERN Open Data.
 
 ```bash
 # Activate virtualenv
@@ -11,7 +13,6 @@ pipenv install
 # CLI Help
 python main.py --help
 ```
-
 
 ### CDS
 
@@ -31,4 +32,4 @@ bagitexport_2272168
 
 ### Cern Open Data
 
-To prepare a BagIt from a CERN Open Data recid, run `python main.py --foldername=1 --method=cod`.
+To prepare a BagIt from a CERN Open Data Record ID, run `python main.py --foldername=1 --method=cod`.
