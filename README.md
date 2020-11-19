@@ -5,6 +5,14 @@ Proof of concept utilities, scripts and pipelines to prepare BagIt ([RFC](https:
 Data is taken from various upstream sources, such as CDS (CERN Document Service) and CERN Open Data.
 
 ```bash
+# Install python3.8 and pipenv
+yum install python3.8 libcurl-devel
+pip3 install pipenv
+# GCC, ..
+dnf group install "Development Tools"
+# Headers
+yum install python38-devel openssl-devel
+
 # Activate virtualenv
 pipenv shell
 # Install dependencies
@@ -14,7 +22,7 @@ pipenv install
 python main.py --help
 ```
 
-### CDS
+### CERN Document Server (CDS)
 
 To prepare a BagIt from a CDS Resource ID, run `python main.py --foldername=2272168 --method=cds`.
 
@@ -32,7 +40,7 @@ bagitexport_2272168
 
 CDS metadata is XML/[MARC21](https://cds.cern.ch/help/admin/howto-marc?ln=fr)
 
-### Cern Open Data
+### CERN Open Data
 
 To prepare a BagIt from a CERN Open Data Record ID, run `python main.py --foldername=1 --method=cod`.
 
