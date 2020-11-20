@@ -24,6 +24,15 @@ def get_random_string(length):
 # Stub
 
 
+def createBagItTxt(version="1.0", encoding="UTF-8"):
+    """
+    Creates the Bag Declaration file, as specified by the RFC:
+    https://tools.ietf.org/html/rfc8493#section-2.1.1
+    """
+    bagittxt = (f'BagIt-Version: {version}\n'
+                 'Tag-File-Character-Encoding: {encoding}')
+    my_fs.writetext(aicfoldername + "/" + "bagit.txt", bagittxt)
+
 def checkunique(id):
     """
     Check if the given ID is unique in our system
