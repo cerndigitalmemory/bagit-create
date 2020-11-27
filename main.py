@@ -24,14 +24,14 @@ def get_random_string(length):
 # Stub
 
 
-def createBagItTxt(version="1.0", encoding="UTF-8"):
+def createBagItTxt(path, version="1.0", encoding="UTF-8"):
     """
     Creates the Bag Declaration file, as specified by the RFC:
     https://tools.ietf.org/html/rfc8493#section-2.1.1
     """
     bagittxt = (f'BagIt-Version: {version}\n'
                  'Tag-File-Character-Encoding: {encoding}')
-    my_fs.writetext(aicfoldername + "/" + "bagit.txt", bagittxt)
+    my_fs.writetext(path + "/" + "bagit.txt", bagittxt)
 
 def checkunique(id):
     """
@@ -156,6 +156,7 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
         os.mkdir(aiufoldername)
         my_fs.copy(file, aiufoldername + "/" + fs.path.basename(file))
 
+    createBagItTxt(baseexportpath)
 
 if __name__ == "__main__":
     process()
