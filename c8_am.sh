@@ -42,3 +42,10 @@ curl --silent --location https://rpm.nodesource.com/setup_12.x | sudo bash -
 yum install -y yarn
 
 yum install go
+
+docker-compose up --detach
+make cadence-seed
+make cadence-domain
+make tools
+make migrations ui
+make
