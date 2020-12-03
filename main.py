@@ -30,7 +30,7 @@ def createBagItTxt(path, version="1.0", encoding="UTF-8"):
     https://tools.ietf.org/html/rfc8493#section-2.1.1
     """
     bagittxt = (f'BagIt-Version: {version}\n'
-                 'Tag-File-Character-Encoding: {encoding}')
+                f'Tag-File-Character-Encoding: {encoding}')
     my_fs.writetext(path + "/" + "bagit.txt", bagittxt)
 
 def checkunique(id):
@@ -114,7 +114,8 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
                     sourcefile["url"],
                     path + "/" + foldername + "/" + foldername + ".mp4",
                 )
-                # open(path + '/' + foldername + '/' +
+                #filedata = b"EEE"
+                #open(path + '/' + foldername + '/' +
                 #    foldername + ".mp4", 'wb').write(filedata)
 
     # CERN Open Data pipeline

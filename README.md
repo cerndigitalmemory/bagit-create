@@ -29,6 +29,7 @@ To prepare a BagIt from a CDS Resource ID, run `python main.py --foldername=2272
 ```
 > tree bagitexport_2272168
 bagitexport_2272168
+├── bagit.txt
 ├── 2272168_1605200583
 │   ├── metadata.xml
 │   └── references.txt

@@ -12,6 +12,3 @@ pymarc = "*"
 cernopendata-client = "*"
 click = "*"
 flake8 = "*"
-
-[requires]
-python_version = "3.8"
