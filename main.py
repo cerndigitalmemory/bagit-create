@@ -11,7 +11,6 @@ import json
 
 my_fs = open_fs(".")
 
-
 def get_random_string(length):
     """
     Get a random string of the desired length
@@ -65,14 +64,12 @@ def getHash(filename, alg="md5"):
     # TODO: remove the random part with real payloads
     return computedhash
 
-
-@click.command()
-@click.option("--foldername", default="1", help="ID of the resource")
-@click.option("--method", help="Processing method to use")
 def process(foldername, method, timestamp=0, requestedFormat="MP4"):
     # Check if the target name is actually unique
     checkunique(foldername)
 
+    # TODO: prepend upstream source name
+    
     # Get current path
     path = os.getcwd()
 
@@ -110,13 +107,13 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
             if sourcefile["filetype"] == requestedFormat:
                 print("Downloading", sourcefile["url"])
                 # Slow connection workaround
-                filedata = cds.downloadRemoteFile(
-                    sourcefile["url"],
-                    path + "/" + foldername + "/" + foldername + ".mp4",
-                )
-                #filedata = b"EEE"
-                #open(path + '/' + foldername + '/' +
-                #    foldername + ".mp4", 'wb').write(filedata)
+                #filedata = cds.downloadRemoteFile(
+                #    sourcefile["url"],
+                #    path + "/" + foldername + "/" + foldername + ".mp4",
+                #)
+                filedata = b"EEE"
+                open(path + '/' + foldername + '/' +
+                    foldername + ".mp4", 'wb').write(filedata)
 
     # CERN Open Data pipeline
     if method == "cod":
@@ -158,6 +155,7 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
         my_fs.copy(file, aiufoldername + "/" + fs.path.basename(file))
 
     createBagItTxt(baseexportpath)
+    return baseexportpath
 
 if __name__ == "__main__":
     process()
