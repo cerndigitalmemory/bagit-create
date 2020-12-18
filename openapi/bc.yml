@@ -1,0 +1,32 @@
+openapi: "3.0.0"
+info:
+  version: 0.0.1
+  title: bagit-create
+  description: Sample API exposing bagit-create functionalities
+servers:
+  - url: http://sachiel.cern.ch/api/v1
+paths:
+  /test:
+    get:
+      tags: [meta]
+      operationId: api.test
+      responses:
+        '200':
+          description: a cat
+  /cds:
+    get:
+      tags: [bagit creation]
+      description: |
+        Trigger a bagit creation from a CDS Resource ID
+      operationId: api.cds
+      parameters:
+        - name: resourceid
+          in: query
+          description: "CDS Resource ID"
+          example: 2272168
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: a cat
