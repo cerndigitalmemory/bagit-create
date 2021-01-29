@@ -70,20 +70,24 @@ def getHash(filename, alg="md5"):
 @click.option("--method", help="Processing method to use")
 @click.option("--skip_downloads", help="Creates files but skip downloading the actual payloads", default=False, is_flag=True)
 def process(skip_downloads, foldername, method, timestamp=0, requestedFormat="MP4"):
+
+    # Delimiter string
+    delimiter_str = "::"
+
     # Check if the target name is actually unique
     checkunique(foldername)
 
     # Save the plain resource ID
     resid = copy.copy(foldername)
 
-    # Prepend the system name
-    foldername = method + foldername
+    # Prepend the system name and the delimiter
+    foldername = f"{method}{delimiter_str}{foldername}"
 
     # Get current path
     path = os.getcwd()
 
     # Prepare the high level folder which will contain the AIC and the AIUs
-    baseexportpath = "bagitexport_" + foldername
+    baseexportpath = f"bagitexport{delimiter_str}{foldername}"
     os.mkdir(path + "/" + baseexportpath)
 
     # If we're on CDS1 pipeline, create also the source folder,
@@ -95,7 +99,7 @@ def process(skip_downloads, foldername, method, timestamp=0, requestedFormat="MP
     if timestamp == 0:
         print("No timestamp provided. Using 'now'")
         timestamp = int(time.time())
-    aicfoldername = baseexportpath + "/" + foldername + "_" + str(timestamp)
+    aicfoldername = baseexportpath + "/" + foldername + delimiter_str + str(timestamp)
     print("AIC folder name is", aicfoldername)
     os.mkdir(path + "/" + aicfoldername)
 
@@ -162,7 +166,7 @@ def process(skip_downloads, foldername, method, timestamp=0, requestedFormat="MP
     # AIUs
     for file in filelist:
         filehash = getHash(file)
-        aiufoldername = baseexportpath + "/" + foldername + "_" + filehash
+        aiufoldername = baseexportpath + "/" + foldername + delimiter_str + filehash
         os.mkdir(aiufoldername)
         my_fs.copy(file, aiufoldername + "/" + fs.path.basename(file))
 
