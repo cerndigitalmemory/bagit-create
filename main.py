@@ -68,7 +68,8 @@ def getHash(filename, alg="md5"):
 @click.command()
 @click.option("--foldername", default="1", help="ID of the resource")
 @click.option("--method", help="Processing method to use")
-def process(foldername, method, timestamp=0, requestedFormat="MP4"):
+@click.option("--skip_downloads", help="Creates files but skip downloading the actual payloads", default=False, is_flag=True)
+def process(skip_downloads, foldername, method, timestamp=0, requestedFormat="MP4"):
     # Check if the target name is actually unique
     checkunique(foldername)
 
@@ -113,15 +114,18 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
         print("Looking for an", requestedFormat, "file..")
         for sourcefile in files:
             if sourcefile["filetype"] == requestedFormat:
-                print("Downloading", sourcefile["url"])
-                # Slow connection workaround
-                #filedata = cds.downloadRemoteFile(
-                #    sourcefile["url"],
-                #    path + "/" + foldername + "/" + foldername + ".mp4",
-                #)
-                filedata = b"EEE"
-                open(path + '/' + foldername + '/' +
-                    foldername + ".mp4", 'wb').write(filedata)
+                destination = path + "/" + foldername + "/" + sourcefile["filename"]
+                print("Downloading", sourcefile["url"], "to", destination)
+                if skip_downloads:
+                    filedata = b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag."
+                    open(destination, 'wb').write(filedata)
+                    print("skipped download")
+                else:
+                    filedata = cds.downloadRemoteFile(
+                        sourcefile["url"],
+                        destination,
+                    )
+                
 
     # CERN Open Data pipeline
     if method == "cod":
