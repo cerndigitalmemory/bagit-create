@@ -8,6 +8,7 @@ import cds
 import cod
 import click
 import json
+import copy
 
 my_fs = open_fs(".")
 
@@ -64,12 +65,19 @@ def getHash(filename, alg="md5"):
     # TODO: remove the random part with real payloads
     return computedhash
 
+@click.command()
+@click.option("--foldername", default="1", help="ID of the resource")
+@click.option("--method", help="Processing method to use")
 def process(foldername, method, timestamp=0, requestedFormat="MP4"):
     # Check if the target name is actually unique
     checkunique(foldername)
 
-    # TODO: prepend upstream source name
-    
+    # Save the plain resource ID
+    resid = copy.copy(foldername)
+
+    # Prepend the system name
+    foldername = method + foldername
+
     # Get current path
     path = os.getcwd()
 
@@ -92,10 +100,10 @@ def process(foldername, method, timestamp=0, requestedFormat="MP4"):
 
     # CERN CDS Pipeline
     if method == "cds":
-        print("Fetching the CDS Resource", foldername)
+        print("Fetching the CDS Resource", resid)
 
         # Get and save metadata
-        metadata = cds.getMetadata(foldername)
+        metadata = cds.getMetadata(resid)
         open(path + "/" + foldername + "/" + "metadata.xml", "wb").write(metadata)
         print("Getting source files locations")
 
