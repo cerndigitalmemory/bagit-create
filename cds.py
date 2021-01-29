@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 from pymarc import MARCReader, marcxml
 from fs import open_fs
 import pprint
+import ntpath
 
 import fs
 my_fs = open_fs('/')
@@ -50,6 +51,8 @@ def getRawFilesLocs(metadata_filename):
 				obj["url"] = f["u"] 
 			elif f["d"]:
 				obj["url"] = f["d"]
+		if obj["url"]:
+			obj["filename"] = ntpath.basename(obj["url"])
 		rawData.append(obj)
 	return rawData
 		#print(f["q"], f["u"], f["d"])
