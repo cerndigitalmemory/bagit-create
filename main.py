@@ -12,6 +12,7 @@ import copy
 
 my_fs = open_fs(".")
 
+
 def get_random_string(length):
     """
     Get a random string of the desired length
@@ -29,9 +30,9 @@ def createBagItTxt(path, version="1.0", encoding="UTF-8"):
     Creates the Bag Declaration file, as specified by the RFC:
     https://tools.ietf.org/html/rfc8493#section-2.1.1
     """
-    bagittxt = (f'BagIt-Version: {version}\n'
-                f'Tag-File-Character-Encoding: {encoding}')
+    bagittxt = f"BagIt-Version: {version}\n" f"Tag-File-Character-Encoding: {encoding}"
     my_fs.writetext(path + "/" + "bagit.txt", bagittxt)
+
 
 def checkunique(id):
     """
@@ -65,11 +66,18 @@ def getHash(filename, alg="md5"):
     # TODO: remove the random part with real payloads
     return computedhash
 
+
 @click.command()
 @click.option("--foldername", default="1", help="ID of the resource")
 @click.option("--method", help="Processing method to use")
-@click.option("--skip_downloads", help="Creates files but skip downloading the actual payloads", default=False, is_flag=True)
-def process(skip_downloads, foldername, method, timestamp=0, requestedFormat="MP4"):
+@click.option(
+    "--skip_downloads",
+    help="Creates files but skip downloading the actual payloads",
+    default=False,
+    is_flag=True,
+)
+@click.option("--requestedformat", help="requested extension", default="MP4")
+def process(skip_downloads, foldername, method, requestedformat, timestamp=0):
 
     # Delimiter string
     delimiter_str = "::"
@@ -92,7 +100,7 @@ def process(skip_downloads, foldername, method, timestamp=0, requestedFormat="MP
 
     # If we're on CDS1 pipeline, create also the source folder,
     #  since we will need to fetch the raw files
-    if method == "cds" or method =="cod":
+    if method == "cds" or method == "cod":
         os.mkdir(path + "/" + foldername)
 
     # Create the AIC folder (ResourceID_timestamp)
@@ -115,27 +123,28 @@ def process(skip_downloads, foldername, method, timestamp=0, requestedFormat="MP
         # From the metadata, extract info about the upstream file sources
         files = cds.getRawFilesLocs(foldername + "/metadata.xml")
         print("Got", len(files), "sources")
-        print("Looking for an", requestedFormat, "file..")
+        print("Looking for an", requestedformat, "file..")
         for sourcefile in files:
-            if sourcefile["filetype"] == requestedFormat:
+            if sourcefile["filetype"] == requestedformat:
                 destination = path + "/" + foldername + "/" + sourcefile["filename"]
                 print("Downloading", sourcefile["url"], "to", destination)
                 if skip_downloads:
                     filedata = b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag."
-                    open(destination, 'wb').write(filedata)
+                    open(destination, "wb").write(filedata)
                     print("skipped download")
                 else:
                     filedata = cds.downloadRemoteFile(
                         sourcefile["url"],
                         destination,
                     )
-                
 
     # CERN Open Data pipeline
     if method == "cod":
         # Get and save metadata about the requested resource
         metadata = cod.getMetadata(foldername)
-        open(path + "/" + foldername + "/" + "metadata.json", "w").write(json.dumps(metadata))
+        open(path + "/" + foldername + "/" + "metadata.json", "w").write(
+            json.dumps(metadata)
+        )
 
     # Prepare AIC
     filelist = []
@@ -172,6 +181,7 @@ def process(skip_downloads, foldername, method, timestamp=0, requestedFormat="MP
 
     createBagItTxt(baseexportpath)
     return baseexportpath
+
 
 if __name__ == "__main__":
     process()
