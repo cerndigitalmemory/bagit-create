@@ -24,7 +24,7 @@ python main.py --help
 
 ### CERN Document Server (CDS)
 
-To prepare a BagIt from a CDS Resource ID, run `python main.py --foldername=2272168 --method=cds`.
+To prepare a BagIt from a CDS Resource ID, run `python main.py --recid=2272168 --source=cds`.
 
 ```
 > tree bagitexport_2272168
