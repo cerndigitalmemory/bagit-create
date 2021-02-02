@@ -42,31 +42,24 @@ def getRawFilesLocs(metadata_filename):
     # Parse the XML as MARC21
     #  and get the first record (result should be one record anyway)
     record = marcxml.parse_xml_to_array(metadata_filename)[0]
-    # Look for 856 fields
+    # Look for 856 entries
     #  MARC21: 856 - Electronic Location and Access (R)
     rawData = []
     for f in record.get_fields("856"):
         obj = {}
-        # Get filetype and URL
-        if f["q"]:
-
-            obj["filetype"] = f["q"]
-            if f["u"]:
-                obj["url"] = f["u"]
-            elif f["d"]:
-                obj["url"] = f["d"]
-        # No file format but the URL is there
-        elif f["u"]:
-            obj["url"] = f["u"]
-            obj["filetype"] = os.path.splitext(obj["url"])[1][1:].upper()
+        if f["u"]:
+            obj["uri"] = f["u"]
+            obj["remote"] = "HTTP"
+        elif f["d"]:
+            obj["uri"] = f["d"]
+            obj["remote"] = "EOS"
 
         # Get basename
-        if obj["url"]:
-            obj["filename"] = ntpath.basename(obj["url"])
-        print(obj)
+        if obj["uri"]:
+            obj["filename"] = ntpath.basename(obj["uri"])
+
         rawData.append(obj)
     return rawData
-    # print(f["q"], f["u"], f["d"])
 
 
 def downloadRemoteFile(src, dest):
@@ -76,7 +69,10 @@ def downloadRemoteFile(src, dest):
 
 
 def downloadEOSfile(src, dest):
-    my_fs.copy(src, dest)
+    try:
+        my_fs.copy(src, dest)
+    except:
+        print(f"  Path '{src}' not found. Skipping file. ")
 
 
 def prettyprint(obj, indentsize=4):
