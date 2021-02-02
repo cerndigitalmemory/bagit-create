@@ -68,105 +68,107 @@ def getHash(filename, alg="md5"):
 
 
 @click.command()
-@click.option("--foldername", default="1", help="ID of the resource")
-@click.option("--method", help="Processing method to use")
+@click.option("--recid", default="1", help="Unique ID of the record in the upstream source")
+@click.option("--source", help="Select source pipeline")
 @click.option(
     "--skip_downloads",
     help="Creates files but skip downloading the actual payloads",
     default=False,
     is_flag=True,
 )
-@click.option("--requestedformat", help="requested extension", default="MP4")
-def process(skip_downloads, foldername, method, requestedformat, timestamp=0):
+def process(skip_downloads, recid, source, timestamp=0):
 
     # Delimiter string
     delimiter_str = "::"
 
     # Check if the target name is actually unique
-    checkunique(foldername)
+    checkunique(recid)
 
     # Save the plain resource ID
-    resid = copy.copy(foldername)
+    resid = copy.copy(recid)
 
     # Prepend the system name and the delimiter
-    foldername = f"{method}{delimiter_str}{foldername}"
+    recid = f"{source}{delimiter_str}{recid}"
 
     # Get current path
     path = os.getcwd()
 
     # Prepare the high level folder which will contain the AIC and the AIUs
-    baseexportpath = f"bagitexport{delimiter_str}{foldername}"
+    baseexportpath = f"bagitexport{delimiter_str}{recid}"
     os.mkdir(path + "/" + baseexportpath)
 
     # If we're on CDS1 pipeline, create also the source folder,
     #  since we will need to fetch the raw files
-    if method == "cds" or method == "cod":
-        os.mkdir(path + "/" + foldername)
+    if source == "cds" or source == "cod":
+        os.mkdir(path + "/" + recid)
 
     # Create the AIC folder (ResourceID_timestamp)
     if timestamp == 0:
         print("No timestamp provided. Using 'now'")
         timestamp = int(time.time())
-    aicfoldername = baseexportpath + "/" + foldername + delimiter_str + str(timestamp)
+    aicfoldername = baseexportpath + "/" + recid + delimiter_str + str(timestamp)
     print("AIC folder name is", aicfoldername)
     os.mkdir(path + "/" + aicfoldername)
 
     # CERN CDS Pipeline
-    if method == "cds":
+    if source == "cds":
         print("Fetching the CDS Resource", resid)
 
         # Get and save metadata
         metadata = cds.getMetadata(resid)
-        open(path + "/" + foldername + "/" + "metadata.xml", "wb").write(metadata)
+        open(path + "/" + recid + "/" + "metadata.xml", "wb").write(metadata)
         print("Getting source files locations")
 
         # From the metadata, extract info about the upstream file sources
-        files = cds.getRawFilesLocs(foldername + "/metadata.xml")
-        print("Got", len(files), "sources")
-        print("Looking for an", requestedformat, "file..")
+        files = cds.getRawFilesLocs(recid + "/metadata.xml")
+        print("Got", len(files), "files")
         for sourcefile in files:
-            if sourcefile["filetype"] == requestedformat:
-                destination = path + "/" + foldername + "/" + sourcefile["filename"]
-                print("Downloading", sourcefile["url"], "to", destination)
-                if skip_downloads:
-                    filedata = b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag."
-                    open(destination, "wb").write(filedata)
-                    print("skipped download")
-                else:
-                    filedata = cds.downloadRemoteFile(
-                        sourcefile["url"],
+            destination = path + "/" + recid + "/" + sourcefile["filename"]
+            print(f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..')
+            if skip_downloads:
+                filedata = b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag."
+                open(destination, "wb").write(filedata)
+                print("skipped download") 
+            elif sourcefile["remote"] == "HTTP":
+                filedata = cds.downloadRemoteFile(
+                        sourcefile["uri"],
+                        destination,
+                    )
+            elif sourcefile["remote"] == "EOS":
+                filedata = cds.downloadEOSfile(
+                        sourcefile["uri"],
                         destination,
                     )
 
     # CERN Open Data pipeline
-    if method == "cod":
+    if source == "cod":
         # Get and save metadata about the requested resource
-        metadata = cod.getMetadata(foldername)
-        open(path + "/" + foldername + "/" + "metadata.json", "w").write(
+        metadata = cod.getMetadata(recid)
+        open(path + "/" + recid + "/" + "metadata.json", "w").write(
             json.dumps(metadata)
         )
 
     # Prepare AIC
     filelist = []
 
-    for el in my_fs.scandir(foldername):
+    for el in my_fs.scandir(recid):
         if el.is_dir:
-            for file in my_fs.listdir(foldername + "/" + el.name):
-                filepath = foldername + "/" + el.name + "/" + file
+            for file in my_fs.listdir(recid + "/" + el.name):
+                filepath = recid+ "/" + el.name + "/" + file
                 filelist.append(filepath)
         else:
-            filepath = foldername + "/" + el.name
+            filepath = recid+ "/" + el.name
             filelist.append(filepath)
 
     # Look for high-level metadata and copy it into the AIC
     metadatafilenames = ["metadata.json", "metadata.xml"]
 
     for filename in metadatafilenames:
-        if filename in my_fs.listdir(foldername):
-            my_fs.copy(foldername + "/" + filename, aicfoldername + "/" + filename)
-            filelist.remove(foldername + "/" + filename)
+        if filename in my_fs.listdir(recid):
+            my_fs.copy(recid + "/" + filename, aicfoldername + "/" + filename)
+            filelist.remove(recid + "/" + filename)
 
-    print("Filelist:", filelist)
+    print("Harvested files:", filelist)
 
     references = generateReferences(filelist)
 
@@ -175,7 +177,7 @@ def process(skip_downloads, foldername, method, requestedformat, timestamp=0):
     # AIUs
     for file in filelist:
         filehash = getHash(file)
-        aiufoldername = baseexportpath + "/" + foldername + delimiter_str + filehash
+        aiufoldername = baseexportpath + "/" + recid + delimiter_str + filehash
         os.mkdir(aiufoldername)
         my_fs.copy(file, aiufoldername + "/" + fs.path.basename(file))
 
