@@ -12,12 +12,12 @@ import fs
 my_fs = open_fs("/")
 
 
-def getMetadata(record_id, type="xml"):
+def getMetadata(record_id, baseEndpoint, type="xml"):
     """
     Get MARC21 metadata from a CDS record ID
     Returns a string
     """
-    baseEndpoint = "http://cds.cern.ch/record/" + str(record_id)
+    record_url = f"{baseEndpoint}{record_id}"
 
     if type == "xml":
         of = "xm"
@@ -26,8 +26,8 @@ def getMetadata(record_id, type="xml"):
 
     payload = {"of": of}
 
-    r = requests.get(baseEndpoint, params=payload)
-    # filename = str(record_id) + "_metadata.xml"
+    r = requests.get(record_url, params=payload)
+
     print("Getting", r.url)
 
     return r.content
