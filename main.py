@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from fs import open_fs
 import fs
 import os
@@ -9,6 +11,7 @@ import cod
 import click
 import json
 import copy
+import shutil
 
 my_fs = open_fs(".")
 
@@ -68,8 +71,18 @@ def getHash(filename, alg="md5"):
 
 
 @click.command()
-@click.option("--recid", default="1", help="Unique ID of the record in the upstream source")
-@click.option("--source", help="Select source pipeline")
+@click.option(
+    "--recid",
+    default="1",
+    help="Unique ID of the record in the upstream source",
+    required=True,
+)
+@click.option(
+    "--source",
+    help="Select source pipeline",
+    required=True,
+    type=click.Choice(["cds", "ilcdoc", "cod"], case_sensitive=False)
+)
 @click.option(
     "--skip_downloads",
     help="Creates files but skip downloading the actual payloads",
@@ -109,11 +122,16 @@ def process(skip_downloads, recid, source, timestamp=0):
     os.mkdir(path + "/" + aicfoldername)
 
     # CERN CDS Pipeline
-    if source == "cds":
-        print("Fetching the CDS Resource", resid)
+    ## consider refactoring the common parts to "invenio-vN" and setting a more general flag
+    if source == "cds" or source == "ilcdoc":
+        print(f"Fetching the {source} Resource", resid)
 
         # Get and save metadata
-        metadata = cds.getMetadata(resid)
+        if source == "cds":
+            metadata = cds.getMetadata(resid, baseEndpoint="http://cds.cern.ch/record/")
+        elif source == "ilcdoc":
+            metadata = cds.getMetadata(resid, baseEndpoint="http://ilcdoc.linearcollider.org/record/")
+
         open(path + "/" + recid + "/" + "metadata.xml", "wb").write(metadata)
         print("Getting source files locations")
 
@@ -126,25 +144,23 @@ def process(skip_downloads, recid, source, timestamp=0):
             if skip_downloads:
                 filedata = b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag."
                 open(destination, "wb").write(filedata)
-                print("skipped download") 
+                print("skipped download")
             elif sourcefile["remote"] == "HTTP":
                 filedata = cds.downloadRemoteFile(
-                        sourcefile["uri"],
-                        destination,
-                    )
+                    sourcefile["uri"],
+                    destination,
+                )
             elif sourcefile["remote"] == "EOS":
                 filedata = cds.downloadEOSfile(
-                        sourcefile["uri"],
-                        destination,
-                    )
+                    sourcefile["uri"],
+                    destination,
+                )
 
     # CERN Open Data pipeline
     if source == "cod":
         # Get and save metadata about the requested resource
         metadata = cod.getMetadata(recid)
-        open(path + "/" + recid + "/" + "metadata.json", "w").write(
-            json.dumps(metadata)
-        )
+        open(path + "/" + recid + "/" + "metadata.json", "w").write(json.dumps(metadata))
 
     # Prepare AIC
     filelist = []
@@ -152,10 +168,10 @@ def process(skip_downloads, recid, source, timestamp=0):
     for el in my_fs.scandir(recid):
         if el.is_dir:
             for file in my_fs.listdir(recid + "/" + el.name):
-                filepath = recid+ "/" + el.name + "/" + file
+                filepath = recid + "/" + el.name + "/" + file
                 filelist.append(filepath)
         else:
-            filepath = recid+ "/" + el.name
+            filepath = recid + "/" + el.name
             filelist.append(filepath)
 
     # Look for high-level metadata and copy it into the AIC
