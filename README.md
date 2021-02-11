@@ -22,9 +22,17 @@ pipenv install
 python main.py --help
 ```
 
+### Supported sources
+
+| Name                 	| ID     	| URL                              	| Notes                     	|
+|----------------------	|--------	|----------------------------------	|---------------------------	|
+| CERN Document Server 	| cds    	| https://cds.cern.ch/             	| Invenio v1.1.3.1106-62468 	|
+| ILC Document Server  	| ilcdoc 	| http://ilcdoc.linearcollider.org 	| CDS Invenio v1.0.7.2-5776 	|
+| CERN Open Data       	| cod    	| https://opendata.cern.ch/        	|                           	|
+
 ### CERN Document Server (CDS)
 
-To prepare a BagIt from a CDS Resource ID, run `python main.py --recid=2272168 --source=cds`.
+To prepare a BagIt from a CDS Resource ID, run `python main.py --recid=2272168 --source=cds`
 
 ```
 > tree bagitexport_2272168
