@@ -97,10 +97,8 @@ def process(skip_downloads, recid, source, timestamp=0):
     baseexportpath = f"bagitexport{delimiter_str}{recid}"
     os.mkdir(path + "/" + baseexportpath)
 
-    # If we're on CDS1 pipeline, create also the source folder,
-    #  since we will need to fetch the raw files
-    if source == "cds" or source == "cod":
-        os.mkdir(path + "/" + recid)
+    # Temp folder to pull the raw data
+    os.mkdir(path + "/" + recid)
 
     # Create the AIC folder (ResourceID_timestamp)
     if timestamp == 0:
@@ -182,6 +180,10 @@ def process(skip_downloads, recid, source, timestamp=0):
         my_fs.copy(file, aiufoldername + "/" + fs.path.basename(file))
 
     createBagItTxt(baseexportpath)
+
+    # Remove temp folder
+    shutil.rmtree(path + "/" + recid)
+
     return baseexportpath
 
 
