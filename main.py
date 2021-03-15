@@ -8,7 +8,6 @@ import random
 import string
 import cds
 import cod
-import click
 import json
 import copy
 import shutil
@@ -60,36 +59,14 @@ def generateReferences(filepathslist):
         references += "\n"
     return references
 
-
 def getHash(filename, alg="md5"):
     """
     Compute hash of a given file
     """
-    computedhash = my_fs.hash(filename, alg) + get_random_string(5)
-    # TODO: remove the random part with real payloads
+    computedhash = my_fs.hash(filename, alg)
     return computedhash
 
-
-@click.command()
-@click.option(
-    "--recid",
-    default="1",
-    help="Unique ID of the record in the upstream source",
-    required=True,
-)
-@click.option(
-    "--source",
-    help="Select source pipeline",
-    required=True,
-    type=click.Choice(["cds", "ilcdoc", "cod"], case_sensitive=False)
-)
-@click.option(
-    "--skip_downloads",
-    help="Creates files but skip downloading the actual payloads",
-    default=False,
-    is_flag=True,
-)
-def process(skip_downloads, recid, source, timestamp=0):
+def process(recid, source, skip_downloads=False, timestamp=0):
 
     # Delimiter string
     delimiter_str = "::"
@@ -130,7 +107,8 @@ def process(skip_downloads, recid, source, timestamp=0):
         if source == "cds":
             metadata = cds.getMetadata(resid, baseEndpoint="http://cds.cern.ch/record/")
         elif source == "ilcdoc":
-            metadata = cds.getMetadata(resid, baseEndpoint="http://ilcdoc.linearcollider.org/record/")
+            metadata = cds.getMeta
+            data(resid, baseEndpoint="http://ilcdoc.linearcollider.org/record/")
 
         open(path + "/" + recid + "/" + "metadata.xml", "wb").write(metadata)
         print("Getting source files locations")
@@ -142,7 +120,7 @@ def process(skip_downloads, recid, source, timestamp=0):
             destination = path + "/" + recid + "/" + sourcefile["filename"]
             print(f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..')
             if skip_downloads:
-                filedata = b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag."
+                filedata = b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag." + get_random_string(5)
                 open(destination, "wb").write(filedata)
                 print("skipped download")
             elif sourcefile["remote"] == "HTTP":
@@ -201,7 +179,3 @@ def process(skip_downloads, recid, source, timestamp=0):
     shutil.rmtree(path + "/" + recid)
 
     return baseexportpath
-
-
-if __name__ == "__main__":
-    process()
