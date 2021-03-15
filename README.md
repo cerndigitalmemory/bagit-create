@@ -32,7 +32,7 @@ python main.py --help
 
 ### CERN Document Server (CDS)
 
-To prepare a BagIt from a CDS Resource ID, run `python main.py --recid=2272168 --source=cds`
+To prepare a BagIt from a CDS Resource ID, using the CLI interface, run `python cli.py --recid=2272168 --source=cds`
 
 ```
 > tree bagitexport_2272168
@@ -51,6 +51,16 @@ CDS metadata is XML/[MARC21](https://cds.cern.ch/help/admin/howto-marc?ln=fr)
 
 ### CERN Open Data
 
-To prepare a BagIt from a CERN Open Data Record ID, run `python main.py --foldername=1 --method=cod`.
+To prepare a BagIt from a CERN Open Data Record ID, run `python cli.py --foldername=1 --method=cod`.
 
 CERN Open Data metadata follows [this](http://opendata.cern.ch/schema/records/record-v1.0.0.json) schema.
+
+### As a module
+
+The BagIt-Create tool can be used from other python scripts easily:
+
+```python
+import main
+
+main.process(recid=2272168, source="cds")
+```
