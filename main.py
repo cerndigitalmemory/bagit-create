@@ -6,8 +6,8 @@ import os
 import time
 import random
 import string
-import cds
-import cod
+from . import cds
+from . import cod
 import json
 import copy
 import shutil
@@ -59,12 +59,14 @@ def generateReferences(filepathslist):
         references += "\n"
     return references
 
+
 def getHash(filename, alg="md5"):
     """
     Compute hash of a given file
     """
     computedhash = my_fs.hash(filename, alg)
     return computedhash
+
 
 def process(recid, source, skip_downloads=False, timestamp=0):
 
@@ -120,7 +122,10 @@ def process(recid, source, skip_downloads=False, timestamp=0):
             destination = path + "/" + recid + "/" + sourcefile["filename"]
             print(f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..')
             if skip_downloads:
-                filedata = b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag." + get_random_string(5)
+                filedata = (
+                    b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag."
+                    + get_random_string(5)
+                )
                 open(destination, "wb").write(filedata)
                 print("skipped download")
             elif sourcefile["remote"] == "HTTP":

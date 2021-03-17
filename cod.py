@@ -4,7 +4,7 @@
 
 import sys
 from cernopendata_client import searcher, downloader
-from cds import prettyprint
+from .cds import prettyprint
 
 
 # WORKAROUND to import the git "master" version
