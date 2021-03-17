@@ -1,10 +1,11 @@
-import main
+from bagit_create.main import process
 import click
+
+"""bagit-create command line tool."""
 
 @click.command()
 @click.option(
     "--recid",
-    default="1",
     help="Unique ID of the record in the upstream source",
     required=True,
 )
@@ -23,7 +24,7 @@ import click
 def cli(recid, source, skip_downloads):
     # This "wrapper" method allows the main one to be called
     #  from python, ignoring the click CLI interface
-    main.process(recid, source, skip_downloads)
+    process(recid, source, skip_downloads)
 
 if __name__ == "__main__":
     cli()

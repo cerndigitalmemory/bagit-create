@@ -13,14 +13,41 @@ dnf group install "Development Tools"
 # Headers
 yum install python38-devel openssl-devel
 
-# Activate virtualenv
-pipenv shell
+# Create and activate virtualenv
+python3 -m venv env
+source env/bin/activate
 # Install dependencies
-pipenv install
-
-# CLI Help
-python main.py --help
+cd bagit_create
+pip3 install -r requirements.xt 
 ```
+
+## Usage
+
+### CLI
+
+```bash
+# Show CLI Usage help
+python cli.py --help
+
+python cli.py --recid=2272168 --source=cds
+```
+
+Arguments:
+
+- Record ID (`--recid`)
+- Source (`--source`)
+
+
+### Module
+
+The BagIt-Create tool can be used from other python scripts easily:
+
+```python
+from bagit_create.main import process
+
+process(recid=2272168, source="cds")
+```
+
 
 ### Supported sources
 
@@ -54,13 +81,3 @@ CDS metadata is XML/[MARC21](https://cds.cern.ch/help/admin/howto-marc?ln=fr)
 To prepare a BagIt from a CERN Open Data Record ID, run `python cli.py --foldername=1 --method=cod`.
 
 CERN Open Data metadata follows [this](http://opendata.cern.ch/schema/records/record-v1.0.0.json) schema.
-
-### As a module
-
-The BagIt-Create tool can be used from other python scripts easily:
-
-```python
-import main
-
-main.process(recid=2272168, source="cds")
-```
