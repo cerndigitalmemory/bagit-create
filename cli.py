@@ -21,10 +21,43 @@ import click
     default=False,
     is_flag=True,
 )
-def cli(recid, source, skip_downloads):
+@click.option(
+    "--ark_json",
+    help="Generate a JSON metadata file for arkivum ingestions",
+    default=False,
+    is_flag=True,
+)
+@click.option(
+    "--ark_json_rel",
+    help="Generate a JSON metadata file for arkivum ingestions using relative paths",
+    default=False,
+    is_flag=True,
+)
+@click.option(
+    "--v",
+    help="Generate a JSON metadata file for arkivum ingestions using relative paths",
+    default=False,
+    is_flag=True,
+)
+@click.option(
+    "--vv",
+    help="Generate a JSON metadata file for arkivum ingestions using relative paths",
+    default=False,
+    is_flag=True,
+)
+def cli(recid, source, skip_downloads, ark_json, ark_json_rel, v, vv):
+    
+    if vv:
+        loglevel = 0
+    elif v:
+        loglevel = 1
+    else:
+        loglevel = 2
+
     # This "wrapper" method allows the main one to be called
     #  from python, ignoring the click CLI interface
-    process(recid, source, skip_downloads)
+    result = process(recid, source, loglevel, skip_downloads)
+    print(f"Result object: {result}")
 
 if __name__ == "__main__":
     cli()
