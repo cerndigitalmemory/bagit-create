@@ -11,9 +11,17 @@ from . import cod
 import json
 import copy
 import shutil
+import logging
+import subprocess
 
 my_fs = open_fs(".")
 
+## TODO: get version information from a manifest
+version = "0.0.2"
+try:
+    commit_hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode("utf-8") 
+except:
+    commit_hash = ""
 
 def get_random_string(length):
     """
@@ -40,7 +48,7 @@ def checkunique(id):
     """
     Check if the given ID is unique in our system
     """
-    print("ID is unique")
+    logging.debug("ID is unique")
     return True
 
 
@@ -68,7 +76,16 @@ def getHash(filename, alg="md5"):
     return computedhash
 
 
-def process(recid, source, skip_downloads=False, timestamp=0):
+def process(recid, source, loglevel, skip_downloads=False, timestamp=0):
+
+    # DEBUG, INFO, WARNING, ERROR
+    loglevels = [10, 20, 30, 40]
+
+    # Setup logging
+    logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
+    logging.info(f"BagIt Create tool {version} {commit_hash}")
+    logging.info(f"Starting job. recid: {recid}, source: {source}")
+    logging.debug(f"Set log level: {loglevels[loglevel]}")
 
     # Delimiter string
     delimiter_str = "::"
@@ -87,23 +104,28 @@ def process(recid, source, skip_downloads=False, timestamp=0):
 
     # Prepare the high level folder which will contain the AIC and the AIUs
     baseexportpath = f"bagitexport{delimiter_str}{recid}"
-    os.mkdir(path + "/" + baseexportpath)
+    try:
+        os.mkdir(path + "/" + baseexportpath)
+    except FileExistsError:
+        logging.error("Directory exists")
+        return {'status': '1',
+                'errormsg': 'Directory Exists'}
 
     # Temp folder to pull the raw data
     os.mkdir(path + "/" + recid)
 
     # Create the AIC folder (ResourceID_timestamp)
     if timestamp == 0:
-        print("No timestamp provided. Using 'now'")
+        logging.debug("No timestamp provided. Using 'now'")
         timestamp = int(time.time())
     aicfoldername = baseexportpath + "/" + recid + delimiter_str + str(timestamp)
-    print("AIC folder name is", aicfoldername)
+    logging.debug(f"AIC folder name is {aicfoldername}")
     os.mkdir(path + "/" + aicfoldername)
 
     # CERN CDS Pipeline
     ## consider refactoring the common parts to "invenio-vN" and setting a more general flag
     if source == "cds" or source == "ilcdoc":
-        print(f"Fetching the {source} Resource", resid)
+        logging.debug(f"Fetching the {source} Resource {resid}")
 
         # Get and save metadata
         if source == "cds":
@@ -113,21 +135,21 @@ def process(recid, source, skip_downloads=False, timestamp=0):
             data(resid, baseEndpoint="http://ilcdoc.linearcollider.org/record/")
 
         open(path + "/" + recid + "/" + "metadata.xml", "wb").write(metadata)
-        print("Getting source files locations")
+        logging.debug("Getting source files locations")
 
         # From the metadata, extract info about the upstream file sources
         files = cds.getRawFilesLocs(recid + "/metadata.xml")
-        print("Got", len(files), "files")
+        logging.debug(f"Got {len(files)} files")
         for sourcefile in files:
             destination = path + "/" + recid + "/" + sourcefile["filename"]
-            print(f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..')
+            logging.debug(f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..')
             if skip_downloads:
                 filedata = (
                     b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag."
                     + get_random_string(5)
                 )
                 open(destination, "wb").write(filedata)
-                print("skipped download")
+                logging.debug("skipped download")
             elif sourcefile["remote"] == "HTTP":
                 filedata = cds.downloadRemoteFile(
                     sourcefile["uri"],
@@ -165,7 +187,7 @@ def process(recid, source, skip_downloads=False, timestamp=0):
             my_fs.copy(recid + "/" + filename, aicfoldername + "/" + filename)
             filelist.remove(recid + "/" + filename)
 
-    print("Harvested files:", filelist)
+    logging.debug(f"Harvested files: {filelist}")
 
     references = generateReferences(filelist)
 
@@ -183,4 +205,6 @@ def process(recid, source, skip_downloads=False, timestamp=0):
     # Remove temp folder
     shutil.rmtree(path + "/" + recid)
 
-    return baseexportpath
+    return {'status': 0,
+            'errormsg': None,
+            'details': baseexportpath}

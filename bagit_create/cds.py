@@ -4,7 +4,7 @@ from pymarc import MARCReader, marcxml
 from fs import open_fs
 import pprint
 import ntpath
-
+import logging
 import os.path
 
 import fs
@@ -28,7 +28,7 @@ def getMetadata(record_id, baseEndpoint, type="xml"):
 
     r = requests.get(record_url, params=payload)
 
-    print("Getting", r.url)
+    logging.debug(f"Getting {r.url}")
 
     return r.content
 
@@ -55,7 +55,7 @@ def getRawFilesLocs(metadata_filename):
             obj["uri"] = f["d"]
             obj["remote"] = "EOS"
         else:
-            print(f"Skipped 856 entry \"{f}\", no u or d field.")
+            logging.debug(f"Skipped 856 entry \"{f}\", no u or d field.")
             continue
 
         # Get basename
@@ -76,7 +76,7 @@ def downloadEOSfile(src, dest):
     try:
         my_fs.copy(src, dest)
     except:
-        print(f"  Path '{src}' not found. Skipping file. ")
+        logging.debug(f"  Path '{src}' not found. Skipping file. ")
 
 
 def prettyprint(obj, indentsize=4):
