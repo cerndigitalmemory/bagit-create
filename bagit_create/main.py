@@ -139,9 +139,14 @@ def process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=Fals
 
         # Get and save metadata
         if source == "cds":
-            metadata, metadata_url = cds.getMetadata(resid, baseEndpoint="http://cds.cern.ch/record/")
+            metadata, metadata_url, status_code = cds.getMetadata(resid, baseEndpoint="http://cds.cern.ch/record/")
         elif source == "ilcdoc":
-            metadata, metadata_url = cds.getMetadata(resid, baseEndpoint="http://ilcdoc.linearcollider.org/record/")
+            metadata, metadata_url, status_code = cds.getMetadata(resid, baseEndpoint="http://ilcdoc.linearcollider.org/record/")
+
+        if status_code != 200:
+            logging.error(f"Got HTTP {status_code}, a non 200 status code from the metadata endpoint. Giving up.")
+            return {'status': '1',
+                    'errormsg': 'Metadata endpoint returned a non 200 http status code.'}
 
         metadata_obj["metadataFile"] = metadata_url
 

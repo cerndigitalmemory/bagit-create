@@ -30,7 +30,7 @@ def getMetadata(record_id, baseEndpoint, type="xml"):
 
     logging.debug(f"Getting {r.url}")
 
-    return r.content, r.url
+    return r.content, r.url, r.status_code
 
 
 def getRawFilesLocs(metadata_filename):
