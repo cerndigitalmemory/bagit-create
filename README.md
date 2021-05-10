@@ -18,7 +18,7 @@ python3 -m venv env
 source env/bin/activate
 # Install dependencies
 cd bagit_create
-pip3 install -r requirements.xt 
+pip3 install -r requirements.txt 
 ```
 
 ## Usage
@@ -27,16 +27,26 @@ pip3 install -r requirements.xt
 
 ```bash
 # Show CLI Usage help
-python cli.py --help
+python3 cli.py --help
 
-python cli.py --recid=2272168 --source=cds
+python3 cli.py --recid=2272168 --source=cds
+
+# Generate JSON metadata for arkivum, running in a very verbose way
+python3 cli.py --recid 2766073 --source cds --ark_json --vv
+
+# Deleted resource, running in a very verbose way
+python3 cli.py --recid 1 --source cds --vv
+
 ```
 
-Arguments:
-
-- Record ID (`--recid`)
-- Source (`--source`)
-
+CLI options:
+	- `--recid TEXT`, Unique ID of the record in the upstream source [required]
+	- `--source [cds|ilcdoc|cod]`, Select source pipeline  [required]
+	- `--skip_downloads`, Creates files but skip downloading the actual payloads
+	- `--ark_json`, Generate a JSON metadata file for arkivum ingestions
+	- `--ark_json_rel`, Generate a JSON metadata file for arkivum ingestions using relative paths
+	- `--v`, Enable logging (verbose, 'info' level)
+	- `--vv`, Enable logging (very verbose, 'debug' level)
 
 ### Module
 
