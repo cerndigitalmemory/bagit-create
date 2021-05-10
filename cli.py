@@ -35,18 +35,19 @@ import click
 )
 @click.option(
     "--v",
-    help="Generate a JSON metadata file for arkivum ingestions using relative paths",
+    help="Enable logging (verbose, 'info' level)",
     default=False,
     is_flag=True,
 )
 @click.option(
     "--vv",
-    help="Generate a JSON metadata file for arkivum ingestions using relative paths",
+    help="Enable logging (very verbose, 'debug' level)",
     default=False,
     is_flag=True,
 )
 def cli(recid, source, skip_downloads, ark_json, ark_json_rel, v, vv):
     
+    # Select the desired log level (default is 2, warning)
     if vv:
         loglevel = 0
     elif v:
@@ -56,7 +57,7 @@ def cli(recid, source, skip_downloads, ark_json, ark_json_rel, v, vv):
 
     # This "wrapper" method allows the main one to be called
     #  from python, ignoring the click CLI interface
-    result = process(recid, source, loglevel, skip_downloads)
+    result = process(recid, source, loglevel, skip_downloads, ark_json, ark_json_rel)
     print(f"Result object: {result}")
 
 if __name__ == "__main__":
