@@ -10,19 +10,19 @@ import click
     required=True,
 )
 @click.option(
-    "--source",
+    "-s", "--source",
     help="Select source pipeline",
     required=True,
     type=click.Choice(["cds", "ilcdoc", "cod"], case_sensitive=False)
 )
 @click.option(
-    "--skip_downloads",
+    "-skip", "--skip_downloads",
     help="Creates files but skip downloading the actual payloads",
     default=False,
     is_flag=True,
 )
 @click.option(
-    "--ark_json",
+    "-aj", "--ark_json",
     help="Generate a JSON metadata file for arkivum ingestions",
     default=False,
     is_flag=True,
@@ -34,13 +34,13 @@ import click
     is_flag=True,
 )
 @click.option(
-    "--v",
+    "--verbose", "-v",
     help="Enable logging (verbose, 'info' level)",
     default=False,
     is_flag=True,
 )
 @click.option(
-    "--vv",
+    "--very-verbose", "-vv",
     help="Enable logging (very verbose, 'debug' level)",
     default=False,
     is_flag=True,
