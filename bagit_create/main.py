@@ -48,6 +48,7 @@ def checkunique(id):
     """
     Check if the given ID is unique in our system
     """
+    # STUB
     logging.debug("ID is unique")
     return True
 
@@ -76,7 +77,7 @@ def getHash(filename, alg="md5"):
     return computedhash
 
 
-def process(recid, source, loglevel, skip_downloads=False, timestamp=0):
+def process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=False, timestamp=0):
 
     # DEBUG, INFO, WARNING, ERROR
     loglevels = [10, 20, 30, 40]
@@ -95,6 +96,15 @@ def process(recid, source, loglevel, skip_downloads=False, timestamp=0):
 
     # Save the plain resource ID
     resid = copy.copy(recid)
+
+    # Prepare the JSON metadata
+
+    metadata_obj = {
+        'system': source,
+        'recid': recid,
+        'metadataFile': None,
+        'contentFile': []
+    }
 
     # Prepend the system name and the delimiter
     recid = f"{source}{delimiter_str}{recid}"
@@ -129,10 +139,12 @@ def process(recid, source, loglevel, skip_downloads=False, timestamp=0):
 
         # Get and save metadata
         if source == "cds":
-            metadata = cds.getMetadata(resid, baseEndpoint="http://cds.cern.ch/record/")
+            metadata, metadata_url = cds.getMetadata(resid, baseEndpoint="http://cds.cern.ch/record/")
         elif source == "ilcdoc":
-            metadata = cds.getMeta
-            data(resid, baseEndpoint="http://ilcdoc.linearcollider.org/record/")
+            metadata, metadata_url = cds.getMetadata(resid, baseEndpoint="http://ilcdoc.linearcollider.org/record/")
+
+        metadata_obj["metadataFile"] = metadata_url
+
 
         open(path + "/" + recid + "/" + "metadata.xml", "wb").write(metadata)
         logging.debug("Getting source files locations")
@@ -151,6 +163,7 @@ def process(recid, source, loglevel, skip_downloads=False, timestamp=0):
                 open(destination, "wb").write(filedata)
                 logging.debug("skipped download")
             elif sourcefile["remote"] == "HTTP":
+                metadata_obj["contentFile"].append(sourcefile["uri"])
                 filedata = cds.downloadRemoteFile(
                     sourcefile["uri"],
                     destination,
@@ -201,6 +214,10 @@ def process(recid, source, loglevel, skip_downloads=False, timestamp=0):
         my_fs.copy(file, aiufoldername + "/" + fs.path.basename(file))
 
     createBagItTxt(baseexportpath)
+
+    if ark_json:
+        open(baseexportpath + '/' + "ark_metadata.json", "w").write(json.dumps(metadata_obj, indent=4))
+        logging.info("Wrote ark_metadata.json")
 
     # Remove temp folder
     shutil.rmtree(path + "/" + recid)

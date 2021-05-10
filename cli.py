@@ -57,7 +57,7 @@ def cli(recid, source, skip_downloads, ark_json, ark_json_rel, v, vv):
 
     # This "wrapper" method allows the main one to be called
     #  from python, ignoring the click CLI interface
-    result = process(recid, source, loglevel, skip_downloads, ark_json, ark_json_rel)
+    result = process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads)
     print(f"Result object: {result}")
 
 if __name__ == "__main__":
