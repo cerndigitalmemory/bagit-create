@@ -45,12 +45,12 @@ import click
     default=False,
     is_flag=True,
 )
-def cli(recid, source, skip_downloads, ark_json, ark_json_rel, v, vv):
+def cli(recid, source, skip_downloads, ark_json, ark_json_rel, verbose, very_verbose):
     
     # Select the desired log level (default is 2, warning)
-    if vv:
+    if very_verbose:
         loglevel = 0
-    elif v:
+    elif verbose:
         loglevel = 1
     else:
         loglevel = 2
