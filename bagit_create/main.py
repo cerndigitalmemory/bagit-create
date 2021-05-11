@@ -128,7 +128,12 @@ def process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=Fals
     if timestamp == 0:
         logging.debug("No timestamp provided. Using 'now'")
         timestamp = int(time.time())
-    aicfoldername = baseexportpath + "/" + recid + delimiter_str + str(timestamp)
+
+    aicfoldername_base = f"{recid}{delimiter_str}{str(timestamp)}"
+    arkjson_filename = f"ark_{source}_{resid}_{str(timestamp)}.json"
+
+    aicfoldername = f"{baseexportpath}/{aicfoldername_base}"
+
     logging.debug(f"AIC folder name is {aicfoldername}")
     os.mkdir(path + "/" + aicfoldername)
 
@@ -221,8 +226,8 @@ def process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=Fals
     createBagItTxt(baseexportpath)
 
     if ark_json:
-        open(baseexportpath + '/' + "ark_metadata.json", "w").write(json.dumps(metadata_obj, indent=4))
-        logging.info("Wrote ark_metadata.json")
+        open(baseexportpath + '/' + arkjson_filename, "w").write(json.dumps(metadata_obj, indent=4))
+        logging.info(f"Wrote {arkjson_filename}")
 
     # Remove temp folder
     shutil.rmtree(path + "/" + recid)
