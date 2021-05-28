@@ -142,10 +142,11 @@ def process(
     logging.debug(f"AIC folder name is {aicfoldername}")
     os.mkdir(path + "/" + aicfoldername)
 
+    logging.debug(f"Fetching the {source} Resource {resid}")
+    
     # CERN CDS Pipeline
     ## consider refactoring the common parts to "invenio-vN" and setting a more general flag
     if source == "cds" or source == "ilcdoc":
-        logging.debug(f"Fetching the {source} Resource {resid}")
 
         # Get and save metadata
         if source == "cds":
@@ -200,7 +201,6 @@ def process(
 
     # CERN Open Data pipeline
     if source == "cod":
-        print(resid)
 
         # Get and save metadata about the requested resource
         metadata = cod.getMetadata(resid)
@@ -219,8 +219,9 @@ def process(
                     f"https://opendata.cern.ch/record/{resid}/files/{sourcefile['key']}"
                 )
                 r = requests.get(list_endpoint)
-                print(f"Unpacking file list {list_endpoint}")
+                logging.debug(f"Unpacking file list {list_endpoint}")
                 for el in r.json():
+                    el["path"] = el["uri"].replace("root://eospublic.cern.ch/", "")
                     metadata_obj["contentFile"].append(el)
 
     # Prepare AIC
