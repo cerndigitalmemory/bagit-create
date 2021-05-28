@@ -55,13 +55,13 @@ def getRawFilesLocs(metadata_filename):
             obj["uri"] = f["d"]
             obj["remote"] = "EOS"
         else:
-            logging.debug(f"Skipped 856 entry \"{f}\", no u or d field.")
+            logging.debug(f'Skipped 856 entry "{f}", no u or d field.')
             continue
 
         # Get basename
         if obj["uri"]:
             obj["filename"] = ntpath.basename(obj["uri"])
-        
+
         rawData.append(obj)
     return rawData
 

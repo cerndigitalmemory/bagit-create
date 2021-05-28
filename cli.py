@@ -3,6 +3,7 @@ import click
 
 """bagit-create command line tool."""
 
+
 @click.command()
 @click.option(
     "--recid",
@@ -10,19 +11,22 @@ import click
     required=True,
 )
 @click.option(
-    "-s", "--source",
+    "-s",
+    "--source",
     help="Select source pipeline",
     required=True,
-    type=click.Choice(["cds", "ilcdoc", "cod"], case_sensitive=False)
+    type=click.Choice(["cds", "ilcdoc", "cod"], case_sensitive=False),
 )
 @click.option(
-    "-skip", "--skip_downloads",
+    "-skip",
+    "--skip_downloads",
     help="Creates files but skip downloading the actual payloads",
     default=False,
     is_flag=True,
 )
 @click.option(
-    "-aj", "--ark_json",
+    "-aj",
+    "--ark_json",
     help="Generate a JSON metadata file for arkivum ingestions",
     default=False,
     is_flag=True,
@@ -34,19 +38,21 @@ import click
     is_flag=True,
 )
 @click.option(
-    "--verbose", "-v",
+    "--verbose",
+    "-v",
     help="Enable logging (verbose, 'info' level)",
     default=False,
     is_flag=True,
 )
 @click.option(
-    "--very-verbose", "-vv",
+    "--very-verbose",
+    "-vv",
     help="Enable logging (very verbose, 'debug' level)",
     default=False,
     is_flag=True,
 )
 def cli(recid, source, skip_downloads, ark_json, ark_json_rel, verbose, very_verbose):
-    
+
     # Select the desired log level (default is 2, warning)
     if very_verbose:
         loglevel = 0
@@ -59,6 +65,7 @@ def cli(recid, source, skip_downloads, ark_json, ark_json_rel, verbose, very_ver
     #  from python, ignoring the click CLI interface
     result = process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads)
     print(f"Result object: {result}")
+
 
 if __name__ == "__main__":
     cli()
