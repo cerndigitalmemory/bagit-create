@@ -13,15 +13,19 @@ import copy
 import shutil
 import logging
 import subprocess
+import requests
 
 my_fs = open_fs(".")
 
 ## TODO: get version information from a manifest
 version = "0.0.2"
 try:
-    commit_hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode("utf-8") 
+    commit_hash = subprocess.check_output(
+        ["git", "rev-parse", "--short", "HEAD"]
+    ).decode("utf-8")
 except:
     commit_hash = ""
+
 
 def get_random_string(length):
     """
@@ -77,7 +81,9 @@ def getHash(filename, alg="md5"):
     return computedhash
 
 
-def process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=False, timestamp=0):
+def process(
+    recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=False, timestamp=0
+):
 
     # DEBUG, INFO, WARNING, ERROR
     loglevels = [10, 20, 30, 40]
@@ -100,10 +106,10 @@ def process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=Fals
     # Prepare the JSON metadata
 
     metadata_obj = {
-        'system': source,
-        'recid': recid,
-        'metadataFile': None,
-        'contentFile': []
+        "system": source,
+        "recid": recid,
+        "metadataFile": None,
+        "contentFile": [],
     }
 
     # Prepend the system name and the delimiter
@@ -118,8 +124,7 @@ def process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=Fals
         os.mkdir(path + "/" + baseexportpath)
     except FileExistsError:
         logging.error("Directory exists")
-        return {'status': '1',
-                'errormsg': 'Directory Exists'}
+        return {"status": "1", "errormsg": "Directory Exists"}
 
     # Temp folder to pull the raw data
     os.mkdir(path + "/" + recid)
@@ -144,17 +149,24 @@ def process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=Fals
 
         # Get and save metadata
         if source == "cds":
-            metadata, metadata_url, status_code = cds.getMetadata(resid, baseEndpoint="http://cds.cern.ch/record/")
+            metadata, metadata_url, status_code = cds.getMetadata(
+                resid, baseEndpoint="http://cds.cern.ch/record/"
+            )
         elif source == "ilcdoc":
-            metadata, metadata_url, status_code = cds.getMetadata(resid, baseEndpoint="http://ilcdoc.linearcollider.org/record/")
+            metadata, metadata_url, status_code = cds.getMetadata(
+                resid, baseEndpoint="http://ilcdoc.linearcollider.org/record/"
+            )
 
         if status_code != 200:
-            logging.error(f"Got HTTP {status_code}, a non 200 status code from the metadata endpoint. Giving up.")
-            return {'status': '1',
-                    'errormsg': 'Metadata endpoint returned a non 200 http status code.'}
+            logging.error(
+                f"Got HTTP {status_code}, a non 200 status code from the metadata endpoint. Giving up."
+            )
+            return {
+                "status": "1",
+                "errormsg": "Metadata endpoint returned a non 200 http status code.",
+            }
 
         metadata_obj["metadataFile"] = metadata_url
-
 
         open(path + "/" + recid + "/" + "metadata.xml", "wb").write(metadata)
         logging.debug("Getting source files locations")
@@ -164,7 +176,9 @@ def process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=Fals
         logging.debug(f"Got {len(files)} files")
         for sourcefile in files:
             destination = path + "/" + recid + "/" + sourcefile["filename"]
-            logging.debug(f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..')
+            logging.debug(
+                f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..'
+            )
             if skip_downloads:
                 filedata = (
                     b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag."
@@ -186,9 +200,28 @@ def process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=Fals
 
     # CERN Open Data pipeline
     if source == "cod":
+        print(resid)
+
         # Get and save metadata about the requested resource
-        metadata = cod.getMetadata(recid)
+        metadata = cod.getMetadata(resid)
         open(path + "/" + recid + "/" + "metadata.json", "w").write(json.dumps(metadata))
+        files = metadata["metadata"]["files"]
+
+        metadata_obj["metadataFile"] = f"https://opendata.cern.ch/api/records/{resid}"
+
+        # From the metadata, extract info about the upstream file sources
+        logging.debug(f"Got {len(files)} files")
+
+        # Unpack file lists
+        for sourcefile in files:
+            if sourcefile["key"][-4:] == "json":
+                list_endpoint = (
+                    f"https://opendata.cern.ch/record/{resid}/files/{sourcefile['key']}"
+                )
+                r = requests.get(list_endpoint)
+                print(f"Unpacking file list {list_endpoint}")
+                for el in r.json():
+                    metadata_obj["contentFile"].append(el)
 
     # Prepare AIC
     filelist = []
@@ -226,12 +259,12 @@ def process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=Fals
     createBagItTxt(baseexportpath)
 
     if ark_json:
-        open(baseexportpath + '/' + arkjson_filename, "w").write(json.dumps(metadata_obj, indent=4))
+        open(baseexportpath + "/" + arkjson_filename, "w").write(
+            json.dumps(metadata_obj, indent=4)
+        )
         logging.info(f"Wrote {arkjson_filename}")
 
     # Remove temp folder
     shutil.rmtree(path + "/" + recid)
 
-    return {'status': 0,
-            'errormsg': None,
-            'details': baseexportpath}
+    return {"status": 0, "errormsg": None, "details": baseexportpath}
