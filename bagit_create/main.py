@@ -8,7 +8,7 @@ import random
 import string
 from . import cds
 from . import cod
-from . import bdf_wrapper
+from . import bibdocfile
 import json
 import copy
 import shutil
@@ -282,7 +282,7 @@ def process(
 
     if ark_json:
         if bibdoc:
-            metadata_obj["contentFile"] = bdf_wrapper.run_bibdoc(
+            metadata_obj["contentFile"] = bibdocfile.get_files_metadata(
                 resid, ssh_host=bd_ssh_host
             )
             metadata_obj["metadataFile"] = "bibdoc"
