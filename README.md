@@ -89,15 +89,15 @@ CDS metadata is XML/[MARC21](https://cds.cern.ch/help/admin/howto-marc?ln=fr)
 
 ### bibdocfile
 
-The `bibdocfile` command line utility can be used to get metadata for CDS records, exposing internal file paths and hashes (metadatas not available through the CDS API).
+The `bibdocfile` command line utility can be used to get metadata for CDS, exposing internal file paths and hashes normally not available through the CDS API.
 
-If the executable is available in the path (i.e. you can run `/opt/cdsweb/bin/bibdocfile`) and working with correct permissions just append `--bibdoc`:
+If the executable is available in the path (i.e. you can run `/opt/cdsweb/bin/bibdocfile`) just append `--bibdoc`:
 
 ```bash
-python3 cli.py --recid 2751237 --source cds --ark_json --bibdoc
+python3 cli.py --recid 2751237 --source cds --ark_json --bibdoc -v
 ```
 
-If this is not the case, you can pass a `--bd_ssh_host` parameter specifying the name of an SSH configured connection pointing to a machine able to run the command for you. Be aware that your machine must be able to establish such connection without any input (e.g. the script will run `ssh <THE_PROVIDED_SSH_HOST> bibdocfile ..args`)
+If this is not the case, you can pass a `--bd_ssh_host` parameter specifying the name of an SSH configured connection pointing to a machine able to run the command for you. Be aware that your machine must be able to establish such connection without any user interaction (the script will run `ssh <THE_PROVIDED_SSH_HOST> bibdocfile ..args`).
 
 Since in a normal CERN scenario this can't be possible due to required ProxyJumps/OTP authentication steps, you can use the `ControlMaster` feature of any recent version of OpenSSH, allowing to reuse sockets for connecting:
 
@@ -112,10 +112,10 @@ Host <SSH_NAME>
   ControlPath ~/.ssh/control:%h:%p:%r
 ```
 
-Then, run `ssh <SSH_NAME>` in a shell and keep it open. OpenSSH will now reuse this socket everytime you run `<SSH_NAME>`, allowing BagItCreate tool to run `bibdocfile` over this ssh connection for you, if you pass the `bd_ssh_host` parameter:
+Then, run `ssh <SSH_NAME>` in a shell, authenticate and keep it open. OpenSSH will now reuse this socket everytime you run `<SSH_NAME>`, allowing BagItCreate tool to run `bibdocfile` over this ssh connection for you, if you pass the `bd_ssh_host` parameter:
 
 ```bash
-python3 cli.py --recid 2751237 --source cds --ark_json --bibdoc --bd_ssh_host=<SSH_NAME>
+python3 cli.py --recid 2751237 --source cds --ark_json --bibdoc --bd_ssh_host=<SSH_NAME> -v
 ``` 
 
 
