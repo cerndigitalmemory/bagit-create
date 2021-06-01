@@ -106,7 +106,7 @@ def process(
             "details": None,
         }
 
-    # DEBUG, INFO, WARNING, ERROR
+    # DEBUG, INFO, WARNING, ERROR logging levels
     loglevels = [10, 20, 30, 40]
 
     # Setup logging
@@ -124,8 +124,7 @@ def process(
     # Save the plain resource ID
     resid = copy.copy(recid)
 
-    # Prepare the JSON metadata
-
+    # Prepare the Arkivum JSON metadata object
     metadata_obj = {
         "system": source,
         "recid": recid,
@@ -147,20 +146,26 @@ def process(
         logging.error("Directory exists")
         return {"status": "1", "errormsg": "Directory Exists"}
 
-    # Temp folder to pull the raw data
+    # Create temp folder to download all the related files
     os.mkdir(path + "/" + recid)
 
-    # Create the AIC folder (ResourceID_timestamp)
+    # Set timestamp to now if 0 is passed
     if timestamp == 0:
         logging.debug("No timestamp provided. Using 'now'")
         timestamp = int(time.time())
 
+    # Prepare the base path strings
+    # AIC folder name
     aicfoldername_base = f"{recid}{delimiter_str}{str(timestamp)}"
+    # Arkivum JSON file name
     arkjson_filename = f"ark_{source}_{resid}_{str(timestamp)}.json"
 
+    # AIC folder path
     aicfoldername = f"{baseexportpath}/{aicfoldername_base}"
 
     logging.debug(f"AIC folder name is {aicfoldername}")
+
+    # Create AIC folder
     os.mkdir(path + "/" + aicfoldername)
 
     logging.debug(f"Fetching the {source} Resource {resid}")
@@ -188,25 +193,28 @@ def process(
                 "errormsg": "Metadata endpoint returned a non 200 http status code.",
             }
 
+        # Save metadata upstream endpoint in the ark metadata
         metadata_obj["metadataFile"] = metadata_url
 
+        # Write metadata.xml
         open(path + "/" + recid + "/" + "metadata.xml", "wb").write(metadata)
         logging.debug("Getting source files locations")
 
         # From the metadata, extract info about the upstream file sources
         files = cds.getRawFilesLocs(recid + "/metadata.xml")
-        logging.debug(f"Got {len(files)} files")
 
-        logging.warning("Starting download")
+        # Append every file's URI to the ark metadata
         for sourcefile in files:
-            
+            metadata_obj["contentFile"].append(sourcefile["uri"])
+
+        logging.warning(f"Starting download of {len(files)} files")
+        for sourcefile in files:    
             destination = path + "/" + recid + "/" + sourcefile["filename"]
             logging.debug(
                 f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..'
             )
             
             if sourcefile["remote"] == "HTTP":
-                metadata_obj["contentFile"].append(sourcefile["uri"])
                 if not skip_downloads:
                     filedata = cds.downloadRemoteFile(
                         sourcefile["uri"],
@@ -228,30 +236,39 @@ def process(
         open(path + "/" + recid + "/" + "metadata.json", "w").write(json.dumps(metadata))
         files = metadata["metadata"]["files"]
 
+        # Save metadata upstream endpoint in the ark metadata        
         metadata_obj["metadataFile"] = f"https://opendata.cern.ch/api/records/{resid}"
 
         # From the metadata, extract info about the upstream file sources
         logging.debug(f"Got {len(files)} files")
 
-        # Unpack file lists
+        # Download and "unpack" every file list
         for sourcefile in files:
+            # file lists are TXT and JSON, look for the JSON ones
             if sourcefile["key"][-4:] == "json":
                 list_endpoint = (
                     f"https://opendata.cern.ch/record/{resid}/files/{sourcefile['key']}"
                 )
+                # Download the file list
                 r = requests.get(list_endpoint)
                 logging.debug(f"Unpacking file list {list_endpoint}")
+                # For every file in the list 
                 for el in r.json():
+                    # Remove the EOS instance prefix to get the path
                     el["path"] = el["uri"].replace("root://eospublic.cern.ch/", "")
+                    # Append the final path 
                     metadata_obj["contentFile"].append(el)
 
     # Prepare AIC
     filelist = []
 
+    # For every downloaded file:
     for el in my_fs.scandir(recid):
         if el.is_dir:
             for file in my_fs.listdir(recid + "/" + el.name):
+                # prepare the relative path
                 filepath = recid + "/" + el.name + "/" + file
+                # and append it to the file list
                 filelist.append(filepath)
         else:
             filepath = recid + "/" + el.name
@@ -267,11 +284,11 @@ def process(
 
     logging.debug(f"Harvested files: {filelist}")
 
+    # Generate and write references.txt
     references = generateReferences(filelist)
-
     my_fs.writetext(aicfoldername + "/" + "references.txt", references)
 
-    # AIUs
+    # Copy each file from the temp folder to the AIU folders
     for file in filelist:
         filehash = getHash(file)
         aiufoldername = baseexportpath + "/" + recid + delimiter_str + filehash
@@ -280,18 +297,22 @@ def process(
 
     createBagItTxt(baseexportpath)
 
+    # Finalize the Arkivum JSON metadata export (if requested)
     if ark_json:
         if bibdoc:
+            # Invoke bibdocfile and parse its output
             metadata_obj["contentFile"] = bibdocfile.get_files_metadata(
                 resid, ssh_host=bd_ssh_host
             )
+            # Overwrite the files array with the metadata got from bibdocfile
             metadata_obj["metadataFile"] = "bibdoc"
         open(baseexportpath + "/" + arkjson_filename, "w").write(
             json.dumps(metadata_obj, indent=4)
         )
         logging.info(f"Wrote {arkjson_filename}")
 
-    # Remove temp folder
+    # Remove the temp folder
     shutil.rmtree(path + "/" + recid)
 
+    # Return details about the executed job
     return {"status": 0, "errormsg": None, "details": baseexportpath}
