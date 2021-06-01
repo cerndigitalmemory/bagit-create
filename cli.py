@@ -51,7 +51,24 @@ import click
     default=False,
     is_flag=True,
 )
-def cli(recid, source, skip_downloads, ark_json, ark_json_rel, verbose, very_verbose):
+@click.option(
+    "--bibdoc",
+    "-b",
+    help="""
+    Get metadata for a CDS record from the bibdocfile utility.
+    (`/opt/cdsweb/bin/bibdocfile` must be available in the system
+    and the resource must be from CDS)""",
+    default=False,
+    is_flag=True,
+)
+@click.option(
+    "--bd_ssh_host",
+    help="""
+    SSH host to run bibdocfile""",
+    default=None,
+    is_flag=False,
+)
+def cli(recid, source, skip_downloads, ark_json, ark_json_rel, verbose, very_verbose, bibdoc, bd_ssh_host):
 
     # Select the desired log level (default is 2, warning)
     if very_verbose:
@@ -63,7 +80,7 @@ def cli(recid, source, skip_downloads, ark_json, ark_json_rel, verbose, very_ver
 
     # This "wrapper" method allows the main one to be called
     #  from python, ignoring the click CLI interface
-    result = process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads)
+    result = process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads, bibdoc, bd_ssh_host)
     print(f"Result object: {result}")
 
 
