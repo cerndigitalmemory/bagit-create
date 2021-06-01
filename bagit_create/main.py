@@ -8,12 +8,14 @@ import random
 import string
 from . import cds
 from . import cod
+from . import bdf_wrapper
 import json
 import copy
 import shutil
 import logging
 import subprocess
 import requests
+
 
 my_fs = open_fs(".")
 
@@ -82,8 +84,27 @@ def getHash(filename, alg="md5"):
 
 
 def process(
-    recid, source, loglevel, ark_json, ark_json_rel, skip_downloads=False, timestamp=0
+    recid,
+    source,
+    loglevel,
+    ark_json,
+    ark_json_rel,
+    skip_downloads=False,
+    bibdoc=False,
+    bd_ssh_host=None,
+    timestamp=0,
 ):
+
+    # Check if the given configuration makes sense
+    if bibdoc == True and source != "cds":
+        logging.error(
+            "You asked to get metadata from bibdocfile but the selected upstream source is not CDS."
+        )
+        return {
+            "status": 1,
+            "errormsg": "Incompatible job configuration",
+            "details": None,
+        }
 
     # DEBUG, INFO, WARNING, ERROR
     loglevels = [10, 20, 30, 40]
@@ -143,7 +164,7 @@ def process(
     os.mkdir(path + "/" + aicfoldername)
 
     logging.debug(f"Fetching the {source} Resource {resid}")
-    
+
     # CERN CDS Pipeline
     ## consider refactoring the common parts to "invenio-vN" and setting a more general flag
     if source == "cds" or source == "ilcdoc":
@@ -260,6 +281,11 @@ def process(
     createBagItTxt(baseexportpath)
 
     if ark_json:
+        if bibdoc:
+            metadata_obj["contentFile"] = bdf_wrapper.run_bibdoc(
+                resid, ssh_host=bd_ssh_host
+            )
+            metadata_obj["metadataFile"] = "bibdoc"
         open(baseexportpath + "/" + arkjson_filename, "w").write(
             json.dumps(metadata_obj, indent=4)
         )
