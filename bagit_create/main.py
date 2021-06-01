@@ -175,29 +175,29 @@ def process(
         # From the metadata, extract info about the upstream file sources
         files = cds.getRawFilesLocs(recid + "/metadata.xml")
         logging.debug(f"Got {len(files)} files")
+
+        logging.warning("Starting download")
         for sourcefile in files:
+            
             destination = path + "/" + recid + "/" + sourcefile["filename"]
             logging.debug(
                 f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..'
             )
-            if skip_downloads:
-                filedata = (
-                    b"FILEDATA DOWNLOAD SKIPPED. If you need the real payloads, remove the --skipdownloads flag."
-                    + get_random_string(5)
-                )
-                open(destination, "wb").write(filedata)
-                logging.debug("skipped download")
-            elif sourcefile["remote"] == "HTTP":
+            
+            if sourcefile["remote"] == "HTTP":
                 metadata_obj["contentFile"].append(sourcefile["uri"])
-                filedata = cds.downloadRemoteFile(
-                    sourcefile["uri"],
-                    destination,
-                )
+                if not skip_downloads:
+                    filedata = cds.downloadRemoteFile(
+                        sourcefile["uri"],
+                        destination,
+                    )
             elif sourcefile["remote"] == "EOS":
                 filedata = cds.downloadEOSfile(
                     sourcefile["uri"],
                     destination,
                 )
+
+        logging.warning("Finished downloading")
 
     # CERN Open Data pipeline
     if source == "cod":
