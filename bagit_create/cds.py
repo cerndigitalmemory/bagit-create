@@ -62,7 +62,11 @@ def getRawFilesLocs(metadata_filename):
         if obj["uri"]:
             obj["filename"] = ntpath.basename(obj["uri"])
 
-        rawData.append(obj)
+        if obj["filename"]:
+            rawData.append(obj)
+        else:
+            logging.warning(f'Skipped entry "{f}", no basename found (probably an URL?)')
+
     return rawData
 
 
