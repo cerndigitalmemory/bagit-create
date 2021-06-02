@@ -1,3 +1,7 @@
+# CDS functions and helpers
+# Interacts with CDS API to get metadata, parses and extract file informations
+# Helper functions to trigger the download of such files from HTTP and EOS
+
 import requests
 import xml.etree.ElementTree as ET
 from pymarc import MARCReader, marcxml
