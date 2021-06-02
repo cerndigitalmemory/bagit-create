@@ -37,6 +37,8 @@ python3 cli.py --recid 2766073 --source cds --ark_json --vv
 # Deleted resource, running in a very verbose way
 python3 cli.py --recid 1 --source cds --vv
 
+# Tests
+pytest
 ```
 
 CLI options:
@@ -48,6 +50,10 @@ CLI options:
 - `--ark_json_rel`, Generate a JSON metadata file for arkivum ingestions using relative paths
 - `--v`, Enable logging (verbose, 'info' level)
 - `--vv`, Enable logging (very verbose, 'debug' level)
+- `-b`,`--bibdoc`, Get metadata for a CDS record from the bibdocfile utility.
+	(`/opt/cdsweb/bin/bibdocfile` must be available in the system and the resource must be from CDS).
+	See [bibdocfile](#bibdocfile).
+-  `--bd_ssh_host TEXT`, SSH host to run bibdocfile. See [bibdocfile](#bibdocfile).
 
 ### Module
 
