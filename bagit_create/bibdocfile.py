@@ -54,6 +54,10 @@ def parse(output, resid):
                         metadata[file_id][key] = parsed_metadata[4].replace(
                             f"{key}=", ""
                         )
+                        if key == "checksum":
+                            metadata[file_id]["checksum"] = (
+                                "md5:" + metadata[file_id]["checksum"]
+                            )
 
     # Convert from key-form to array of files
     metadata_list = []
