@@ -305,7 +305,7 @@ def process(
                 resid, ssh_host=bd_ssh_host
             )
             # Overwrite the files array with the metadata got from bibdocfile
-            metadata_obj["metadataFile"] = "bibdoc"
+            metadata_obj["metadataFile"] = f"{aicfoldername}/metadata.xml"
         open(baseexportpath + "/" + arkjson_filename, "w").write(
             json.dumps(metadata_obj, indent=4)
         )
