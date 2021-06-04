@@ -27,15 +27,15 @@ pip3 install -r requirements.txt
 
 ```bash
 # Show CLI Usage help
-python3 cli.py --help
+./cli.py --help
 
-python3 cli.py --recid=2272168 --source=cds
+./cli.py --recid=2272168 --source=cds
 
 # Generate JSON metadata for arkivum, running in a very verbose way
-python3 cli.py --recid 2766073 --source cds --ark_json --vv
+./cli.py --recid 2766073 --source cds --ark-_json --vv
 
 # Deleted resource, running in a very verbose way
-python3 cli.py --recid 1 --source cds --vv
+./cli.py --recid 1 --source cds --vv
 
 # Tests
 pytest
@@ -45,15 +45,15 @@ CLI options:
 
 - `--recid TEXT`, Unique ID of the record in the upstream source [required]
 - `--source [cds|ilcdoc|cod]`, Select source pipeline  [required]
-- `--skip_downloads`, Creates files but skip downloading the actual payloads
-- `--ark_json`, Generate a JSON metadata file for arkivum ingestions
-- `--ark_json_rel`, Generate a JSON metadata file for arkivum ingestions using relative paths
+- `--skip-downloads`, Creates files but skip downloading the actual payloads
+- `--ark-json`, Generate a JSON metadata file for arkivum ingestions
+- `--ark-json-rel`, Generate a JSON metadata file for arkivum ingestions using relative paths
 - `--v`, Enable logging (verbose, 'info' level)
 - `--vv`, Enable logging (very verbose, 'debug' level)
 - `-b`,`--bibdoc`, Get metadata for a CDS record from the bibdocfile utility.
 	(`/opt/cdsweb/bin/bibdocfile` must be available in the system and the resource must be from CDS).
 	See [bibdocfile](#bibdocfile).
--  `--bd_ssh_host TEXT`, SSH host to run bibdocfile. See [bibdocfile](#bibdocfile).
+-  `--bd-ssh-host TEXT`, SSH host to run bibdocfile. See [bibdocfile](#bibdocfile).
 
 ### Module
 
@@ -100,10 +100,10 @@ The `bibdocfile` command line utility can be used to get metadata for CDS, expos
 If the executable is available in the path (i.e. you can run `/opt/cdsweb/bin/bibdocfile`) just append `--bibdoc`:
 
 ```bash
-python3 cli.py --recid 2751237 --source cds --ark_json --bibdoc -v
+python3 cli.py --recid 2751237 --source cds --ark-json --bibdoc -v
 ```
 
-If this is not the case, you can pass a `--bd_ssh_host` parameter specifying the name of an SSH configured connection pointing to a machine able to run the command for you. Be aware that your machine must be able to establish such connection without any user interaction (the script will run `ssh <THE_PROVIDED_SSH_HOST> bibdocfile ..args`).
+If this is not the case, you can pass a `--bd-ssh-host` parameter specifying the name of an SSH configured connection pointing to a machine able to run the command for you. Be aware that your machine must be able to establish such connection without any user interaction (the script will run `ssh <THE_PROVIDED_SSH_HOST> bibdocfile ..args`).
 
 Since in a normal CERN scenario this can't be possible due to required ProxyJumps/OTP authentication steps, you can use the `ControlMaster` feature of any recent version of OpenSSH, allowing to reuse sockets for connecting:
 
@@ -118,15 +118,15 @@ Host <SSH_NAME>
   ControlPath ~/.ssh/control:%h:%p:%r
 ```
 
-Then, run `ssh <SSH_NAME>` in a shell, authenticate and keep it open. OpenSSH will now reuse this socket everytime you run `<SSH_NAME>`, allowing BagItCreate tool to run `bibdocfile` over this ssh connection for you, if you pass the `bd_ssh_host` parameter:
+Then, run `ssh <SSH_NAME>` in a shell, authenticate and keep it open. OpenSSH will now reuse this socket everytime you run `<SSH_NAME>`, allowing BagItCreate tool to run `bibdocfile` over this ssh connection for you, if you pass the `bd-ssh-host` parameter:
 
 ```bash
-python3 cli.py --recid 2751237 --source cds --ark_json --bibdoc --bd_ssh_host=<SSH_NAME> -v
+./cli.py --recid 2751237 --source cds --ark-json --bibdoc --bd-ssh-host=<SSH_NAME> -v
 ``` 
 
 
 ### CERN Open Data
 
-To prepare a BagIt from a CERN Open Data Record ID, run `python cli.py --foldername=1 --method=cod`.
+To prepare a BagIt from a CERN Open Data Record ID, run `./cli.py --foldername=1 --method=cod`.
 
 CERN Open Data metadata follows [this](http://opendata.cern.ch/schema/records/record-v1.0.0.json) schema.
