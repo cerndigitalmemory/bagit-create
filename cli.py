@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from bagit_create.main import process
 import click
 
@@ -19,20 +21,20 @@ import click
 )
 @click.option(
     "-skip",
-    "--skip_downloads",
+    "--skip-downloads",
     help="Creates files but skip downloading the actual payloads",
     default=False,
     is_flag=True,
 )
 @click.option(
     "-aj",
-    "--ark_json",
+    "--ark-json",
     help="Generate a JSON metadata file for arkivum ingestions",
     default=False,
     is_flag=True,
 )
 @click.option(
-    "--ark_json_rel",
+    "--ark-json-rel",
     help="Generate a JSON metadata file for arkivum ingestions using relative paths",
     default=False,
     is_flag=True,
@@ -62,7 +64,7 @@ import click
     is_flag=True,
 )
 @click.option(
-    "--bd_ssh_host",
+    "--bd-ssh-host",
     help="""
     SSH host to run bibdocfile""",
     default=None,
