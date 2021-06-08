@@ -94,7 +94,14 @@ def process(
     bd_ssh_host=None,
     timestamp=0,
 ):
+    
+    result = {}
 
+    # Set timestamp to now if 0 is passed
+    if timestamp == 0:
+        logging.debug("No timestamp provided. Using 'now'")
+        timestamp = int(time.time())
+    
     # Check if the given configuration makes sense
     if bibdoc == True and source != "cds":
         logging.error(
@@ -130,6 +137,7 @@ def process(
         "recid": recid,
         "metadataFile": None,
         "contentFile": [],
+        "timestamp": timestamp
     }
 
     # Prepend the system name and the delimiter
@@ -149,16 +157,11 @@ def process(
     # Create temp folder to download all the related files
     os.mkdir(path + "/" + recid)
 
-    # Set timestamp to now if 0 is passed
-    if timestamp == 0:
-        logging.debug("No timestamp provided. Using 'now'")
-        timestamp = int(time.time())
-
     # Prepare the base path strings
     # AIC folder name
     aicfoldername_base = f"{recid}{delimiter_str}{str(timestamp)}"
     # Arkivum JSON file name
-    arkjson_filename = f"ark_{source}_{resid}_{str(timestamp)}.json"
+    arkjson_filename = f"ark_{source}_{resid}.json"
 
     # AIC folder path
     aicfoldername = f"{baseexportpath}/{aicfoldername_base}"
@@ -310,9 +313,15 @@ def process(
             json.dumps(metadata_obj, indent=4)
         )
         logging.info(f"Wrote {arkjson_filename}")
+        result["ark_json"] = arkjson_filename
+
 
     # Remove the temp folder
     shutil.rmtree(path + "/" + recid)
 
+    result["status"] = 0
+    result["errormsg"] = None
+    result["details"] = baseexportpath
+
     # Return details about the executed job
-    return {"status": 0, "errormsg": None, "details": baseexportpath}
+    return result
