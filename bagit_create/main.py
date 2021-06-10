@@ -211,23 +211,26 @@ def process(
             metadata_obj["contentFile"].append(sourcefile["uri"])
 
         logging.warning(f"Starting download of {len(files)} files")
-        for sourcefile in files:    
-            destination = path + "/" + recid + "/" + sourcefile["filename"]
-            logging.debug(
-                f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..'
-            )
-            
-            if sourcefile["remote"] == "HTTP":
-                if not skip_downloads:
-                    filedata = cds.downloadRemoteFile(
+        for sourcefile in files:   
+            if not skip_downloads: 
+                destination = path + "/" + recid + "/" + sourcefile["filename"]
+                logging.debug(
+                    f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..'
+                )
+                
+
+                if sourcefile["remote"] == "HTTP":
+                        filedata = cds.downloadRemoteFile(
+                            sourcefile["uri"],
+                            destination,
+                        )
+                elif sourcefile["remote"] == "EOS":
+                    filedata = cds.downloadEOSfile(
                         sourcefile["uri"],
                         destination,
                     )
-            elif sourcefile["remote"] == "EOS":
-                filedata = cds.downloadEOSfile(
-                    sourcefile["uri"],
-                    destination,
-                )
+            else:
+                logging.debug(f'Skipped downloading of {sourcefile["filename"]} from {sourcefile["uri"]}..')
 
         logging.warning("Finished downloading")
 
