@@ -96,12 +96,21 @@ def process(
 ):
     
     result = {}
+    
+    # DEBUG, INFO, WARNING, ERROR logging levels
+    loglevels = [10, 20, 30, 40]
+
+    # Setup logging
+    logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
+    logging.info(f"BagIt Create tool {version} {commit_hash}")
+    logging.info(f"Starting job. recid: {recid}, source: {source}")
+    logging.debug(f"Set log level: {loglevels[loglevel]}")
 
     # Set timestamp to now if 0 is passed
     if timestamp == 0:
         logging.debug("No timestamp provided. Using 'now'")
         timestamp = int(time.time())
-    
+
     # Check if the given configuration makes sense
     if bibdoc == True and source != "cds":
         logging.error(
@@ -112,15 +121,6 @@ def process(
             "errormsg": "Incompatible job configuration",
             "details": None,
         }
-
-    # DEBUG, INFO, WARNING, ERROR logging levels
-    loglevels = [10, 20, 30, 40]
-
-    # Setup logging
-    logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
-    logging.info(f"BagIt Create tool {version} {commit_hash}")
-    logging.info(f"Starting job. recid: {recid}, source: {source}")
-    logging.debug(f"Set log level: {loglevels[loglevel]}")
 
     # Delimiter string
     delimiter_str = "::"
@@ -161,7 +161,7 @@ def process(
     # AIC folder name
     aicfoldername_base = f"{recid}{delimiter_str}{str(timestamp)}"
     # Arkivum JSON file name
-    arkjson_filename = f"ark_{source}_{resid}.json"
+    arkjson_filename = f"{source}_{resid}_files.json"
 
     # AIC folder path
     aicfoldername = f"{baseexportpath}/{aicfoldername_base}"
