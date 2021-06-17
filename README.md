@@ -32,10 +32,10 @@ pip3 install -r requirements.txt
 ./cli.py --recid=2272168 --source=cds
 
 # Generate JSON metadata for arkivum, running in a very verbose way
-./cli.py --recid 2766073 --source cds --ark-_json --vv
+./cli.py --recid 2766073 --source cds --ark-json -vv
 
 # Deleted resource, running in a very verbose way
-./cli.py --recid 1 --source cds --vv
+./cli.py --recid 1 --source cds -vv
 
 # Tests
 pytest
@@ -48,8 +48,8 @@ CLI options:
 - `--skip-downloads`, Creates files but skip downloading the actual payloads
 - `--ark-json`, Generate a JSON metadata file for arkivum ingestions
 - `--ark-json-rel`, Generate a JSON metadata file for arkivum ingestions using relative paths
-- `--v`, Enable logging (verbose, 'info' level)
-- `--vv`, Enable logging (very verbose, 'debug' level)
+- `-v`, Enable logging (verbose, 'info' level)
+- `-vv`, Enable logging (very verbose, 'debug' level)
 - `-b`,`--bibdoc`, Get metadata for a CDS record from the bibdocfile utility.
 	(`/opt/cdsweb/bin/bibdocfile` must be available in the system and the resource must be from CDS).
 	See [bibdocfile](#bibdocfile).
