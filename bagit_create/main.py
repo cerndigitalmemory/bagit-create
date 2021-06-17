@@ -268,6 +268,10 @@ def process(
                     el["path"] = el["uri"].replace("root://eospublic.cern.ch/", "")
                     # Append the final path 
                     metadata_obj["contentFile"].append(el)
+            else:
+                sourcefile["path"] = sourcefile["uri"].replace("root://eospublic.cern.ch/", "")
+                # Append the final path 
+                metadata_obj["contentFile"].append(sourcefile)
 
     # Prepare AIC
     filelist = []
