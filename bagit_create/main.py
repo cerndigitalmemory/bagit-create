@@ -208,6 +208,10 @@ def process(
 
         # Append every file's URI to the ark metadata
         for sourcefile in files:
+            # Check if the files are from Digital Memory and replace the paths with the full EOS one
+            sourcefile["uri"] = sourcefile["uri"].replace(
+                "https://cern.ch/digital-memory/media-archive/", 
+                "/eos/media/cds/public/www/digital-memory/media-archive/")
             metadata_obj["contentFile"].append(sourcefile["uri"])
 
         logging.warning(f"Starting download of {len(files)} files")
@@ -315,6 +319,7 @@ def process(
         open(baseexportpath + "/" + arkjson_filename, "w").write(
             json.dumps(metadata_obj, indent=4)
         )
+
         logging.info(f"Wrote {arkjson_filename}")
         result["ark_json"] = arkjson_filename
 
