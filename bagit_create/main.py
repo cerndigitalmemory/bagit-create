@@ -211,10 +211,11 @@ def process(
             # Check if the files are from Digital Memory and replace the paths with the full EOS one
             if "https://cern.ch/digital-memory/media-archive/" in sourcefile["uri"]:
                 sourcefile["original_uri"] = sourcefile["uri"]
-                sourcefile["uri"] = sourcefile["uri"].replace(
+                sourcefile["fullpath"] = sourcefile["uri"].replace(
                     "https://cern.ch/digital-memory/media-archive/", 
                     "/eos/media/cds/public/www/digital-memory/media-archive/")
-                metadata_obj["contentFile"].append(sourcefile["uri"])
+                metadata_obj["contentFile"].append(sourcefile["fullpath"])
+                metadata_obj["contentFile"].append(sourcefile["original_uri"])
 
         logging.warning(f"Starting download of {len(files)} files")
         for sourcefile in files:   
@@ -267,11 +268,11 @@ def process(
                 # For every file in the list 
                 for el in r.json():
                     # Remove the EOS instance prefix to get the path
-                    el["path"] = el["uri"].replace("root://eospublic.cern.ch/", "")
+                    el["fullpath"] = el["uri"].replace("root://eospublic.cern.ch/", "")
                     # Append the final path 
                     metadata_obj["contentFile"].append(el)
             else:
-                sourcefile["path"] = sourcefile["uri"].replace("root://eospublic.cern.ch/", "")
+                sourcefile["fullpath"] = sourcefile["uri"].replace("root://eospublic.cern.ch/", "")
                 # Append the final path 
                 metadata_obj["contentFile"].append(sourcefile)
 
