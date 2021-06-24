@@ -209,10 +209,12 @@ def process(
         # Append every file's URI to the ark metadata
         for sourcefile in files:
             # Check if the files are from Digital Memory and replace the paths with the full EOS one
-            sourcefile["uri"] = sourcefile["uri"].replace(
-                "https://cern.ch/digital-memory/media-archive/", 
-                "/eos/media/cds/public/www/digital-memory/media-archive/")
-            metadata_obj["contentFile"].append(sourcefile["uri"])
+            if "https://cern.ch/digital-memory/media-archive/" in sourcefile["uri"]:
+                sourcefile["original_uri"] = sourcefile["uri"]
+                sourcefile["uri"] = sourcefile["uri"].replace(
+                    "https://cern.ch/digital-memory/media-archive/", 
+                    "/eos/media/cds/public/www/digital-memory/media-archive/")
+                metadata_obj["contentFile"].append(sourcefile["uri"])
 
         logging.warning(f"Starting download of {len(files)} files")
         for sourcefile in files:   
