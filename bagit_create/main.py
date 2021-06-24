@@ -313,13 +313,14 @@ def process(
 
     # Finalize the Arkivum JSON metadata export (if requested)
     if ark_json:
+        if source == "cds":
+            # Set the metadata path as the locally downloaded one
+            metadata_obj["metadataFile"] = f"{aicfoldername}/metadata.xml"
         if bibdoc:
             # Invoke bibdocfile and parse its output
             metadata_obj["contentFile"] = bibdocfile.get_files_metadata(
                 resid, ssh_host=bd_ssh_host
             )
-            # Overwrite the files array with the metadata got from bibdocfile
-            metadata_obj["metadataFile"] = f"{aicfoldername}/metadata.xml"
         open(baseexportpath + "/" + arkjson_filename, "w").write(
             json.dumps(metadata_obj, indent=4)
         )
