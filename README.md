@@ -127,6 +127,6 @@ Then, run `ssh <SSH_NAME>` in a shell, authenticate and keep it open. OpenSSH wi
 
 ### CERN Open Data
 
-To prepare a BagIt from a CERN Open Data Record ID, run `./cli.py --foldername=1 --method=cod`.
+To prepare a BagIt from a CERN Open Data Record ID, run `./cli.py --recid 1 --source cod`.
 
 CERN Open Data metadata follows [this](http://opendata.cern.ch/schema/records/record-v1.0.0.json) schema.
