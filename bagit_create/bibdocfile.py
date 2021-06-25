@@ -49,7 +49,7 @@ def parse(output, resid):
 
                 for key in keys:
                     if key == "fullpath":
-                        metadata[file_id]["ext"] = parsed_metadata[3]
+                        ext = parsed_metadata[3]
                     if parsed_metadata[4].startswith(key):
                         metadata[file_id][key] = parsed_metadata[4].replace(
                             f"{key}=", ""
@@ -58,6 +58,10 @@ def parse(output, resid):
                             metadata[file_id]["checksum"] = (
                                 "md5:" + metadata[file_id]["checksum"]
                             )
+                        # name -> filename
+                        if key == "name":
+                            metadata[file_id]["filename"] = f'{metadata[file_id].pop("name")}{ext}'
+
 
     # Convert from key-form to array of files
     metadata_list = []
