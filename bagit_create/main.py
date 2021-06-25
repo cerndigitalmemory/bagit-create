@@ -20,7 +20,7 @@ import requests
 my_fs = open_fs(".")
 
 ## TODO: get version information from a manifest
-version = "0.0.2"
+version = "0.0.3"
 try:
     commit_hash = subprocess.check_output(
         ["git", "rev-parse", "--short", "HEAD"]
@@ -136,6 +136,7 @@ def process(
         "system": source,
         "recid": recid,
         "metadataFile": None,
+        "metadataFile_upstream": None,
         "contentFile": [],
         "timestamp": timestamp
     }
@@ -197,7 +198,7 @@ def process(
             }
 
         # Save metadata upstream endpoint in the ark metadata
-        metadata_obj["metadataFile"] = metadata_url
+        metadata_obj["metadataFile_upstream"] = metadata_url
 
         # Write metadata.xml
         open(path + "/" + recid + "/" + "metadata.xml", "wb").write(metadata)
@@ -249,7 +250,7 @@ def process(
         files = metadata["metadata"]["files"]
 
         # Save metadata upstream endpoint in the ark metadata        
-        metadata_obj["metadataFile"] = f"https://opendata.cern.ch/api/records/{resid}"
+        metadata_obj["metadataFile_upstream"] = f"https://opendata.cern.ch/api/records/{resid}"
 
         # From the metadata, extract info about the upstream file sources
         logging.debug(f"Got {len(files)} files")
