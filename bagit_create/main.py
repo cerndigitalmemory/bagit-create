@@ -215,7 +215,7 @@ def process(
                 sourcefile["fullpath"] = sourcefile["uri"].replace(
                     "https://cern.ch/digital-memory/media-archive/", 
                     "/eos/media/cds/public/www/digital-memory/media-archive/")
-                metadata_obj["contentFile"].append(sourcefile)
+            metadata_obj["contentFile"].append(sourcefile)
 
         logging.warning(f"Starting download of {len(files)} files")
         for sourcefile in files:   
@@ -225,7 +225,6 @@ def process(
                     f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..'
                 )
                 
-
                 if sourcefile["remote"] == "HTTP":
                         filedata = cds.downloadRemoteFile(
                             sourcefile["uri"],
@@ -327,15 +326,17 @@ def process(
             bd_files = bibdocfile.get_files_metadata(
                 resid, ssh_host=bd_ssh_host
             )
-            # Naive strategy to merge results from bibdocfile:
-            for bibdoc_entry in bd_files:
-                add = True
-                for file in metadata_obj["contentFile"]:
-                    # Entries from the XML metadata have priority
-                    if bibdoc_entry["filename"] == file["filename"]:
-                        add = False
-                if add == True:
-                    metadata_obj["contentFile"].append(bibdoc_entry)
+            if bd_files != [{}]:
+                # Naive strategy to merge results from bibdocfile:
+                for bibdoc_entry in bd_files:
+                    add = True
+                    for file in metadata_obj["contentFile"]:
+                        # Entries from the XML metadata have priority
+                        if bibdoc_entry["filename"] == file["filename"]:
+                            add = False
+                            break
+                    if add == True:
+                        metadata_obj["contentFile"].append(bibdoc_entry)
 
 
         open(baseexportpath + "/" + arkjson_filename, "w").write(
