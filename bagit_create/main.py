@@ -210,12 +210,11 @@ def process(
         for sourcefile in files:
             # Check if the files are from Digital Memory and replace the paths with the full EOS one
             if "https://cern.ch/digital-memory/media-archive/" in sourcefile["uri"]:
-                sourcefile["original_uri"] = sourcefile["uri"]
+                sourcefile["remote"] = "EOS"
                 sourcefile["fullpath"] = sourcefile["uri"].replace(
                     "https://cern.ch/digital-memory/media-archive/", 
                     "/eos/media/cds/public/www/digital-memory/media-archive/")
-                metadata_obj["contentFile"].append(sourcefile["fullpath"])
-                metadata_obj["contentFile"].append(sourcefile["original_uri"])
+                metadata_obj["contentFile"].append(sourcefile)
 
         logging.warning(f"Starting download of {len(files)} files")
         for sourcefile in files:   
