@@ -324,9 +324,20 @@ def process(
             metadata_obj["metadataFile"] = f"{aicfoldername}/metadata.json"
         if bibdoc:
             # Invoke bibdocfile and parse its output
-            metadata_obj["contentFile"] = bibdocfile.get_files_metadata(
+            bd_files = bibdocfile.get_files_metadata(
                 resid, ssh_host=bd_ssh_host
             )
+            # Naive strategy to merge results from bibdocfile:
+            for bibdoc_entry in bd_files:
+                add = True
+                for file in metadata_obj["contentFile"]:
+                    # Entries from the XML metadata have priority
+                    if bibdoc_entry["filename"] == file["filename"]:
+                        add = False
+                if add == True:
+                    metadata_obj["contentFile"].append(bibdoc_entry)
+
+
         open(baseexportpath + "/" + arkjson_filename, "w").write(
             json.dumps(metadata_obj, indent=4)
         )
