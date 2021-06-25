@@ -1,8 +1,10 @@
 # bagit-create
 
-Proof of concept utilities, scripts and pipelines to prepare BagIt ([RFC](https://tools.ietf.org/html/rfc8493)) files, following the CERN Archival Information Packages (AIP) [specification](https://digital-repositories.web.cern.ch/digital-repositories/dm/oais-platform/cern-aips/), ready for Archivematica ingestions.
+CLI tool to prepare BagIt ([RFC](https://tools.ietf.org/html/rfc8493)) packages harvesting metadata and raw files, following the CERN Archival Information Packages (AIP) [specification](https://digital-repositories.web.cern.ch/digital-repositories/dm/oais-platform/cern-aips/).
 
 Data is taken from various upstream sources, such as CDS (CERN Document Service) and CERN Open Data.
+
+On a CC8 machine:
 
 ```bash
 # Install python3.8 and pipenv
@@ -130,3 +132,11 @@ Then, run `ssh <SSH_NAME>` in a shell, authenticate and keep it open. OpenSSH wi
 To prepare a BagIt from a CERN Open Data Record ID, run `./cli.py --recid 1 --source cod`.
 
 CERN Open Data metadata follows [this](http://opendata.cern.ch/schema/records/record-v1.0.0.json) schema.
+
+### Examples
+
+- CDS `2272168` - DM entry
+- CDS `1000571` - bibdoc entry (merged results), hundreds of entries
+- COD `1`- packed in file lists
+- COD `5200` - non packed
+- COD `8884` - big record
