@@ -66,7 +66,9 @@ def parse(output, resid):
     # Convert from key-form to array of files
     metadata_list = []
     for file in metadata:
-        metadata_list.append(metadata[file])
+        # Skip empty file objects
+        if file != "":
+            metadata_list.append(metadata[file])
 
     return metadata_list
 
