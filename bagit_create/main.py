@@ -318,6 +318,9 @@ def process(
         if source == "cds":
             # Set the metadata path as the locally downloaded one
             metadata_obj["metadataFile"] = f"{aicfoldername}/metadata.xml"
+        if source == "cod":
+            # Set the metadata path as the locally downloaded one
+            metadata_obj["metadataFile"] = f"{aicfoldername}/metadata.json"
         if bibdoc:
             # Invoke bibdocfile and parse its output
             metadata_obj["contentFile"] = bibdocfile.get_files_metadata(
