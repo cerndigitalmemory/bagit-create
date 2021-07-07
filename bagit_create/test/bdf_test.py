@@ -44,7 +44,7 @@ recast_atlas_2019_08_pyhf:2751237:2276586:::doctype=Plot
 2751237:2276586:1:.png:size=40234
 """
 
-parsed_metadata = [{'ext': '.pdf', 'fullpath': '/opt/cdsweb/var/data/files/g227/2276585/content.pdf;1', 'name': '2101.02245', 'checksum': 'be99bc4762f1add866d8c08abb2e0657'}, {'ext': '.png', 'fullpath': '/opt/cdsweb/var/data/files/g227/2276586/content.png;1', 'name': 'recast_atlas_2019_08_pyhf', 'checksum': '6e40ebc1649be639050f0fdd7f67aa45'}]
+parsed_metadata = [{'ext': '.pdf', 'fullpath': '/opt/cdsweb/var/data/files/g227/2276585/content.pdf;1', 'name': '2101.02245', 'checksum': 'md5:be99bc4762f1add866d8c08abb2e0657'}, {'ext': '.png', 'fullpath': '/opt/cdsweb/var/data/files/g227/2276586/content.png;1', 'name': 'recast_atlas_2019_08_pyhf', 'checksum': 'md5:6e40ebc1649be639050f0fdd7f67aa45'}]
 
 
 resid = "2751237"
