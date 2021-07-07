@@ -29,6 +29,22 @@ except:
     commit_hash = ""
 
 
+def merge_lists():
+    """
+    Given two dictionaries, merge them
+    """
+    output = []
+    c = dict()
+    for e in chain(a, b):
+        key = e['key']
+        c[key] = True
+    for e in chain(a, b):
+        key = e['key']
+        if c[key]:
+            c[key] = False
+            output.append(e)
+    return output
+
 def get_random_string(length):
     """
     Get a random string of the desired length
@@ -94,9 +110,9 @@ def process(
     bd_ssh_host=None,
     timestamp=0,
 ):
-    
+
     result = {}
-    
+
     # DEBUG, INFO, WARNING, ERROR logging levels
     loglevels = [10, 20, 30, 40]
 
@@ -138,7 +154,7 @@ def process(
         "metadataFile": None,
         "metadataFile_upstream": None,
         "contentFile": [],
-        "timestamp": timestamp
+        "timestamp": timestamp,
     }
 
     # Prepend the system name and the delimiter
@@ -213,30 +229,33 @@ def process(
             if "https://cern.ch/digital-memory/media-archive/" in sourcefile["uri"]:
                 sourcefile["remote"] = "EOS"
                 sourcefile["fullpath"] = sourcefile["uri"].replace(
-                    "https://cern.ch/digital-memory/media-archive/", 
-                    "/eos/media/cds/public/www/digital-memory/media-archive/")
+                    "https://cern.ch/digital-memory/media-archive/",
+                    "/eos/media/cds/public/www/digital-memory/media-archive/",
+                )
             metadata_obj["contentFile"].append(sourcefile)
 
         logging.warning(f"Starting download of {len(files)} files")
-        for sourcefile in files:   
-            if not skip_downloads: 
+        for sourcefile in files:
+            if not skip_downloads:
                 destination = path + "/" + recid + "/" + sourcefile["filename"]
                 logging.debug(
                     f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..'
                 )
-                
+
                 if sourcefile["remote"] == "HTTP":
-                        filedata = cds.downloadRemoteFile(
-                            sourcefile["uri"],
-                            destination,
-                        )
+                    filedata = cds.downloadRemoteFile(
+                        sourcefile["uri"],
+                        destination,
+                    )
                 elif sourcefile["remote"] == "EOS":
                     filedata = cds.downloadEOSfile(
                         sourcefile["uri"],
                         destination,
                     )
             else:
-                logging.debug(f'Skipped downloading of {sourcefile["filename"]} from {sourcefile["uri"]}..')
+                logging.debug(
+                    f'Skipped downloading of {sourcefile["filename"]} from {sourcefile["uri"]}..'
+                )
 
         logging.warning("Finished downloading")
 
@@ -248,8 +267,10 @@ def process(
         open(path + "/" + recid + "/" + "metadata.json", "w").write(json.dumps(metadata))
         files = metadata["metadata"]["files"]
 
-        # Save metadata upstream endpoint in the ark metadata        
-        metadata_obj["metadataFile_upstream"] = f"https://opendata.cern.ch/api/records/{resid}"
+        # Save metadata upstream endpoint in the ark metadata
+        metadata_obj[
+            "metadataFile_upstream"
+        ] = f"https://opendata.cern.ch/api/records/{resid}"
 
         # From the metadata, extract info about the upstream file sources
         logging.debug(f"Got {len(files)} files")
@@ -264,15 +285,17 @@ def process(
                 # Download the file list
                 r = requests.get(list_endpoint)
                 logging.debug(f"Unpacking file list {list_endpoint}")
-                # For every file in the list 
+                # For every file in the list
                 for el in r.json():
                     # Remove the EOS instance prefix to get the path
                     el["fullpath"] = el["uri"].replace("root://eospublic.cern.ch/", "")
-                    # Append the final path 
+                    # Append the final path
                     metadata_obj["contentFile"].append(el)
             else:
-                sourcefile["fullpath"] = sourcefile["uri"].replace("root://eospublic.cern.ch/", "")
-                # Append the final path 
+                sourcefile["fullpath"] = sourcefile["uri"].replace(
+                    "root://eospublic.cern.ch/", ""
+                )
+                # Append the final path
                 metadata_obj["contentFile"].append(sourcefile)
 
     # Prepare AIC
@@ -323,9 +346,7 @@ def process(
             metadata_obj["metadataFile"] = f"{aicfoldername}/metadata.json"
         if bibdoc:
             # Invoke bibdocfile and parse its output
-            bd_files = bibdocfile.get_files_metadata(
-                resid, ssh_host=bd_ssh_host
-            )
+            bd_files = bibdocfile.get_files_metadata(resid, ssh_host=bd_ssh_host)
             if bd_files != [{}]:
                 # Naive strategy to merge results from bibdocfile:
                 for bibdoc_entry in bd_files:
@@ -338,14 +359,12 @@ def process(
                     if add == True:
                         metadata_obj["contentFile"].append(bibdoc_entry)
 
-
         open(baseexportpath + "/" + arkjson_filename, "w").write(
             json.dumps(metadata_obj, indent=4)
         )
 
         logging.info(f"Wrote {arkjson_filename}")
         result["ark_json"] = arkjson_filename
-
 
     # Remove the temp folder
     shutil.rmtree(path + "/" + recid)
