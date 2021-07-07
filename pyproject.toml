@@ -1,2 +1,11 @@
 [tool.black]
 line-length = 89
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py36
+[testenv]
+deps = pytest
+commands = pytest
+"""
