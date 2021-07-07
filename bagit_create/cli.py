@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from bagit_create.main import process
+from . import main
 import click
 
 """bagit-create command line tool."""
@@ -70,7 +70,17 @@ import click
     default=None,
     is_flag=False,
 )
-def cli(recid, source, skip_downloads, ark_json, ark_json_rel, verbose, very_verbose, bibdoc, bd_ssh_host):
+def cli(
+    recid,
+    source,
+    skip_downloads,
+    ark_json,
+    ark_json_rel,
+    verbose,
+    very_verbose,
+    bibdoc,
+    bd_ssh_host,
+):
 
     # Select the desired log level (default is 2, warning)
     if very_verbose:
@@ -82,7 +92,16 @@ def cli(recid, source, skip_downloads, ark_json, ark_json_rel, verbose, very_ver
 
     # This "wrapper" method allows the main one to be called
     #  from python, ignoring the click CLI interface
-    result = process(recid, source, loglevel, ark_json, ark_json_rel, skip_downloads, bibdoc, bd_ssh_host)
+    result = main.process(
+        recid,
+        source,
+        loglevel,
+        ark_json,
+        ark_json_rel,
+        skip_downloads,
+        bibdoc,
+        bd_ssh_host,
+    )
     print(f"Result object: {result}")
 
 
