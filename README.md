@@ -34,15 +34,15 @@ bic --version
 
 ```bash
 # Show CLI Usage help
-bci --help
+bic --help
 
-bci --recid=2272168 --source=cds
+bic --recid=2272168 --source=cds
 
 # Generate JSON metadata for arkivum, running in a very verbose way
-bci --recid 2766073 --source cds --ark-json -vv
+bic --recid 2766073 --source cds --ark-json -vv
 
 # Deleted resource, running in a very verbose way
-bci --recid 1 --source cds -vv
+bic --recid 1 --source cds -vv
 
 # Run tests
 pytest
@@ -107,7 +107,7 @@ The `bibdocfile` command line utility can be used to get metadata for CDS, expos
 If the executable is available in the path (i.e. you can run `/opt/cdsweb/bin/bibdocfile`) just append `--bibdoc`:
 
 ```bash
-bci --recid 2751237 --source cds --ark-json --bibdoc -v
+bic --recid 2751237 --source cds --ark-json --bibdoc -v
 ```
 
 If this is not the case, you can pass a `--bd-ssh-host` parameter specifying the name of an SSH configured connection pointing to a machine able to run the command for you. Be aware that your machine must be able to establish such connection without any user interaction (the script will run `ssh <THE_PROVIDED_SSH_HOST> bibdocfile ..args`).
@@ -128,7 +128,7 @@ Host <SSH_NAME>
 Then, run `ssh <SSH_NAME>` in a shell, authenticate and keep it open. OpenSSH will now reuse this socket everytime you run `<SSH_NAME>`, allowing BagItCreate tool to run `bibdocfile` over this ssh connection for you, if you pass the `bd-ssh-host` parameter:
 
 ```bash
-bci --recid 2751237 --source cds --ark-json --bibdoc --bd-ssh-host=<SSH_NAME> -v
+bic --recid 2751237 --source cds --ark-json --bibdoc --bd-ssh-host=<SSH_NAME> -v
 ``` 
 
 
