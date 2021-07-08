@@ -9,6 +9,7 @@ import string
 from . import cds
 from . import cod
 from . import bibdocfile
+from .version import __version__
 import json
 import copy
 import shutil
@@ -19,8 +20,6 @@ import requests
 
 my_fs = open_fs(".")
 
-## TODO: get version information from a manifest
-version = "0.0.3"
 try:
     commit_hash = subprocess.check_output(
         ["git", "rev-parse", "--short", "HEAD"]
@@ -118,7 +117,7 @@ def process(
 
     # Setup logging
     logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
-    logging.info(f"BagIt Create tool {version} {commit_hash}")
+    logging.info(f"BagIt Create tool {__version__} {commit_hash}")
     logging.info(f"Starting job. recid: {recid}, source: {source}")
     logging.debug(f"Set log level: {loglevels[loglevel]}")
 

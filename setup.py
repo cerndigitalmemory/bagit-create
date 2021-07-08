@@ -7,10 +7,16 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
+# Get the version string. Cannot be done with import!
+with open(os.path.join("cernopendata_client", "version.py"), "rt") as f:
+    version = re.search('__version__\s*=\s*"(?P<version>.*)"\n', f.read()).group(
+        "version"
+    )
+
 # This call to setup() does all the work
 setup(
     name="bagit-create",
-    version="0.0.2",
+    version=version,
     description="Create BagIt packages harvesting data from upstream sources",
     long_description=README,
     long_description_content_type="text/markdown",
