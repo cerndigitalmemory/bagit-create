@@ -4,23 +4,28 @@ CLI tool to prepare BagIt ([RFC](https://tools.ietf.org/html/rfc8493)) packages 
 
 Data is taken from various upstream sources, such as CDS (CERN Document Service) and CERN Open Data.
 
-On a CC8 machine:
+## Install
+
+If you just need to run BagIt Create from the command line:
 
 ```bash
-# Install python3.8 and pipenv
-yum install python3.8 libcurl-devel
-pip3 install pipenv
-# GCC, ..
-dnf group install "Development Tools"
-# Headers
-yum install python38-devel openssl-devel
+# Install from PyPi
+pip install bagit-create
 
-# Create and activate virtualenv
-python3 -m venv env
-source env/bin/activate
-# Install dependencies
-cd bagit_create
-pip3 install -r requirements.txt 
+# Check installed version
+bic --version
+```
+
+For development, you can clone this repository and then install it with the `-e` flag:
+
+```bash
+# Clone the repository
+git clone https://gitlab.cern.ch/digitalmemory/bagit-create
+cd bagit-create
+pip install -e .
+
+# Check installed version
+bic --version
 ```
 
 ## Usage
@@ -29,17 +34,17 @@ pip3 install -r requirements.txt
 
 ```bash
 # Show CLI Usage help
-./cli.py --help
+bci --help
 
-./cli.py --recid=2272168 --source=cds
+bci --recid=2272168 --source=cds
 
 # Generate JSON metadata for arkivum, running in a very verbose way
-./cli.py --recid 2766073 --source cds --ark-json -vv
+bci --recid 2766073 --source cds --ark-json -vv
 
 # Deleted resource, running in a very verbose way
-./cli.py --recid 1 --source cds -vv
+bci --recid 1 --source cds -vv
 
-# Tests
+# Run tests
 pytest
 ```
 
@@ -102,7 +107,7 @@ The `bibdocfile` command line utility can be used to get metadata for CDS, expos
 If the executable is available in the path (i.e. you can run `/opt/cdsweb/bin/bibdocfile`) just append `--bibdoc`:
 
 ```bash
-python3 cli.py --recid 2751237 --source cds --ark-json --bibdoc -v
+bci --recid 2751237 --source cds --ark-json --bibdoc -v
 ```
 
 If this is not the case, you can pass a `--bd-ssh-host` parameter specifying the name of an SSH configured connection pointing to a machine able to run the command for you. Be aware that your machine must be able to establish such connection without any user interaction (the script will run `ssh <THE_PROVIDED_SSH_HOST> bibdocfile ..args`).
@@ -123,7 +128,7 @@ Host <SSH_NAME>
 Then, run `ssh <SSH_NAME>` in a shell, authenticate and keep it open. OpenSSH will now reuse this socket everytime you run `<SSH_NAME>`, allowing BagItCreate tool to run `bibdocfile` over this ssh connection for you, if you pass the `bd-ssh-host` parameter:
 
 ```bash
-./cli.py --recid 2751237 --source cds --ark-json --bibdoc --bd-ssh-host=<SSH_NAME> -v
+bci --recid 2751237 --source cds --ark-json --bibdoc --bd-ssh-host=<SSH_NAME> -v
 ``` 
 
 
