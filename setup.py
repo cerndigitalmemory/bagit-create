@@ -1,4 +1,4 @@
-import pathlib
+import pathlib, os, re
 from setuptools import setup, find_packages
 
 # The directory containing this file
@@ -8,7 +8,7 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 # Get the version string. Cannot be done with import!
-with open(os.path.join("cernopendata_client", "version.py"), "rt") as f:
+with open(os.path.join("bagit_create", "version.py"), "rt") as f:
     version = re.search('__version__\s*=\s*"(?P<version>.*)"\n', f.read()).group(
         "version"
     )
