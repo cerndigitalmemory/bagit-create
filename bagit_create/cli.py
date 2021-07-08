@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 from . import main
+from .version import __version__
 import click
 
 """bagit-create command line tool."""
 
 
 @click.command()
+@click.version_option(__version__)
 @click.option(
     "--recid",
     help="Unique ID of the record in the upstream source",
