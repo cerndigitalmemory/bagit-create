@@ -7,5 +7,5 @@ legacy_tox_ini = """
 envlist = py
 [testenv]
 deps = pytest
-commands = pytest
+commands = pytest --junitxml=report.xml
 """

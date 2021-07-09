@@ -21,6 +21,10 @@ test:
   script:
     - pip install tox flake8
     - python -m tox
+  artifacts:
+    when: always
+    reports:
+      junit: ./report.xml
 
 pypi:
     stage: Release
