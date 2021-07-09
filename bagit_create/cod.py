@@ -3,12 +3,14 @@
 ## https://github.com/cernopendata/cernopendata-client
 
 import sys
-from cernopendata_client import searcher, downloader
-from .cds import prettyprint
-
 
 # WORKAROUND to import the git "master" version
-sys.path.insert(1, "/home/avivace/projects/cern/bagit-create/cernopendata-client")
+sys.path.insert(1, "/home/avivace/cern/cernopendata-client")
+
+from cernopendata_client import searcher, downloader
+
+# from .cds import prettyprint
+
 
 SERVER_HTTP_URI = "http://opendata.cern.ch"
 """Default CERN Open Data server to query over HTTP protocol."""
@@ -45,13 +47,8 @@ def test():
     prettyprint(files_list)
 
 
-def downloadFile():
+def downloadFile(recid):
     # Get the files list with a checksum, name, size, and URI
-    remote_info = searcher.get_file_info_remote(server=SERVER_HTTP_URI, recid=5500)
+    remote_info = searcher.get_file_info_remote(server=SERVER_HTTP_URI, recid=recid)
 
-    # prettyprint(remote_info)
-
-    # Download a file using the xrootd protocol
-    downloader.download_single_file(
-        path=".", file_location=remote_info[0]["uri"], protocol="http"
-    )
+    return remote_info
