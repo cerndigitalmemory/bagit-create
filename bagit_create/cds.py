@@ -3,15 +3,12 @@
 # Helper functions to trigger the download of such files from HTTP and EOS
 
 import requests
-import xml.etree.ElementTree as ET
-from pymarc import MARCReader, marcxml
+from pymarc import marcxml
 from fs import open_fs
 import pprint
 import ntpath
 import logging
-import os.path
 import re
-
 import fs
 
 my_fs = open_fs("/")
@@ -62,14 +59,14 @@ def getRawFilesLocs(metadata_filename):
         else:
             logging.debug(f'Skipped 856 entry "{f}", no u or d field.')
             continue
-        
+
         # File checksum
         if f["w"]:
-            p = re.compile('\([A-Za-z]*:([A-Za-z0-9]*).*;([A-Za-z0-9]*)')
+            p = re.compile(r"\([A-Za-z]*:([A-Za-z0-9]*).*;([A-Za-z0-9]*)")
             m = p.match(f["w"])
             alg = m.groups()[0].lower()
             checksum = m.groups()[1]
-            obj["checksum"] = f'{alg}:{checksum}'
+            obj["checksum"] = f"{alg}:{checksum}"
 
         # File size
         if f["s"]:
@@ -96,7 +93,7 @@ def downloadRemoteFile(src, dest):
 def downloadEOSfile(src, dest):
     try:
         my_fs.copy(src, dest)
-    except:
+    except (FileNotFoundError, fs.errors.ResourceNotFound):
         logging.debug(f"  Path '{src}' not found. Skipping file. ")
 
 

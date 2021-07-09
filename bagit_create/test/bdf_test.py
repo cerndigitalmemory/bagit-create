@@ -44,10 +44,22 @@ recast_atlas_2019_08_pyhf:2751237:2276586:::doctype=Plot
 2751237:2276586:1:.png:size=40234
 """
 
-parsed_metadata = [{'fullpath': '/opt/cdsweb/var/data/files/g227/2276585/content.pdf;1', 'filename': '2101.02245.pdf', 'checksum': 'md5:be99bc4762f1add866d8c08abb2e0657'}, {'fullpath': '/opt/cdsweb/var/data/files/g227/2276586/content.png;1', 'filename': 'recast_atlas_2019_08_pyhf.png', 'checksum': 'md5:6e40ebc1649be639050f0fdd7f67aa45'}]
+parsed_metadata = [
+    {
+        "fullpath": "/opt/cdsweb/var/data/files/g227/2276585/content.pdf;1",
+        "filename": "2101.02245.pdf",
+        "checksum": "md5:be99bc4762f1add866d8c08abb2e0657",
+    },
+    {
+        "fullpath": "/opt/cdsweb/var/data/files/g227/2276586/content.png;1",
+        "filename": "recast_atlas_2019_08_pyhf.png",
+        "checksum": "md5:6e40ebc1649be639050f0fdd7f67aa45",
+    },
+]
 
 
 resid = "2751237"
 
+
 def test_parse():
-	assert bibdocfile.parse(test_output, resid) == parsed_metadata
+    assert bibdocfile.parse(test_output, resid) == parsed_metadata

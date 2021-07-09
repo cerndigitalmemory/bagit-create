@@ -60,8 +60,9 @@ def parse(output, resid):
                             )
                         # name -> filename
                         if key == "name":
-                            metadata[file_id]["filename"] = f'{metadata[file_id].pop("name")}{ext}'
-
+                            metadata[file_id][
+                                "filename"
+                            ] = f'{metadata[file_id].pop("name")}{ext}'
 
     # Convert from key-form to array of files
     metadata_list = []

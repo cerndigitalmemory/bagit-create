@@ -1,4 +1,6 @@
-import pathlib, os, re
+import pathlib
+import os
+import re
 from setuptools import setup, find_packages
 
 # The directory containing this file
@@ -9,7 +11,7 @@ README = (HERE / "README.md").read_text()
 
 # Get the version string. Cannot be done with import!
 with open(os.path.join("bagit_create", "version.py"), "rt") as f:
-    version = re.search('__version__\s*=\s*"(?P<version>.*)"\n', f.read()).group(
+    version = re.search(r'__version__\s*=\s*"(?P<version>.*)"\n', f.read()).group(
         "version"
     )
 

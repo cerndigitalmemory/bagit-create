@@ -1,22 +1,25 @@
 #!/usr/bin/python3
+"""
+docstring
+"""
 
-from fs import open_fs
-import fs
 import os
 import time
 import random
 import string
-from . import cds
-from . import cod
-from . import bibdocfile
-from .version import __version__
 import json
 import copy
 import shutil
 import logging
 import subprocess
+from itertools import chain
+import fs
+from fs import open_fs
 import requests
-
+from .version import __version__
+from . import cds
+from . import cod
+from . import bibdocfile
 
 my_fs = open_fs(".")
 
@@ -24,25 +27,26 @@ try:
     commit_hash = subprocess.check_output(
         ["git", "rev-parse", "--short", "HEAD"]
     ).decode("utf-8")
-except:
+except CalledProcessError:
     commit_hash = ""
 
 
-def merge_lists():
+def merge_lists(a, b):
     """
     Given two dictionaries, merge them
     """
     output = []
     c = dict()
     for e in chain(a, b):
-        key = e['key']
+        key = e["key"]
         c[key] = True
     for e in chain(a, b):
-        key = e['key']
+        key = e["key"]
         if c[key]:
             c[key] = False
             output.append(e)
     return output
+
 
 def get_random_string(length):
     """
@@ -127,9 +131,10 @@ def process(
         timestamp = int(time.time())
 
     # Check if the given configuration makes sense
-    if bibdoc == True and source != "cds":
+    if bibdoc is True and source != "cds":
         logging.error(
-            "You asked to get metadata from bibdocfile but the selected upstream source is not CDS."
+            "You asked to get metadata from bibdocfile but the selected upstream source\
+            is not CDS."
         )
         return {
             "status": 1,
@@ -190,7 +195,8 @@ def process(
     logging.debug(f"Fetching the {source} Resource {resid}")
 
     # CERN CDS Pipeline
-    ## consider refactoring the common parts to "invenio-vN" and setting a more general flag
+    # consider refactoring the common parts to "invenio-vN" and setting
+    # a more general flag
     if source == "cds" or source == "ilcdoc":
 
         # Get and save metadata
@@ -205,7 +211,8 @@ def process(
 
         if status_code != 200:
             logging.error(
-                f"Got HTTP {status_code}, a non 200 status code from the metadata endpoint. Giving up."
+                f"Got HTTP {status_code}, a non 200 status code from the metadata \
+                endpoint. Giving up."
             )
             return {
                 "status": "1",
@@ -224,7 +231,8 @@ def process(
 
         # Append every file's URI to the ark metadata
         for sourcefile in files:
-            # Check if the files are from Digital Memory and replace the paths with the full EOS one
+            # Check if the files are from Digital Memory and replace the paths with the
+            #  full EOS one
             if "https://cern.ch/digital-memory/media-archive/" in sourcefile["uri"]:
                 sourcefile["remote"] = "EOS"
                 sourcefile["fullpath"] = sourcefile["uri"].replace(
@@ -242,18 +250,19 @@ def process(
                 )
 
                 if sourcefile["remote"] == "HTTP":
-                    filedata = cds.downloadRemoteFile(
+                    cds.downloadRemoteFile(
                         sourcefile["uri"],
                         destination,
                     )
                 elif sourcefile["remote"] == "EOS":
-                    filedata = cds.downloadEOSfile(
+                    cds.downloadEOSfile(
                         sourcefile["uri"],
                         destination,
                     )
             else:
                 logging.debug(
-                    f'Skipped downloading of {sourcefile["filename"]} from {sourcefile["uri"]}..'
+                    f'Skipped downloading of {sourcefile["filename"]} from \
+                    {sourcefile["uri"]}..'
                 )
 
         logging.warning("Finished downloading")
@@ -355,7 +364,7 @@ def process(
                         if bibdoc_entry["filename"] == file["filename"]:
                             add = False
                             break
-                    if add == True:
+                    if add is True:
                         metadata_obj["contentFile"].append(bibdoc_entry)
 
         open(baseexportpath + "/" + arkjson_filename, "w").write(
