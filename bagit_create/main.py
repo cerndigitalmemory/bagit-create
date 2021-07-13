@@ -31,17 +31,14 @@ except CalledProcessError:
     commit_hash = ""
 
 
-def merge_lists(a, b):
-    """
-    Given two dictionaries, merge them
-    """
+def merge_lists(a, b, keyname):
     output = []
     c = dict()
     for e in chain(a, b):
-        key = e["key"]
+        key = e[keyname]
         c[key] = True
     for e in chain(a, b):
-        key = e["key"]
+        key = e[keyname]
         if c[key]:
             c[key] = False
             output.append(e)
