@@ -75,6 +75,26 @@ def checkunique(id):
     return True
 
 
+def generate_fetch_txt(files):
+    """
+    Given an array of "files" dictionaries (containing the `url`, `size` and `path` keys)
+    generate the contents for the fetch.txt file and
+    """
+    contents = ""
+    for file in files:
+        line = f'{file["url"]} {file["size"]} {file["path"]}\n'
+        contents += line
+    contents += "\n"
+    return contents
+
+
+def write_file(contents, dest):
+    """
+    Write the given contents to the given destination
+    """
+    open(dest, "w").write(contents)
+
+
 def generateReferences(filepathslist):
     """
     Given a list of file paths, compute hashes and generate a
