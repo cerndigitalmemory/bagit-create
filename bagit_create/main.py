@@ -54,16 +54,13 @@ def get_random_string(length):
     return result_str
 
 
-# Stub
-
-
-def createBagItTxt(path, version="1.0", encoding="UTF-8"):
+def generate_bagit_txt(version="0.97", encoding="UTF-8"):
     """
     Creates the Bag Declaration file, as specified by the RFC:
     https://tools.ietf.org/html/rfc8493#section-2.1.1
     """
     bagittxt = f"BagIt-Version: {version}\n" f"Tag-File-Character-Encoding: {encoding}"
-    my_fs.writetext(path + "/" + "bagit.txt", bagittxt)
+    return bagittxt
 
 
 def checkunique(id):
@@ -78,11 +75,24 @@ def checkunique(id):
 def generate_fetch_txt(files):
     """
     Given an array of "files" dictionaries (containing the `url`, `size` and `path` keys)
-    generate the contents for the fetch.txt file and
+    generate the contents for the fetch.txt
     """
     contents = ""
     for file in files:
         line = f'{file["url"]} {file["size"]} {file["path"]}\n'
+        contents += line
+    contents += "\n"
+    return contents
+
+
+def generate_manifest(files, alg):
+    """
+    Given an array of "files" dictionaries (containing the `path` and `hash`)
+    If a path is provided
+    """
+    contents = ""
+    for file in files:
+        line = f'{file["hash"]} {file["path"]}\n'
         contents += line
     contents += "\n"
     return contents
@@ -111,7 +121,7 @@ def generateReferences(filepathslist):
     return references
 
 
-def getHash(filename, alg="md5"):
+def compute_hash(filename, alg="md5"):
     """
     Compute hash of a given file
     """
@@ -133,10 +143,9 @@ def process(
 
     result = {}
 
+    # Setup logging
     # DEBUG, INFO, WARNING, ERROR logging levels
     loglevels = [10, 20, 30, 40]
-
-    # Setup logging
     logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
     logging.info(f"BagIt Create tool {__version__} {commit_hash}")
     logging.info(f"Starting job. recid: {recid}, source: {source}")
@@ -149,23 +158,19 @@ def process(
 
     # Check if the given configuration makes sense
     if bibdoc is True and source != "cds":
-        logging.error(
-            "You asked to get metadata from bibdocfile but the selected upstream source\
-            is not CDS."
-        )
+        logging.error("Incompatible job configuration")
         return {
             "status": 1,
             "errormsg": "Incompatible job configuration",
             "details": None,
         }
 
+    ## Step 0: preparation
+
     # Delimiter string
     delimiter_str = "::"
 
-    # Check if the target name is actually unique
-    checkunique(recid)
-
-    # Save the plain resource ID
+    # Save the plain resource ID (??)
     resid = copy.copy(recid)
 
     # Prepare the Arkivum JSON metadata object
@@ -179,43 +184,58 @@ def process(
     }
 
     # Prepend the system name and the delimiter
-    recid = f"{source}{delimiter_str}{recid}"
+    # recid = f"{source}{delimiter_str}{recid}"
 
     # Get current path
     path = os.getcwd()
 
-    # Prepare the high level folder which will contain the AIC and the AIUs
-    baseexportpath = f"bagitexport{delimiter_str}{recid}"
+    # Prepare the base folder for the BagIt export
+    #  e.g. "bagitexport::cds::42"
+    base_name = f"bagitexport{delimiter_str}{source}{delimiter_str}{recid}"
+    base_path = f"{path}/{base_name}"
     try:
-        os.mkdir(path + "/" + baseexportpath)
+        os.mkdir(base_path)
+        # Create data/ subfolder (bagit payload)
+        os.mkdir(f"{base_path}/data")
     except FileExistsError:
         logging.error("Directory exists")
         return {"status": "1", "errormsg": "Directory Exists"}
 
-    # Create temp folder to download all the related files
-    os.mkdir(path + "/" + recid)
+    # Create temporary folder to download the resource content
+    temp_path = f"{path}/temp_{source}_{recid}"
+    os.mkdir(temp_path)
+    # Create subfolder for saving upstream metadata
+    os.mkdir(f"{temp_path}/meta")
+    # Create subfolder for saving upstream resource contents
+    os.mkdir(f"{temp_path}/payload")
 
-    # Prepare the base path strings
-    # AIC folder name
-    aicfoldername_base = f"{recid}{delimiter_str}{str(timestamp)}"
+    # AIC will contain all the metadata related to resource
+    # AIUs will contain the resource files
+
+    # AIC
+    aic_name = f"{recid}{delimiter_str}{str(timestamp)}"
+    aic_path = f"{base_path}/data/{aic_name}"
+    os.mkdir(aic_path)
+
     # Arkivum JSON file name
-    arkjson_filename = f"{source}_{resid}_files.json"
+    arkjson_name = f"{source}_{resid}_files.json"
 
-    # AIC folder path
-    aicfoldername = f"{baseexportpath}/{aicfoldername_base}"
+    # Create bagit.txt
+    with open(f"{base_path}/bagit.txt", "w") as f:
+        f.write(generate_bagit_txt())
 
-    logging.debug(f"AIC folder name is {aicfoldername}")
-
-    # Create AIC folder
-    os.mkdir(path + "/" + aicfoldername)
+    logging.debug(f"Prepared export with aic {aic_name}")
 
     logging.debug(f"Fetching the {source} Resource {resid}")
+
+    ## Step 1: pipelines
 
     # CERN CDS Pipeline
     # consider refactoring the common parts to "invenio-vN" and setting
     # a more general flag
     if source == "cds" or source == "ilcdoc":
 
+        ## Step 1.1: META
         # Get and save metadata
         if source == "cds":
             metadata, metadata_url, status_code = cds.getMetadata(
@@ -239,12 +259,19 @@ def process(
         # Save metadata upstream endpoint in the ark metadata
         metadata_obj["metadataFile_upstream"] = metadata_url
 
-        # Write metadata.xml
-        open(path + "/" + recid + "/" + "metadata.xml", "wb").write(metadata)
+        # Write metadata.xml to the temp folder
+        open(f"{temp_path}/meta/metadata.xml", "wb").write(metadata)
+
+        ## Step 1.2: PAYLOAD
+
         logging.debug("Getting source files locations")
 
         # From the metadata, extract info about the upstream file sources
-        files = cds.getRawFilesLocs(recid + "/metadata.xml")
+        files = cds.getRawFilesLocs(f"{temp_path}/meta/metadata.xml")
+
+        print(files)
+
+        return
 
         # Append every file's URI to the ark metadata
         for sourcefile in files:
@@ -259,9 +286,11 @@ def process(
             metadata_obj["contentFile"].append(sourcefile)
 
         logging.warning(f"Starting download of {len(files)} files")
+
         for sourcefile in files:
             if not skip_downloads:
-                destination = path + "/" + recid + "/" + sourcefile["filename"]
+                destination = f'{temp_path}/payload/{sourcefile["filename"]}'
+
                 logging.debug(
                     f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..'
                 )
@@ -358,8 +387,6 @@ def process(
         aiufoldername = baseexportpath + "/" + recid + delimiter_str + filehash
         os.mkdir(aiufoldername)
         my_fs.copy(file, aiufoldername + "/" + fs.path.basename(file))
-
-    createBagItTxt(baseexportpath)
 
     # Finalize the Arkivum JSON metadata export (if requested)
     if ark_json:

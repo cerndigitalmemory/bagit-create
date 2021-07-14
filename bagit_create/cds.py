@@ -17,7 +17,7 @@ my_fs = open_fs("/")
 def getMetadata(record_id, baseEndpoint, type="xml"):
     """
     Get MARC21 metadata from a CDS record ID
-    Returns a string
+    Returns: [metadata_serialized, metadata_upstream_url, operation_status_code]
     """
     record_url = f"{baseEndpoint}{record_id}"
 
@@ -37,8 +37,13 @@ def getMetadata(record_id, baseEndpoint, type="xml"):
 
 def getRawFilesLocs(metadata_filename):
     """
-    Given a MARX21 metadata file,
-    get source file locations (on EOS or HTTP remotes)
+    Given a MARC21 metadata file,
+    return an array of "Files" objects, containing:
+    `filename`
+    `uri`
+    `remote`
+    `hash`
+    `size`
     """
 
     # Parse the XML as MARC21
@@ -46,7 +51,7 @@ def getRawFilesLocs(metadata_filename):
     record = marcxml.parse_xml_to_array(metadata_filename)[0]
     # Look for 856 entries
     #  MARC21: 856 - Electronic Location and Access (R)
-    rawData = []
+    files = []
     for f in record.get_fields("856"):
         obj = {}
 
@@ -77,11 +82,11 @@ def getRawFilesLocs(metadata_filename):
             obj["filename"] = ntpath.basename(obj["uri"])
 
         if obj["filename"]:
-            rawData.append(obj)
+            files.append(obj)
         else:
             logging.warning(f'Skipped entry "{f}", no basename found (probably an URL?)')
 
-    return rawData
+    return files
 
 
 def downloadRemoteFile(src, dest):
