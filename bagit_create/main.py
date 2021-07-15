@@ -114,7 +114,7 @@ def generateReferences(filepathslist):
     """
     references = ""
     for filename in filepathslist:
-        filehash = getHash(filename)
+        filehash = compute_hash(filename)
         line = filehash + " " + filename
         references += line
         references += "\n"
@@ -203,9 +203,8 @@ def process(
 
     # Create temporary folder to download the resource content
     temp_path = f"{path}/temp_{source}_{recid}"
+    temp_relpath = f"temp_{source}_{recid}"
     os.mkdir(temp_path)
-    # Create subfolder for saving upstream metadata
-    os.mkdir(f"{temp_path}/meta")
     # Create subfolder for saving upstream resource contents
     os.mkdir(f"{temp_path}/payload")
 
@@ -259,19 +258,15 @@ def process(
         # Save metadata upstream endpoint in the ark metadata
         metadata_obj["metadataFile_upstream"] = metadata_url
 
-        # Write metadata.xml to the temp folder
-        open(f"{temp_path}/meta/metadata.xml", "wb").write(metadata)
+        # Save metadata.xml the AIC
+        open(f"{aic_path}/metadata.xml", "wb").write(metadata)
 
         ## Step 1.2: PAYLOAD
 
         logging.debug("Getting source files locations")
 
         # From the metadata, extract info about the upstream file sources
-        files = cds.getRawFilesLocs(f"{temp_path}/meta/metadata.xml")
-
-        print(files)
-
-        return
+        files = cds.getRawFilesLocs(f"{aic_path}/metadata.xml")
 
         # Append every file's URI to the ark metadata
         for sourcefile in files:
@@ -287,7 +282,7 @@ def process(
 
         logging.warning(f"Starting download of {len(files)} files")
 
-        for sourcefile in files:
+        for sourcefile in files[0:10]:
             if not skip_downloads:
                 destination = f'{temp_path}/payload/{sourcefile["filename"]}'
 
@@ -356,37 +351,44 @@ def process(
     filelist = []
 
     # For every downloaded file:
-    for el in my_fs.scandir(recid):
+    for el in my_fs.scandir(f"{temp_relpath}/payload"):
         if el.is_dir:
-            for file in my_fs.listdir(recid + "/" + el.name):
+            for file in my_fs.listdir(f"{temp_relpath}/payload/{el.name}"):
                 # prepare the relative path
-                filepath = recid + "/" + el.name + "/" + file
+                filepath = f"payload/{el.name}/{file}"
                 # and append it to the file list
                 filelist.append(filepath)
         else:
-            filepath = recid + "/" + el.name
+            filepath = f"payload/{el.name}"
             filelist.append(filepath)
 
-    # Look for high-level metadata and copy it into the AIC
-    metadatafilenames = ["metadata.json", "metadata.xml"]
+    print(filelist)
 
-    for filename in metadatafilenames:
-        if filename in my_fs.listdir(recid):
-            my_fs.copy(recid + "/" + filename, aicfoldername + "/" + filename)
-            filelist.remove(recid + "/" + filename)
+    # Look for high-level metadata and copy it into the AIC
+    # metadatafilenames = ["metadata.json", "metadata.xml"]
+
+    # for filename in metadatafilenames:
+    #    if filename in my_fs.listdir(recid):
+    #        my_fs.copy(recid + "/" + filename, aicfoldername + "/" + filename)
+    #        filelist.remove(recid + "/" + filename)
 
     logging.debug(f"Harvested files: {filelist}")
 
     # Generate and write references.txt
-    references = generateReferences(filelist)
-    my_fs.writetext(aicfoldername + "/" + "references.txt", references)
+    # references = generateReferences(filelist)
+    # my_fs.writetext(aicfoldername + "/" + "references.txt", references)
 
     # Copy each file from the temp folder to the AIU folders
     for file in filelist:
-        filehash = getHash(file)
-        aiufoldername = baseexportpath + "/" + recid + delimiter_str + filehash
+        filehash = compute_hash(f"{temp_relpath}/{file}")
+        aiufoldername = f"{base_path}/data/{recid}{delimiter_str}{filehash}"
         os.mkdir(aiufoldername)
-        my_fs.copy(file, aiufoldername + "/" + fs.path.basename(file))
+        my_fs.copy(
+            f"{temp_relpath}/{file}",
+            f"{base_name}/data/{recid}{delimiter_str}{filehash}/{fs.path.basename(file)}",
+        )
+
+    return
 
     # Finalize the Arkivum JSON metadata export (if requested)
     if ark_json:
