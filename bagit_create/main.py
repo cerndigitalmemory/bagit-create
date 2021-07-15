@@ -16,7 +16,7 @@ import shutil
 import logging
 import subprocess
 import requests
-
+from . import zenodo
 
 my_fs = open_fs(".")
 
@@ -297,6 +297,41 @@ def process(
                 # Append the final path
                 metadata_obj["contentFile"].append(sourcefile)
 
+    #Zenodo pipeline
+    if source == 'zenodo':
+        #Saving metadata into JSON file
+        metadata = zenodo.getMetadata(resid)
+        open(path + "/" + recid + "/" + "metadata.json", "w").write(json.dumps(metadata, indent = 4))
+
+        metadata_obj["metadataFile_upstream"] = metadata["links"]["self"]
+
+        files = metadata['files']
+
+        logging.debug(f"Got {len(files)} files")
+        
+        #Appending file information
+        for sourcefile in files:
+            file_url = sourcefile["links"]["self"]
+            sourcefile.pop('links')
+            sourcefile["uri"] =file_url
+            metadata_obj["contentFile"].append(sourcefile)
+
+        #Downloading files
+        if not skip_downloads:
+            logging.warning(f"Starting download of {len(files)} files")
+
+            for sourcefile in files:
+                destination = path + "/" + recid + "/" + sourcefile["key"]
+                logging.debug(
+                    f'Downloading {sourcefile["key"]} from {sourcefile["uri"]}..'
+                )
+
+                zenodo.downloadFile(sourcefile["uri"], destination, sourcefile["checksum"])
+            
+            logging.warning("Finished downloading")
+        else:
+            logging.debug(f'Skipped downloading files..')
+
     # Prepare AIC
     filelist = []
 
@@ -340,7 +375,7 @@ def process(
         if source == "cds":
             # Set the metadata path as the locally downloaded one
             metadata_obj["metadataFile"] = f"{aicfoldername}/metadata.xml"
-        if source == "cod":
+        if source == "cod" or source == "zenodo":
             # Set the metadata path as the locally downloaded one
             metadata_obj["metadataFile"] = f"{aicfoldername}/metadata.json"
         if bibdoc:

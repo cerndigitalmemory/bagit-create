@@ -19,7 +19,7 @@ import click
     "--source",
     help="Select source pipeline",
     required=True,
-    type=click.Choice(["cds", "ilcdoc", "cod"], case_sensitive=False),
+    type=click.Choice(["cds", "ilcdoc", "cod", "zenodo"], case_sensitive=False),
 )
 @click.option(
     "-skip",
@@ -83,7 +83,6 @@ def cli(
     bibdoc,
     bd_ssh_host,
 ):
-
     # Select the desired log level (default is 2, warning)
     if very_verbose:
         loglevel = 0
@@ -105,7 +104,6 @@ def cli(
         bd_ssh_host,
     )
     print(f"Result object: {result}")
-
 
 if __name__ == "__main__":
     cli()
