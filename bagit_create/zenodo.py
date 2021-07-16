@@ -19,12 +19,12 @@ def getMetadata(recid):
 def verifyChecksum(checksum, file):
     p = re.compile('([A-Za-z0-9]*):([A-Za-z0-9]*)')
     m = p.match(checksum)
-    print(m)
     alg = m.groups()[0].lower()
     checksum = m.groups()[1]
-    print(f'{alg}:{checksum}')
 
     current_checksum = hashlib.md5(file).hexdigest()
+
+    logging.debug(f'Original checksum: {alg}:{checksum}, Calculated checksum: {alg}:{current_checksum}')
 
     return current_checksum == checksum
 
