@@ -420,12 +420,12 @@ def process(
         logging.info(f"Wrote {arkjson_filename}")
         result["ark_json"] = arkjson_filename
 
-    # Remove the temp folder
-    shutil.rmtree(path + "/" + recid)
+    logging.info(f"Cleaning up temporary folder..")
+    shutil.rmtree(temp_path)
 
     result["status"] = 0
     result["errormsg"] = None
-    result["details"] = baseexportpath
+    result["details"] = base_path
 
     # Return details about the executed job
     return result
