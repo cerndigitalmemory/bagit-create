@@ -80,6 +80,7 @@ def getRawFilesLocs(metadata_filename):
         # Get basename
         if obj["uri"]:
             obj["filename"] = ntpath.basename(obj["uri"])
+            obj["path"] = obj["filename"]
 
         if obj["filename"]:
             files.append(obj)
@@ -99,7 +100,7 @@ def downloadEOSfile(src, dest):
     try:
         my_fs.copy(src, dest)
     except (FileNotFoundError, fs.errors.ResourceNotFound):
-        logging.debug(f"  Path '{src}' not found. Skipping file. ")
+        logging.warning(f"  Path '{src}' not found. Skipping file. ")
 
 
 def prettyprint(obj, indentsize=4):
