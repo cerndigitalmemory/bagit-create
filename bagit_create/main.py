@@ -268,21 +268,27 @@ def process(
         # From the metadata, extract info about the upstream file sources
         files = cds.getRawFilesLocs(f"{aic_path}/metadata.xml")
 
+        # Write fetch.txt with every file/remote mentioned upstream
+        write_file(f"{base_path}/fetch.txt", generate_fetch_txt(files))
+
+        replace_dm_eos = False
+
         # Append every file's URI to the ark metadata
-        for sourcefile in files:
-            # Check if the files are from Digital Memory and replace the paths with the
-            #  full EOS one
-            if "https://cern.ch/digital-memory/media-archive/" in sourcefile["uri"]:
-                sourcefile["remote"] = "EOS"
-                sourcefile["fullpath"] = sourcefile["uri"].replace(
-                    "https://cern.ch/digital-memory/media-archive/",
-                    "/eos/media/cds/public/www/digital-memory/media-archive/",
-                )
-            metadata_obj["contentFile"].append(sourcefile)
+        if replace_dm_eos:
+            for sourcefile in files:
+                # Check if the files are from Digital Memory and replace the paths with the
+                #  full EOS one
+                if "https://cern.ch/digital-memory/media-archive/" in sourcefile["uri"]:
+                    sourcefile["remote"] = "EOS"
+                    sourcefile["fullpath"] = sourcefile["uri"].replace(
+                        "https://cern.ch/digital-memory/media-archive/",
+                        "/eos/media/cds/public/www/digital-memory/media-archive/",
+                    )
+                metadata_obj["contentFile"].append(sourcefile)
 
         logging.warning(f"Starting download of {len(files)} files")
 
-        for sourcefile in files[0:10]:
+        for sourcefile in files:
             if not skip_downloads:
                 destination = f'{temp_path}/payload/{sourcefile["filename"]}'
 
