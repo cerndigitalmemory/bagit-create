@@ -74,12 +74,12 @@ def checkunique(id):
 
 def generate_fetch_txt(files):
     """
-    Given an array of "files" dictionaries (containing the `url`, `size` and `path` keys)
+    Given an array of "files" dictionaries (containing the `uri`, `size` and `path` keys)
     generate the contents for the fetch.txt
     """
     contents = ""
     for file in files:
-        line = f'{file["url"]} {file["size"]} {file["path"]}\n'
+        line = f'{file["uri"]} {file["size"]} {file["path"]}\n'
         contents += line
     contents += "\n"
     return contents
@@ -98,11 +98,11 @@ def generate_manifest(files, alg):
     return contents
 
 
-def write_file(contents, dest):
+def write_file(dest, contents, encoding="UTF-8"):
     """
     Write the given contents to the given destination
     """
-    open(dest, "w").write(contents)
+    open(dest, "wb").write(contents.encode(encoding=encoding))
 
 
 def generateReferences(filepathslist):
@@ -156,7 +156,7 @@ def process(
         logging.debug("No timestamp provided. Using 'now'")
         timestamp = int(time.time())
 
-    # Check if the given configuration makes sense
+    # Check if the given configuration is valid
     if bibdoc is True and source != "cds":
         logging.error("Incompatible job configuration")
         return {
@@ -183,9 +183,6 @@ def process(
         "timestamp": timestamp,
     }
 
-    # Prepend the system name and the delimiter
-    # recid = f"{source}{delimiter_str}{recid}"
-
     # Get current path
     path = os.getcwd()
 
@@ -193,6 +190,7 @@ def process(
     #  e.g. "bagitexport::cds::42"
     base_name = f"bagitexport{delimiter_str}{source}{delimiter_str}{recid}"
     base_path = f"{path}/{base_name}"
+
     try:
         os.mkdir(base_path)
         # Create data/ subfolder (bagit payload)
@@ -393,8 +391,6 @@ def process(
             f"{temp_relpath}/{file}",
             f"{base_name}/data/{recid}{delimiter_str}{filehash}/{fs.path.basename(file)}",
         )
-
-    return
 
     # Finalize the Arkivum JSON metadata export (if requested)
     if ark_json:
