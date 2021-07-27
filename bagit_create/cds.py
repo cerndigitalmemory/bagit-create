@@ -56,10 +56,10 @@ def getRawFilesLocs(metadata_filename):
         obj = {}
 
         if f["u"]:
-            obj["uri"] = f["u"]
+            obj["url"] = f["u"]
             obj["remote"] = "HTTP"
         elif f["d"]:
-            obj["uri"] = f["d"]
+            obj["url"] = f["d"]
             obj["remote"] = "EOS"
         else:
             logging.debug(f'Skipped 856 entry "{f}", no u or d field.')
@@ -78,8 +78,8 @@ def getRawFilesLocs(metadata_filename):
             obj["size"] = int(f["s"])
 
         # Get basename
-        if obj["uri"]:
-            obj["filename"] = ntpath.basename(obj["uri"])
+        if obj["url"]:
+            obj["filename"] = ntpath.basename(obj["url"])
             obj["path"] = obj["filename"]
 
         if obj["filename"]:
