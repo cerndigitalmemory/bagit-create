@@ -294,15 +294,30 @@ def process(
         # Save metadata upstream endpoint in the ark metadata
         metadata_obj["metadataFile_upstream"] = metadata_url
 
-        # Save metadata.xml the AIC
-        open(f"{aic_path}/metadata.xml", "wb").write(metadata)
-
         ## Step 1.2: PAYLOAD
 
         logging.debug("Getting source files locations")
 
+        # Save metadata.xml in the AIC
+        open(f"{aic_path}/metadata.xml", "wb").write(metadata)
+        # Workaround
+        open(f"{temp_path}/payload/metadata.xml", "wb").write(metadata)
+
         # From the metadata, extract info about the upstream file sources
         files = cds.getRawFilesLocs(f"{aic_path}/metadata.xml")
+
+        # Add metadata.xml to the files object
+        files.append(
+            {
+                "metadata": True,
+                "filename": "metadata.xml",
+                "localpath": f"data/{aic_name}/metadata.xml",
+                "path": "metadata.xml",
+                "url": metadata_url,
+                "size": 1,
+                "downloaded": True,
+            }
+        )
 
         # Write fetch.txt with every file/remote mentioned upstream
         write_file(f"{base_path}/fetch.txt", generate_fetch_txt(files))
