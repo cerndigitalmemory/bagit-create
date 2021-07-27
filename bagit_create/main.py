@@ -428,26 +428,28 @@ def process(
     # Look for high-level metadata and copy it into the AIC
     # metadatafilenames = ["metadata.json", "metadata.xml"]
 
-    # for filename in metadatafilenames:
-    #    if filename in my_fs.listdir(recid):
-    #        my_fs.copy(recid + "/" + filename, aicfoldername + "/" + filename)
-    #        filelist.remove(recid + "/" + filename)
-
     logging.debug(f"Harvested files: {filelist}")
 
-    # Generate and write references.txt
-    # references = generateReferences(filelist)
-    # my_fs.writetext(aicfoldername + "/" + "references.txt", references)
-
     # Copy each file from the temp folder to the AIU folders
-    for file in filelist:
-        filehash = compute_hash(f"{temp_relpath}/{file}")
-        aiufoldername = f"{base_path}/data/{recid}{delimiter_str}{filehash}"
-        os.mkdir(aiufoldername)
-        my_fs.copy(
-            f"{temp_relpath}/{file}",
-            f"{base_name}/data/{recid}{delimiter_str}{filehash}/{fs.path.basename(file)}",
-        )
+    for idx, file in enumerate(files):
+        if file["downloaded"] and file["metadata"] == False:
+            filehash = compute_hash(f"{temp_relpath}/payload/{file['filename']}")
+            aiufoldername = f"{base_path}/data/{recid}{delimiter_str}{filehash}"
+            os.mkdir(aiufoldername)
+            files[idx][
+                "localpath"
+            ] = f"data/{recid}{delimiter_str}{filehash}/{file['filename']}"
+
+            my_fs.copy(
+                f"{temp_relpath}/payload/{file['filename']}",
+                f"{base_name}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
+            )
+
+    # Generate manifest-md5.txt
+    write_file(
+        f"{base_path}/manifest-md5.txt",
+        generate_manifest(files, "md5", f"{temp_relpath}/payload"),
+    )
 
     # Finalize the Arkivum JSON metadata export (if requested)
     if ark_json:
