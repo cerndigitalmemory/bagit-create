@@ -91,7 +91,7 @@ def generate_fetch_txt(files):
     return contents
 
 
-def generate_manifest(files, algorithm, temp_relpath):
+def generate_manifest(files, algorithm, temp_relpath=""):
     """
     Given an array of File objects (with `filename` and optionally `checksum`
     key), generate a manifest (BagIt specification) file listing every file
@@ -111,10 +111,9 @@ def generate_manifest(files, algorithm, temp_relpath):
             p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
             m = p.match(file["checksum"])
             alg = m.groups()[0].lower()
-            checksum = m.groups()[1]
+            matched_checksum = m.groups()[1]
             if alg == algorithm:
-                line = f'{checksum} {file["path"]}\n'
-                contents += line
+                checksum = matched_checksum
             else:
                 logging.info(
                     f"Checksum {alg} found for {file['filename']} \
