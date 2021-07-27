@@ -88,7 +88,6 @@ def generate_fetch_txt(files):
     for file in files:
         line = f'{file["url"]} {file["size"]} {file["path"]}\n'
         contents += line
-    contents += "\n"
     return contents
 
 
@@ -130,7 +129,7 @@ def generate_manifest(files, algorithm, temp_relpath=""):
             logging.info(f"Computing {algorithm} of {file['filename']}")
             checksum = compute_hash(f"{temp_relpath}/{file['filename']}", alg=algorithm)
 
-        line = f'{checksum} {file["path"]}\n'
+        line = f'{checksum} {file["localpath"]}\n'
         contents += line
     contents += "\n"
     return contents
@@ -259,7 +258,7 @@ def process(
     with open(f"{base_path}/bagit.txt", "w") as f:
         f.write(generate_bagit_txt())
 
-    logging.debug(f"Prepared export with aic {aic_name}")
+    logging.debug(f"Prepared export with AIC {aic_name}")
 
     logging.debug(f"Fetching the {source} Resource {resid}")
 
@@ -340,7 +339,7 @@ def process(
         logging.warning(f"Starting download of {len(files)} files")
 
         for sourcefile in files:
-            if not skip_downloads:
+            if not skip_downloads and sourcefile["metadata"] == False:
                 destination = f'{temp_path}/payload/{sourcefile["filename"]}'
 
                 logging.debug(
@@ -348,7 +347,7 @@ def process(
                 )
 
                 if sourcefile["remote"] == "HTTP":
-                    cds.downloadRemoteFile(
+                    sourcefile["downloaded"] = cds.downloadRemoteFile(
                         sourcefile["url"],
                         destination,
                     )
@@ -364,12 +363,6 @@ def process(
                 )
 
         logging.warning("Finished downloading")
-
-        # Generate manifest-md5.txt
-        write_file(
-            f"{base_path}/manifest-md5.txt",
-            generate_manifest(files, "md5", f"{temp_relpath}/payload"),
-        )
 
     # CERN Open Data pipeline
     if source == "cod":
