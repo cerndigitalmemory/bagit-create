@@ -55,6 +55,9 @@ def getRawFilesLocs(metadata_filename):
     for f in record.get_fields("856"):
         obj = {}
 
+        # Unknown size fallback
+        obj["size"] = 0
+
         if f["u"]:
             obj["url"] = f["u"]
             obj["remote"] = "HTTP"
@@ -82,6 +85,9 @@ def getRawFilesLocs(metadata_filename):
             obj["filename"] = ntpath.basename(obj["url"])
             obj["path"] = obj["filename"]
 
+        obj["metadata"] = False
+        obj["downloaded"] = False
+
         if obj["filename"]:
             files.append(obj)
         else:
@@ -94,6 +100,7 @@ def downloadRemoteFile(src, dest):
     r = requests.get(src)
     with open(dest, "wb") as f:
         f.write(r.content)
+    return True
 
 
 def downloadEOSfile(src, dest):
