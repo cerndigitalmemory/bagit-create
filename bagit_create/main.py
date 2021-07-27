@@ -21,6 +21,7 @@ from . import cds
 from . import cod
 from . import bibdocfile
 import re
+import bagit
 
 my_fs = open_fs(".")
 
@@ -465,6 +466,12 @@ def process(
 
     logging.info(f"Cleaning up temporary folder..")
     shutil.rmtree(temp_path)
+
+    # Validate bag
+    logging.info(f"Validating created Bag {base_path} ..")
+    bag = bagit.Bag(base_path)
+    if bag.is_valid():
+        logging.info(f"Bag successfully validated")
 
     result["status"] = 0
     result["errormsg"] = None
