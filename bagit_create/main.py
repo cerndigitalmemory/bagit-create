@@ -20,6 +20,7 @@ from .version import __version__
 from . import cds
 from . import cod
 from . import bibdocfile
+import re
 
 my_fs = open_fs(".")
 
@@ -308,14 +309,14 @@ def process(
 
         replace_dm_eos = False
 
-        # Append every file's URI to the ark metadata
+        # Append every file's url to the ark metadata
         if replace_dm_eos:
             for sourcefile in files:
                 # Check if the files are from Digital Memory and replace the paths with the
                 #  full EOS one
-                if "https://cern.ch/digital-memory/media-archive/" in sourcefile["uri"]:
+                if "https://cern.ch/digital-memory/media-archive/" in sourcefile["url"]:
                     sourcefile["remote"] = "EOS"
-                    sourcefile["fullpath"] = sourcefile["uri"].replace(
+                    sourcefile["fullpath"] = sourcefile["url"].replace(
                         "https://cern.ch/digital-memory/media-archive/",
                         "/eos/media/cds/public/www/digital-memory/media-archive/",
                     )
@@ -328,26 +329,32 @@ def process(
                 destination = f'{temp_path}/payload/{sourcefile["filename"]}'
 
                 logging.debug(
-                    f'Downloading {sourcefile["filename"]} from {sourcefile["uri"]}..'
+                    f'Downloading {sourcefile["filename"]} from {sourcefile["url"]}..'
                 )
 
                 if sourcefile["remote"] == "HTTP":
                     cds.downloadRemoteFile(
-                        sourcefile["uri"],
+                        sourcefile["url"],
                         destination,
                     )
                 elif sourcefile["remote"] == "EOS":
                     cds.downloadEOSfile(
-                        sourcefile["uri"],
+                        sourcefile["url"],
                         destination,
                     )
             else:
                 logging.debug(
                     f'Skipped downloading of {sourcefile["filename"]} from \
-                    {sourcefile["uri"]}..'
+                    {sourcefile["url"]}..'
                 )
 
         logging.warning("Finished downloading")
+
+        # Generate manifest-md5.txt
+        write_file(
+            f"{base_path}/manifest-md5.txt",
+            generate_manifest(files, "md5", f"{temp_relpath}/payload"),
+        )
 
     # CERN Open Data pipeline
     if source == "cod":
@@ -378,11 +385,11 @@ def process(
                 # For every file in the list
                 for el in r.json():
                     # Remove the EOS instance prefix to get the path
-                    el["fullpath"] = el["uri"].replace("root://eospublic.cern.ch/", "")
+                    el["fullpath"] = el["url"].replace("root://eospublic.cern.ch/", "")
                     # Append the final path
                     metadata_obj["contentFile"].append(el)
             else:
-                sourcefile["fullpath"] = sourcefile["uri"].replace(
+                sourcefile["fullpath"] = sourcefile["url"].replace(
                     "root://eospublic.cern.ch/", ""
                 )
                 # Append the final path
@@ -402,8 +409,6 @@ def process(
         else:
             filepath = f"payload/{el.name}"
             filelist.append(filepath)
-
-    print(filelist)
 
     # Look for high-level metadata and copy it into the AIC
     # metadatafilenames = ["metadata.json", "metadata.xml"]
