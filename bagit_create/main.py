@@ -56,8 +56,7 @@ def get_random_string(length):
 
 def generate_bagit_txt(version="0.97", encoding="UTF-8"):
     """
-    Creates the Bag Declaration file, as specified by the RFC:
-    https://tools.ietf.org/html/rfc8493#section-2.1.1
+    Creates "bagit.txt", the Bag Declaration file (BagIt specification)
     """
     bagittxt = f"BagIt-Version: {version}\n" f"Tag-File-Character-Encoding: {encoding}"
     return bagittxt
@@ -74,25 +73,63 @@ def checkunique(id):
 
 def generate_fetch_txt(files):
     """
-    Given an array of "files" dictionaries (containing the `uri`, `size` and `path` keys)
-    generate the contents for the fetch.txt
+    Given an array of "files" dictionaries (containing the `url`, `size` and `path` keys)
+    generate the contents for the fetch.txt file (BagIt specification)
+
+    <URL> <LENGTH_IN_BYTES> <FILENAME>
+    <URL> <LENGTH_IN_BYTES> <FILENAME>
+    <URL> <LENGTH_IN_BYTES> <FILENAME>
+    ...
+
     """
     contents = ""
     for file in files:
-        line = f'{file["uri"]} {file["size"]} {file["path"]}\n'
+        line = f'{file["url"]} {file["size"]} {file["path"]}\n'
         contents += line
     contents += "\n"
     return contents
 
 
-def generate_manifest(files, alg):
+def generate_manifest(files, algorithm, temp_relpath):
     """
-    Given an array of "files" dictionaries (containing the `path` and `hash`)
-    If a path is provided
+    Given an array of File objects (with `filename` and optionally `checksum`
+    key), generate a manifest (BagIt specification) file listing every file
+    and their checksums.
+
+    <CHECKSUM> <FILENAME>
+    <CHECKSUM> <FILENAME>
+    ...
+
+    If the requested algorithm is not available (or the `checksum` key is not
+    there at all), compute the checksums on the downloaded files (found
+    appending the filaname to the given base path)
     """
     contents = ""
     for file in files:
-        line = f'{file["hash"]} {file["path"]}\n'
+        if "checksum" in file:
+            p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
+            m = p.match(file["checksum"])
+            alg = m.groups()[0].lower()
+            checksum = m.groups()[1]
+            if alg == algorithm:
+                line = f'{checksum} {file["path"]}\n'
+                contents += line
+            else:
+                logging.info(
+                    f"Checksum {alg} found for {file['filename']} \
+                    but {algorithm} was requested."
+                )
+                logging.info(f"Computing {algorithm} of {file['filename']}")
+                checksum = compute_hash(
+                    f"{temp_relpath}/{file['filename']}", alg=algorithm
+                )
+
+        else:
+            logging.info(f"No checksum available for {file['filename']}")
+            logging.info(f"Computing {algorithm} of {file['filename']}")
+            checksum = compute_hash(f"{temp_relpath}/{file['filename']}", alg=algorithm)
+
+        line = f'{checksum} {file["path"]}\n'
         contents += line
     contents += "\n"
     return contents
