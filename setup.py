@@ -50,6 +50,7 @@ setup(
         "requests==2.25.1",
         "six==1.15.0",
         "urllib3==1.26.4",
+        "bagit==1.8.1",
     ],
     entry_points={
         "console_scripts": [
