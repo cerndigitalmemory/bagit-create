@@ -131,7 +131,6 @@ def generate_manifest(files, algorithm, temp_relpath=""):
 
         line = f'{checksum} {file["localpath"]}\n'
         contents += line
-    contents += "\n"
     return contents
 
 

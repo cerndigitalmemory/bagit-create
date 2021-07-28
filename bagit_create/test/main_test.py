@@ -34,6 +34,7 @@ files = [
         "path": "data/local/42.txt",
         "filename": "42.txt",
         "checksum": "md5:anothersamplehash",
+        "localpath": "data/local/42.txt",
     },
     {
         "url": "http://someurl.com/43.txt",
@@ -41,17 +42,16 @@ files = [
         "path": "data/local/43.txt",
         "filename": "43.txt",
         "checksum": "md5:asamplehash",
+        "localpath": "data/local/43.txt",
     },
 ]
 
 fetch_txt = """http://someurl.com/42.txt 123123 data/local/42.txt
 http://someurl.com/43.txt 1024 data/local/43.txt
-
 """
 
 manifest_md5 = """anothersamplehash data/local/42.txt
 asamplehash data/local/43.txt
-
 """
 
 
