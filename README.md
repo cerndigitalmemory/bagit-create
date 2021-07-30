@@ -1,5 +1,7 @@
 # bagit-create
 
+[![PyPI version](https://badge.fury.io/py/bagit-create.svg)](https://pypi.org/project/bagit-create/)
+
 CLI tool to prepare BagIt ([RFC](https://tools.ietf.org/html/rfc8493)) packages harvesting metadata and raw files following the CERN Archival Information Packages (AIP) [specification](https://digital-repositories.web.cern.ch/digital-repositories/dm/oais-platform/cern-aips/).
 
 Data is taken from various upstream sources, such as CDS (CERN Document Service) and CERN Open Data.
