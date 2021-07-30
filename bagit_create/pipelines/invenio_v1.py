@@ -6,7 +6,7 @@ import ntpath
 from .. import cds
 
 
-class InvenioV1Pipeline(base_pipeline.BasePipeline):
+class InvenioV1Pipeline(base.BasePipeline):
     def __init__(self, base_url):
         logging.debug(f"Invenio v1 Pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url

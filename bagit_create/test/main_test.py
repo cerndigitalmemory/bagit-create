@@ -1,6 +1,6 @@
-from .. import invenio_v1_pipeline
+from ..pipelines import invenio_v1
 
-pipeline = invenio_v1_pipeline.InvenioV1Pipeline("https://some/invenio/v1/instance")
+pipeline = invenio_v1.InvenioV1Pipeline("https://some/invenio/v1/instance")
 
 a = [{"filename": "42.txt", "path": "8"}, {"filename": "47.txt", "path": "/opt/47"}]
 b = [
