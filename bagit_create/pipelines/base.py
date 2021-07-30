@@ -5,7 +5,7 @@ import logging
 import time
 import re
 from fs import open_fs
-from .version import __version__
+from ..version import __version__
 import bagit
 import shutil
 from itertools import chain

@@ -1,9 +1,9 @@
-from . import base_pipeline
+from . import base
 import logging
 import requests
 from pymarc import marcxml
 import ntpath
-from . import cds
+from .. import cds
 
 
 class InvenioV1Pipeline(base_pipeline.BasePipeline):

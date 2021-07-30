@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from . import main2
+from .main import process
 from .version import __version__
 import click
 
@@ -96,7 +96,7 @@ def cli(
 
     # This "wrapper" method allows the main one to be called
     #  from python, ignoring the click CLI interface
-    result = main2.process(
+    result = process(
         recid,
         source,
         loglevel,

@@ -1,43 +1,46 @@
-from . import base_pipeline
+from . import base
 import logging
 import os, requests, json
 import configparser
+
 
 def get_dict_value(dct, keys):
     for key in keys:
         try:
             dct = dct[key]
         except KeyError:
-            logging.error("Key:" + key +" not found in dict: " + str(dct))
+            logging.error("Key:" + key + " not found in dict: " + str(dct))
             return None
     return dct
 
-"""Invenio V3 pipeline to query over HTTP protocol."""
-class InvenioV3Pipeline(base_pipeline.BasePipeline):
 
+"""Invenio V3 pipeline to query over HTTP protocol."""
+
+
+class InvenioV3Pipeline(base.BasePipeline):
     def __init__(self, source):
         self.headers = {"Content-Type": "application/json"}
-        self.response_type = 'json'
+        self.response_type = "json"
 
         self.config_file = configparser.ConfigParser()
-        self.config_file.read(os.path.join(os.path.dirname(__file__), 'invenio.ini'))
+        self.config_file.read(os.path.join(os.path.dirname(__file__), "invenio.ini"))
         self.config = None
-        
+
         if len(self.config_file.sections()) == 0:
             logging.error("Could not read config file")
 
         for instance in self.config_file.sections():
             if instance == source:
                 self.config = self.config_file[instance]
-                self.base_endpoint = self.config['base_endpoint']
-                #Some instances have the file endpoint separately where the parameters are the filenames
+                self.base_endpoint = self.config["base_endpoint"]
+                # Some instances have the file endpoint separately where the parameters are the filenames
                 self.has_file_base_uri = self.config.getboolean("has_file_base_uri")
 
         if not self.config:
             logging.error("No such Invenio instance: " + source)
 
     def get_metadata(self, recid):
-        res = requests.get(self.base_endpoint + str(recid), headers = self.headers)
+        res = requests.get(self.base_endpoint + str(recid), headers=self.headers)
 
         self.recid = recid
         self.metadata_url = res.url
@@ -74,8 +77,8 @@ class InvenioV3Pipeline(base_pipeline.BasePipeline):
                 sourcefile["remote"] = "HTTP"
                 sourcefile["downloaded"] = False
                 sourcefile["metadata"] = False
-        
-        '''
+
+        """
         files.append(
             {
                 "metadata": True,
@@ -87,24 +90,26 @@ class InvenioV3Pipeline(base_pipeline.BasePipeline):
                 "downloaded": True,
             }
         )
-        '''
+        """
 
         logging.debug(f"Got {len(files)} files")
         return files
 
     def get_fileslist(self):
-        key_list = self.config['files'].split(',')
-        
-        if self.config.getboolean("files_separately", fallback = False):
-            res = requests.get(self.base_endpoint + str(self.recid) + "/files", headers = self.headers)
+        key_list = self.config["files"].split(",")
+
+        if self.config.getboolean("files_separately", fallback=False):
+            res = requests.get(
+                self.base_endpoint + str(self.recid) + "/files", headers=self.headers
+            )
 
             if res.status_code != 200:
-                logging.error(f'Getting files return status code {res.status_code}')
+                logging.error(f"Getting files return status code {res.status_code}")
                 return None
             else:
                 data = json.loads(res.text)
-                key_list = self.config['files'].split(',')
-                
+                key_list = self.config["files"].split(",")
+
                 return get_dict_value(data, key_list)
         else:
             return get_dict_value(self.metadata, key_list)
@@ -132,24 +137,21 @@ class InvenioV3Pipeline(base_pipeline.BasePipeline):
         return self.has_file_base_uri
 
     def get_file_baseuri(self):
-        key_list = self.config['file_uri'].split(',')
+        key_list = self.config["file_uri"].split(",")
 
         return get_dict_value(self.metadata, key_list)
 
     def get_file_uri(self, file):
-        key_list = self.config['file_uri'].split(',')
+        key_list = self.config["file_uri"].split(",")
         file["url"] = get_dict_value(file, key_list)
 
-        #If the uri is nested than unnest it (Zenodo's case)
-        if key_list[0] != 'url':
+        # If the uri is nested than unnest it (Zenodo's case)
+        if key_list[0] != "url":
             file.pop(key_list[0])
-        
+
         return file
 
     def get_filename(self, file):
-            key_list = self.config['file_name'].split(',')
+        key_list = self.config["file_name"].split(",")
 
-            return get_dict_value(file, key_list)
-
-
-
+        return get_dict_value(file, key_list)

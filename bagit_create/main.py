@@ -1,5 +1,5 @@
-from . import invenio_v1_pipeline
-from . import invenio_v3_pipeline
+from .pipelines import invenio_v1
+from .pipelines import invenio_v3
 
 import logging
 import subprocess
@@ -37,15 +37,13 @@ def process(
 
     # Initialize the pipeline
     if source == "cds":
-        pipeline = invenio_v1_pipeline.InvenioV1Pipeline("https://cds.cern.ch/record/")
+        pipeline = invenio_v1.InvenioV1Pipeline("https://cds.cern.ch/record/")
     elif source == "ilcdoc":
-        pipeline = invenio_v1_pipeline.InvenioV1Pipeline(
-            "http://ilcdoc.linearcollider.org/"
-        )
+        pipeline = invenio_v1.InvenioV1Pipeline("http://ilcdoc.linearcollider.org/")
     elif source == "cod":
         pipeline = opendata.OpenDataPipeline()
     elif source == "zenodo" or source == "inveniordm":
-        pipeline = invenio_v3_pipeline.InvenioV3Pipeline(source)
+        pipeline = invenio_v3.InvenioV3Pipeline(source)
 
     # Prepare folders
     base_path, temp_files_path = pipeline.prepare_folders(source, recid)
