@@ -77,11 +77,18 @@ process(recid=2272168, source="cds")
 
 ### Supported sources
 
-| Name                 	| ID     	| URL                              	| Notes                     	|
-|----------------------	|--------	|----------------------------------	|---------------------------	|
-| CERN Document Server 	| cds    	| https://cds.cern.ch/             	| Invenio v1.1.3.1106-62468 	|
-| ILC Document Server  	| ilcdoc 	| http://ilcdoc.linearcollider.org 	| CDS Invenio v1.0.7.2-5776 	|
-| CERN Open Data       	| cod    	| https://opendata.cern.ch/        	|                           	|
+Three pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data) are currently implemented, supporting the following digital repositories:
+
+| Name                 	| ID     	     | URL                              	| Pipeline                   	|
+|----------------------	|--------------|------------------------------------|-----------------------------|
+| CERN Document Server 	| cds    	     | https://cds.cern.ch/             	| Invenio v1.x 	              |
+| ILC Document Server  	| ilcdoc 	     | http://ilcdoc.linearcollider.org 	| Invenio v1.x              	|
+| CERN Open Data       	| cod          | https://opendata.cern.ch/        	| CERN Open Data             	|
+| (Generic) Invenio v3  | inv3         |                                    | Invenio v3.x*               |
+| Zenodo                | zenodo       | https://zenodo.org/                | Invenio v3.x                |
+| (Generic) InvenioRDM  | invenio-rdm  |                                    | Invenio v3.x*               |
+
+\* requires additional configuration in `invenio.ini`
 
 ### CERN Document Server (CDS)
 
