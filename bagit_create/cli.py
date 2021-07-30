@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from . import main
+from . import main2
 from .version import __version__
 import click
 
@@ -19,7 +19,9 @@ import click
     "--source",
     help="Select source pipeline",
     required=True,
-    type=click.Choice(["cds", "ilcdoc", "cod"], case_sensitive=False),
+    type=click.Choice(
+        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm"], case_sensitive=False
+    ),
 )
 @click.option(
     "-skip",
@@ -94,7 +96,7 @@ def cli(
 
     # This "wrapper" method allows the main one to be called
     #  from python, ignoring the click CLI interface
-    result = main.process(
+    result = main2.process(
         recid,
         source,
         loglevel,

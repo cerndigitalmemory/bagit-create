@@ -1,4 +1,6 @@
-from .. import main
+from .. import invenio_v1_pipeline
+
+pipeline = invenio_v1_pipeline.InvenioV1Pipeline("https://some/invenio/v1/instance")
 
 a = [{"filename": "42.txt", "path": "8"}, {"filename": "47.txt", "path": "/opt/47"}]
 b = [
@@ -20,11 +22,11 @@ c2 = [
 
 
 def test_mergelists():
-    assert main.merge_lists(a, b, "filename") == c1
+    assert pipeline.merge_lists(a, b, "filename") == c1
 
 
 def test_mergelists_inverted():
-    assert main.merge_lists(b, a, "filename") == c2
+    assert pipeline.merge_lists(b, a, "filename") == c2
 
 
 files = [
@@ -56,8 +58,8 @@ asamplehash data/local/43.txt
 
 
 def test_fetch_txt():
-    assert main.generate_fetch_txt(files) == fetch_txt
+    assert pipeline.generate_fetch_txt(files) == fetch_txt
 
 
 def test_manifest_md5():
-    assert main.generate_manifest(files, "md5") == manifest_md5
+    assert pipeline.generate_manifest(files, "md5") == manifest_md5
