@@ -9,6 +9,7 @@ from ..version import __version__
 import bagit
 import shutil
 from itertools import chain
+import zlib
 
 my_fs = open_fs("/")
 
@@ -16,6 +17,9 @@ my_fs = open_fs("/")
 class BasePipeline:
     def __init__(self) -> None:
         pass
+
+    def adler32sum(self, filepath):
+        return "a"
 
     def merge_lists(self, a, b, keyname):
         output = []
@@ -71,7 +75,10 @@ class BasePipeline:
         """
         Compute hash of a given file
         """
-        computedhash = my_fs.hash(filename, alg)
+        if alg == "adler32":
+            computedhash = self.adler32sum(filename)
+        else:
+            computedhash = my_fs.hash(filename, alg)
         return computedhash
 
     def generate_manifest(self, files, algorithm, temp_relpath=""):
@@ -195,6 +202,18 @@ class BasePipeline:
                     f"{temp_relpath}/{file['filename']}",
                     f"{base_path}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
                 )
+            if file["downloaded"] == False and file["metadata"] == False:
+                print("Adding path")
+                if file["checksum"]:
+                    p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
+                    m = p.match(file["checksum"])
+                    alg = m.groups()[0].lower()
+                    matched_checksum = m.groups()[1]
+
+                    files[idx][
+                        "localpath"
+                    ] = f"data/{recid}{delimiter_str}{matched_checksum}/{file['filename']}"
+
         return files
 
     def create_bic_meta(

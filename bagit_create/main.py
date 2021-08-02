@@ -1,5 +1,6 @@
 from .pipelines import invenio_v1
 from .pipelines import invenio_v3
+from .pipelines import opendata
 
 import logging
 import subprocess
@@ -41,7 +42,7 @@ def process(
     elif source == "ilcdoc":
         pipeline = invenio_v1.InvenioV1Pipeline("http://ilcdoc.linearcollider.org/")
     elif source == "cod":
-        pipeline = opendata.OpenDataPipeline()
+        pipeline = opendata.OpenDataPipeline("http://opendata.cern.ch")
     elif source == "zenodo" or source == "inveniordm":
         pipeline = invenio_v3.InvenioV3Pipeline(source)
 
@@ -62,6 +63,8 @@ def process(
 
     # Parse metadata for files
     files = pipeline.parse_metadata(f"{aic_path}/{metadata_filename}")
+
+    print(files)
 
     # Create fetch.txt
     pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt")
