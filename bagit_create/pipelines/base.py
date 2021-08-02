@@ -9,7 +9,7 @@ from ..version import __version__
 import bagit
 import shutil
 from itertools import chain
-import zlib
+from zlib import adler32
 
 my_fs = open_fs("/")
 
@@ -19,7 +19,18 @@ class BasePipeline:
         pass
 
     def adler32sum(self, filepath):
-        return "a"
+        """
+        Compute adler32 of given file
+        """
+        BLOCKSIZE = 256 * 1024 * 1024
+        asum = 1
+        with open(filepath, "rb") as f:
+            while True:
+                data = f.read(BLOCKSIZE)
+                if not data:
+                    break
+                asum = adler32(data, asum)
+        return hex(asum)[2:10].zfill(8).lower()
 
     def merge_lists(self, a, b, keyname):
         output = []
@@ -203,7 +214,6 @@ class BasePipeline:
                     f"{base_path}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
                 )
             if file["downloaded"] == False and file["metadata"] == False:
-                print("Adding path")
                 if file["checksum"]:
                     p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
                     m = p.match(file["checksum"])
