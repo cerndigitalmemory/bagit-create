@@ -223,6 +223,10 @@ class BasePipeline:
                     files[idx][
                         "localpath"
                     ] = f"data/{recid}{delimiter_str}{matched_checksum}/{file['filename']}"
+                else:
+                    logging.error(
+                        "File was not downloaded and there's not checksum available from metadata"
+                    )
 
         return files
 
