@@ -12,7 +12,7 @@ try:
     commit_hash = subprocess.check_output(
         ["git", "rev-parse", "--short", "HEAD"]
     ).decode("utf-8")
-except CalledProcessError:
+except subprocess.CalledProcessError:
     commit_hash = ""
 
 
