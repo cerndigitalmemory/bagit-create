@@ -33,7 +33,7 @@ def process(
     loglevels = [10, 20, 30, 40]
     logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
     logging.info(f"BagIt Create tool {__version__} {commit_hash}")
-    logging.info(f"Starting job. recid: {recid}, source: {source}")
+    logging.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     logging.debug(f"Set log level: {loglevels[loglevel]}")
 
     # Initialize the pipeline

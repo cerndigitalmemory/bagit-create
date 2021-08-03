@@ -106,7 +106,7 @@ def cli(
         bibdoc,
         bd_ssh_host,
     )
-    print(f"Result object: {result}")
+    print(f"Job result: {result}")
 
 
 if __name__ == "__main__":

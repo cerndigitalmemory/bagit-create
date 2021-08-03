@@ -11,7 +11,7 @@ from cernopendata_client import searcher, downloader
 
 class OpenDataPipeline(base.BasePipeline):
     def __init__(self, base_url):
-        logging.debug(f"CERN Open Data pipeline initialised. Base URL: {base_url}")
+        logging.info(f"CERN Open Data pipeline initialised.\nBase URL: {base_url}")
         self.SERVER_HTTP_URI = base_url
 
     # metadata, metadata_url, status_code, metadata_filename

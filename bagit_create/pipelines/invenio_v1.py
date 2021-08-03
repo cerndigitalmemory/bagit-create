@@ -8,7 +8,7 @@ from .. import cds
 
 class InvenioV1Pipeline(base.BasePipeline):
     def __init__(self, base_url):
-        logging.debug(f"Invenio v1 Pipeline initialised.\nBase URL: {base_url}")
+        logging.info(f"Invenio v1 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
 
     def get_metadata(self, record_id, type="xml"):

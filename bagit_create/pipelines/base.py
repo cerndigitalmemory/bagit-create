@@ -259,7 +259,11 @@ class BasePipeline:
     def verify_bag(self, path):
         logging.info(f"Validating created Bag {path} ..")
         bag = bagit.Bag(path)
-        valid = bag.is_valid()
+        valid = False
+        try:
+            valid = bag.validate()
+        except bagit.BagValidationError as err:
+            print(f"Bag validation failed: {err}")
         if valid:
             logging.info(f"Bag successfully validated")
         return valid

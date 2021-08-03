@@ -36,6 +36,8 @@ class InvenioV3Pipeline(base.BasePipeline):
                 # Some instances have the file endpoint separately where the parameters are the filenames
                 self.has_file_base_uri = self.config.getboolean("has_file_base_uri")
 
+        logging.info(f"Invenio v3 pipeline initialised.\nBase URL: {base_endpoint}")
+
         if not self.config:
             logging.error("No such Invenio instance: " + source)
 
