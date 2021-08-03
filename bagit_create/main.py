@@ -21,9 +21,7 @@ def process(
     recid,
     source,
     loglevel,
-    ark_json,
-    ark_json_rel,
-    skip_downloads=False,
+    dry_run=False,
     bibdoc=False,
     bd_ssh_host=None,
     timestamp=0,
@@ -35,6 +33,11 @@ def process(
     logging.info(f"BagIt Create tool {__version__} {commit_hash}")
     logging.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     logging.debug(f"Set log level: {loglevels[loglevel]}")
+
+    if dry_run:
+        logging.warning(
+            f"This will be a DRY RUN. A 'light' bag will be created, not downloading or moving any payload file, but checksums *must* be available from the metadata, or no valid CERN AIP will be created."
+        )
 
     # Initialize the pipeline
     if source == "cds":
@@ -64,13 +67,12 @@ def process(
     # Parse metadata for files
     files = pipeline.parse_metadata(f"{aic_path}/{metadata_filename}")
 
-    print(files)
-
     # Create fetch.txt
     pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt")
 
-    # Download files
-    pipeline.download_files(files, temp_files_path)
+    if dry_run == False:
+        # Download files
+        pipeline.download_files(files, temp_files_path)
 
     # Copy files to final locations (AIUs)
     files = pipeline.move_files_to_aius(files, base_path, temp_files_path, recid)
