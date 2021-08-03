@@ -18,6 +18,19 @@ class BasePipeline:
     def __init__(self) -> None:
         pass
 
+    def downloadRemoteFile(self, src, dest):
+        r = requests.get(src)
+        with open(dest, "wb") as f:
+            f.write(r.content)
+        return True
+
+    def downloadEOSfile(self, src, dest):
+        try:
+            my_fs.copy(src, dest)
+        except (FileNotFoundError, fs.errors.ResourceNotFound):
+            logging.debug(f"  Path '{src}' not found. Skipping file. ")
+            return False
+
     def adler32sum(self, filepath):
         """
         Compute adler32 of given file
