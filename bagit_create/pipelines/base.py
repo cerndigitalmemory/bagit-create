@@ -192,12 +192,9 @@ class BasePipeline:
         temp_path = f"{path}/temp_{source}_{recid}"
         temp_relpath = f"temp_{source}_{recid}"
         os.mkdir(temp_path)
-        # Create subfolder for saving upstream resource contents
-        temp_file_path = f"{temp_path}/payload"
-        os.mkdir(temp_file_path)
 
         logging.debug(f"Bag folder: {base_name}")
-        return base_path, temp_file_path
+        return base_path, temp_path
 
     def prepare_AIC(self, base_path, recid, timestamp=0, delimiter_str="::"):
         logging.info("Creating AIC..")
@@ -228,7 +225,7 @@ class BasePipeline:
                     f"{base_path}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
                 )
             if file["downloaded"] == False and file["metadata"] == False:
-                if file["checksum"]:
+                if "checksum" in file:
                     p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
                     m = p.match(file["checksum"])
                     alg = m.groups()[0].lower()
@@ -239,8 +236,9 @@ class BasePipeline:
                     ] = f"data/{recid}{delimiter_str}{matched_checksum}/{file['filename']}"
                 else:
                     logging.error(
-                        "File was not downloaded and there's not checksum available from metadata"
+                        "FATAL: File was not downloaded and there's not checksum available from metadata."
                     )
+                    return []
 
         return files
 
