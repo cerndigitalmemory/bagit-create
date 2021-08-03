@@ -150,7 +150,7 @@ class BasePipeline:
             contents += line
         return contents
 
-    def generate_fetch_txt(self, files):
+    def generate_fetch_txt(self, files, alternate_uri=False):
         """
         Given an array of "files" dictionaries (containing the `url`, `size` and `path` keys)
         generate the contents for the fetch.txt file (BagIt specification)
@@ -163,12 +163,15 @@ class BasePipeline:
         """
         contents = ""
         for file in files:
-            line = f'{file["url"]} {file["size"]} {file["path"]}\n'
+            if alternate_uri and "uri" in file:
+                line = f'{file["uri"]} {file["size"]} {file["path"]}\n'
+            else:
+                line = f'{file["url"]} {file["size"]} {file["path"]}\n'
             contents += line
         return contents
 
-    def create_fetch_txt(self, files, dest):
-        content = self.generate_fetch_txt(files)
+    def create_fetch_txt(self, files, dest, alternate_uri):
+        content = self.generate_fetch_txt(files, alternate_uri)
         self.write_file(content, dest)
 
     def prepare_folders(self, source, recid, delimiter_str="::"):
@@ -180,13 +183,9 @@ class BasePipeline:
         base_name = f"bagitexport{delimiter_str}{source}{delimiter_str}{recid}"
         base_path = f"{path}/{base_name}"
 
-        try:
-            os.mkdir(base_path)
-            # Create data/ subfolder (bagit payload)
-            os.mkdir(f"{base_path}/data")
-        except FileExistsError:
-            logging.error("Directory exists")
-            return {"status": "1", "errormsg": "Directory Exists"}
+        os.mkdir(base_path)
+        # Create data/ subfolder (bagit payload)
+        os.mkdir(f"{base_path}/data")
 
         # Create temporary folder to download the resource content
         temp_path = f"{path}/temp_{source}_{recid}"

@@ -22,6 +22,7 @@ def process(
     source,
     loglevel,
     dry_run=False,
+    alternate_uri=False,
     bibdoc=False,
     bd_ssh_host=None,
     timestamp=0,
@@ -70,7 +71,7 @@ def process(
         files = pipeline.parse_metadata(f"{aic_path}/{metadata_filename}")
 
         # Create fetch.txt
-        pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt")
+        pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
 
         if dry_run is False:
             # Download files

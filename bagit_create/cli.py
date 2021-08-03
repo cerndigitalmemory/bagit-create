@@ -31,6 +31,15 @@ import click
     is_flag=True,
 )
 @click.option(
+    "-a",
+    "--alternate-uri",
+    help="""
+         Use alternative uri instead of https for fetch.txt (e.g. root endpoints 
+         for CERN Open Data instead of http)""",
+    default=False,
+    is_flag=True,
+)
+@click.option(
     "--verbose",
     "-v",
     help="Enable logging (verbose, 'info' level)",
@@ -65,6 +74,7 @@ def cli(
     recid,
     source,
     dry_run,
+    alternate_uri,
     verbose,
     very_verbose,
     bibdoc,
@@ -86,6 +96,7 @@ def cli(
         source,
         loglevel,
         dry_run,
+        alternate_uri,
         bibdoc,
         bd_ssh_host,
     )
