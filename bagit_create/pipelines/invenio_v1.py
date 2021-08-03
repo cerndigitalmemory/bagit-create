@@ -4,6 +4,7 @@ import requests
 from pymarc import marcxml
 import ntpath
 from .. import cds
+import re
 
 
 class InvenioV1Pipeline(base.BasePipeline):
