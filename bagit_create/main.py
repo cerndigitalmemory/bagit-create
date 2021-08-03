@@ -94,7 +94,12 @@ def process(
         pipeline.verify_bag(base_path)
 
         pipeline.delete_folder(temp_files_path)
+    except FileExistsError as e:
+        # Folder exists, gracefully stop.
+        logging.error(f"Job failed with error: {e}")
     except Exception as e:
+        # For any other error, print details and clean up
+        #  any folder created
         logging.error(f"Job failed with error: {e}")
         pipeline.delete_folder(temp_files_path)
         pipeline.delete_folder(base_path)
