@@ -214,7 +214,12 @@ class BasePipeline:
             if file["downloaded"] and file["metadata"] == False:
                 filehash = self.compute_hash(f"{temp_relpath}/{file['filename']}")
                 aiufoldername = f"{base_path}/data/{recid}{delimiter_str}{filehash}"
-                os.mkdir(aiufoldername)
+                try:
+                    os.mkdir(aiufoldername)
+                except:
+                    logging.warning(
+                        "Trying to create an already existing AIU. Duplicate files or colliding checksums?"
+                    )
                 files[idx][
                     "localpath"
                 ] = f"data/{recid}{delimiter_str}{filehash}/{file['filename']}"
