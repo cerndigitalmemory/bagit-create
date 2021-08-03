@@ -133,7 +133,7 @@ class BasePipeline:
                 matched_checksum = m.groups()[1]
                 if alg == algorithm:
                     checksum = matched_checksum
-                else:
+                elif file["downloaded"]:
                     logging.info(
                         f"Checksum {alg} found for {file['filename']} \
                         but {algorithm} was requested."
@@ -141,11 +141,12 @@ class BasePipeline:
                     logging.debug(f"Computing {algorithm} of {file['filename']}")
                     checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
 
-            else:
+            elif file["downloaded"]:
                 logging.debug(f"No checksum available for {file['filename']}")
                 logging.debug(f"Computing {algorithm} of {file['filename']}")
                 checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
-
+            else:
+                pass
             line = f'{checksum} {file["localpath"]}\n'
             contents += line
         return contents
