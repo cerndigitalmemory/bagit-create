@@ -94,6 +94,10 @@ class OpenDataPipeline(base.BasePipeline):
 
     def create_manifests(self, files, base_path, files_base_path):
         algs = ["adler32"]
+        logging.warning(
+            "adler32 was selected because it's the only checksum available in CERN Open Data. This will create an invalid Bag, as adler32 is not supported."
+        )
+
         for alg in algs:
             logging.info(f"Generating manifest {alg}..")
             content = self.generate_manifest(files, alg, files_base_path)
