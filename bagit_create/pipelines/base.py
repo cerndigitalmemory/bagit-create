@@ -165,9 +165,14 @@ class BasePipeline:
         contents = ""
         for file in files:
             if alternate_uri and "uri" in file:
-                line = f'{file["uri"]} {file["size"]} {file["path"]}\n'
+                url = file["uri"]
             else:
-                line = f'{file["url"]} {file["size"]} {file["path"]}\n'
+                url = file["url"]
+
+            # Workaround to get a valid fetch.txt (/eos/ is a malformed URL)
+            if url[:5] == "/eos/":
+                url = f"eos:/{url}"
+            line = f'{url} {file["size"]} {file["path"]}\n'
             contents += line
         return contents
 
