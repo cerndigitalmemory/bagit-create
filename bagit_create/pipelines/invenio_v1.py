@@ -16,6 +16,7 @@ class InvenioV1Pipeline(base.BasePipeline):
         Get MARC21 metadata from a CDS record ID
         Returns: [metadata_serialized, metadata_upstream_url, operation_status_code]
         """
+
         record_url = f"{self.base_url}{record_id}"
 
         if type == "xml":
@@ -28,6 +29,9 @@ class InvenioV1Pipeline(base.BasePipeline):
         r = requests.get(record_url, params=payload)
 
         logging.debug(f"Getting {r.url}")
+
+        if r.status_code != 200:
+            raise Exception(f"Metadata request gave HTTP {r.status_code}.")
 
         return r.content, r.url, r.status_code, "metadata.xml"
 
@@ -45,7 +49,10 @@ class InvenioV1Pipeline(base.BasePipeline):
         # Parse the XML as MARC21
         #  and get the first record (result should be one record anyway)
         logging.debug("Parsing metadata..")
-        record = marcxml.parse_xml_to_array(metadata_filename)[0]
+        try:
+            record = marcxml.parse_xml_to_array(metadata_filename)[0]
+        except:
+            raise Exception("Malformed metadata. Check if the record is public.")
         # Look for 856 entries
         #  MARC21: 856 - Electronic Location and Access (R)
         files = []
