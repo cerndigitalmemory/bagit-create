@@ -35,39 +35,62 @@ class OpenDataPipeline(base.BasePipeline):
 
         for sourcefile in metadata["metadata"]["files"]:
             # file lists are TXT and JSON, look for the JSON ones
-            if sourcefile["key"][-4:] == "json":
-                list_endpoint = f"https://opendata.cern.ch/record/{metadata['id']}/files/{sourcefile['key']}"
-                # Download the file list
-                r = requests.get(list_endpoint)
-                logging.debug(f"Unpacking file list {list_endpoint}")
-                # For every file in the list
-                for el in r.json():
-                    # Remove the EOS instance prefix to get the path
-                    el["url"] = el["uri"].replace("root://eospublic.cern.ch/", "")
-                    # Append the final path
-                    el["path"] = el["filename"]
-                    el["metadata"] = False
-                    el["downloaded"] = False
-                    if type not in el or (type in el and el["type"] != "index.txt"):
-                        files.append(el)
+            print(sourcefile)
+            if "type" in sourcefile:
+                if sourcefile["key"][-4:] == "json" and "index" in sourcefile["type"]:
+                    list_endpoint = f"https://opendata.cern.ch/record/{metadata['id']}/files/{sourcefile['key']}"
+                    # Download the file list
+                    r = requests.get(list_endpoint)
+                    logging.debug(f"Unpacking file list {list_endpoint}")
+                    # For every file in the list
+                    for el in r.json():
+                        # Remove the EOS instance prefix to get the path
+                        el["url"] = el["uri"].replace(
+                            "root://eospublic.cern.ch/", "http://opendata.cern.ch/"
+                        )
+                        # Append the final path
+                        el["path"] = el["filename"]
+                        el["metadata"] = False
+                        el["downloaded"] = False
+                        if type not in el or (type in el and el["type"] != "index.txt"):
+                            files.append(el)
+            else:
+                sourcefile["url"] = sourcefile["uri"].replace(
+                    "root://eospublic.cern.ch/", "http://opendata.cern.ch/"
+                )
+                sourcefile["filename"] = sourcefile["key"]
+                sourcefile["path"] = sourcefile["filename"]
+                sourcefile["metadata"] = False
+                sourcefile["downloaded"] = False
+                files.append(sourcefile)
         return files
 
     def download_files(self, files, temp_files_path):
         logging.info(f"Downloading {len(files)} files to {temp_files_path}..")
+        skipped = 0
         for file in files:
             if file["metadata"] == False:
                 destination = f'{temp_files_path}/{file["filename"]}'
                 logging.debug(f'Downloading {file["filename"]} from {file["url"]}..')
                 if file["url"][:4] == "http":
-                    file["downloaded"] = cds.downloadRemotefile(
+                    print(file["url"])
+                    file["downloaded"] = self.downloadRemoteFile(
                         file["url"],
                         destination,
                     )
                 elif file["url"][:4] == "/eos":
-                    file["downloaded"] = cds.downloadEOSfile(
+                    file["downloaded"] = self.downloadEOSfile(
                         file["url"],
                         destination,
                     )
+
+                    if file["downloaded"] == False:
+                        skipped += 1
+        if skipped > 0:
+            logging.info(
+                f"{skipped} files were skipped. Checksums will be searched in metadata \
+    but won't be computed locally."
+            )
 
     def create_manifests(self, files, base_path, files_base_path):
         algs = ["adler32"]
