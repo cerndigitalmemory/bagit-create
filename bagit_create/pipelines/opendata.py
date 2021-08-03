@@ -35,7 +35,6 @@ class OpenDataPipeline(base.BasePipeline):
 
         for sourcefile in metadata["metadata"]["files"]:
             # file lists are TXT and JSON, look for the JSON ones
-            print(sourcefile)
             if "type" in sourcefile:
                 if sourcefile["key"][-4:] == "json" and "index" in sourcefile["type"]:
                     list_endpoint = f"https://opendata.cern.ch/record/{metadata['id']}/files/{sourcefile['key']}"
@@ -73,7 +72,6 @@ class OpenDataPipeline(base.BasePipeline):
                 destination = f'{temp_files_path}/{file["filename"]}'
                 logging.debug(f'Downloading {file["filename"]} from {file["url"]}..')
                 if file["url"][:4] == "http":
-                    print(file["url"])
                     file["downloaded"] = self.downloadRemoteFile(
                         file["url"],
                         destination,

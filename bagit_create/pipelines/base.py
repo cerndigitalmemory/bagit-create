@@ -72,7 +72,8 @@ class BasePipeline:
             open(f"{dest}", "w").write(json.dumps(content, indent=4))
         else:
             open(f"{dest}", "w").write(content)
-        logging.info(f"Wrote {dest}")
+        logging.info(f"Wrote {os.path.basename(dest)}")
+        logging.debug(f"({dest})")
 
     def download_file(self, sourcefile, dest):
         r = requests.get(sourcefile["url"])
