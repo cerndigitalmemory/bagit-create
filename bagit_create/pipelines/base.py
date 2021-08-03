@@ -9,6 +9,7 @@ from ..version import __version__
 import bagit
 import shutil
 from itertools import chain
+from zlib import adler32
 
 my_fs = open_fs("/")
 
@@ -16,6 +17,33 @@ my_fs = open_fs("/")
 class BasePipeline:
     def __init__(self) -> None:
         pass
+
+    def downloadRemoteFile(self, src, dest):
+        r = requests.get(src)
+        with open(dest, "wb") as f:
+            f.write(r.content)
+        return True
+
+    def downloadEOSfile(self, src, dest):
+        try:
+            my_fs.copy(src, dest)
+        except (FileNotFoundError, fs.errors.ResourceNotFound):
+            logging.debug(f"  Path '{src}' not found. Skipping file. ")
+            return False
+
+    def adler32sum(self, filepath):
+        """
+        Compute adler32 of given file
+        """
+        BLOCKSIZE = 256 * 1024 * 1024
+        asum = 1
+        with open(filepath, "rb") as f:
+            while True:
+                data = f.read(BLOCKSIZE)
+                if not data:
+                    break
+                asum = adler32(data, asum)
+        return hex(asum)[2:10].zfill(8).lower()
 
     def merge_lists(self, a, b, keyname):
         output = []
@@ -44,7 +72,8 @@ class BasePipeline:
             open(f"{dest}", "w").write(json.dumps(content, indent=4))
         else:
             open(f"{dest}", "w").write(content)
-        logging.info(f"Wrote {dest}")
+        logging.info(f"Wrote {os.path.basename(dest)}")
+        logging.debug(f"({dest})")
 
     def download_file(self, sourcefile, dest):
         r = requests.get(sourcefile["url"])
@@ -71,7 +100,10 @@ class BasePipeline:
         """
         Compute hash of a given file
         """
-        computedhash = my_fs.hash(filename, alg)
+        if alg == "adler32":
+            computedhash = self.adler32sum(filename)
+        else:
+            computedhash = my_fs.hash(filename, alg)
         return computedhash
 
     def generate_manifest(self, files, algorithm, temp_relpath=""):
@@ -195,6 +227,21 @@ class BasePipeline:
                     f"{temp_relpath}/{file['filename']}",
                     f"{base_path}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
                 )
+            if file["downloaded"] == False and file["metadata"] == False:
+                if file["checksum"]:
+                    p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
+                    m = p.match(file["checksum"])
+                    alg = m.groups()[0].lower()
+                    matched_checksum = m.groups()[1]
+
+                    files[idx][
+                        "localpath"
+                    ] = f"data/{recid}{delimiter_str}{matched_checksum}/{file['filename']}"
+                else:
+                    logging.error(
+                        "File was not downloaded and there's not checksum available from metadata"
+                    )
+
         return files
 
     def create_bic_meta(
@@ -226,7 +273,11 @@ class BasePipeline:
     def verify_bag(self, path):
         logging.info(f"Validating created Bag {path} ..")
         bag = bagit.Bag(path)
-        valid = bag.is_valid()
+        valid = False
+        try:
+            valid = bag.validate()
+        except bagit.BagValidationError as err:
+            print(f"Bag validation failed: {err}")
         if valid:
             logging.info(f"Bag successfully validated")
         return valid

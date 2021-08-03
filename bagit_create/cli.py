@@ -24,22 +24,9 @@ import click
     ),
 )
 @click.option(
-    "-skip",
-    "--skip-downloads",
-    help="Creates files but skip downloading the actual payloads",
-    default=False,
-    is_flag=True,
-)
-@click.option(
-    "-aj",
-    "--ark-json",
-    help="Generate a JSON metadata file for arkivum ingestions",
-    default=False,
-    is_flag=True,
-)
-@click.option(
-    "--ark-json-rel",
-    help="Generate a JSON metadata file for arkivum ingestions using relative paths",
+    "-d",
+    "--dry-run",
+    help="Skip downloads",
     default=False,
     is_flag=True,
 )
@@ -77,9 +64,7 @@ import click
 def cli(
     recid,
     source,
-    skip_downloads,
-    ark_json,
-    ark_json_rel,
+    dry_run,
     verbose,
     very_verbose,
     bibdoc,
@@ -100,13 +85,11 @@ def cli(
         recid,
         source,
         loglevel,
-        ark_json,
-        ark_json_rel,
-        skip_downloads,
+        dry_run,
         bibdoc,
         bd_ssh_host,
     )
-    print(f"Result object: {result}")
+    print(f"Job result: {result}")
 
 
 if __name__ == "__main__":

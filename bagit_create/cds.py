@@ -108,6 +108,7 @@ def downloadEOSfile(src, dest):
         my_fs.copy(src, dest)
     except (FileNotFoundError, fs.errors.ResourceNotFound):
         logging.warning(f"  Path '{src}' not found. Skipping file. ")
+        return False
 
 
 def prettyprint(obj, indentsize=4):

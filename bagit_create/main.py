@@ -1,5 +1,6 @@
 from .pipelines import invenio_v1
 from .pipelines import invenio_v3
+from .pipelines import opendata
 
 import logging
 import subprocess
@@ -20,9 +21,7 @@ def process(
     recid,
     source,
     loglevel,
-    ark_json,
-    ark_json_rel,
-    skip_downloads=False,
+    dry_run=False,
     bibdoc=False,
     bd_ssh_host=None,
     timestamp=0,
@@ -32,8 +31,13 @@ def process(
     loglevels = [10, 20, 30, 40]
     logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
     logging.info(f"BagIt Create tool {__version__} {commit_hash}")
-    logging.info(f"Starting job. recid: {recid}, source: {source}")
+    logging.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     logging.debug(f"Set log level: {loglevels[loglevel]}")
+
+    if dry_run:
+        logging.warning(
+            f"This will be a DRY RUN. A 'light' bag will be created, not downloading or moving any payload file, but checksums *must* be available from the metadata, or no valid CERN AIP will be created."
+        )
 
     # Initialize the pipeline
     if source == "cds":
@@ -41,7 +45,7 @@ def process(
     elif source == "ilcdoc":
         pipeline = invenio_v1.InvenioV1Pipeline("http://ilcdoc.linearcollider.org/")
     elif source == "cod":
-        pipeline = opendata.OpenDataPipeline()
+        pipeline = opendata.OpenDataPipeline("http://opendata.cern.ch")
     elif source == "zenodo" or source == "inveniordm":
         pipeline = invenio_v3.InvenioV3Pipeline(source)
 
@@ -66,8 +70,9 @@ def process(
     # Create fetch.txt
     pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt")
 
-    # Download files
-    pipeline.download_files(files, temp_files_path)
+    if dry_run == False:
+        # Download files
+        pipeline.download_files(files, temp_files_path)
 
     # Copy files to final locations (AIUs)
     files = pipeline.move_files_to_aius(files, base_path, temp_files_path, recid)
