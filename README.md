@@ -29,41 +29,89 @@ pip install -e .
 
 # Check installed version
 bic --version
-```
-
-## Usage
-
-### CLI
-
-```bash
-# Show CLI Usage help
-bic --help
-
-bic --recid=2272168 --source=cds
-
-# Generate JSON metadata for arkivum, running in a very verbose way
-bic --recid 2766073 --source cds --ark-json -vv
-
-# Deleted resource, running in a very verbose way
-bic --recid 1 --source cds -vv
 
 # Run tests
 pytest
 ```
 
+## Usage
+
+### Supported sources
+
+Three pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data) are currently implemented, supporting the following digital repositories:
+
+| Name                  | ID           | URL                                | Pipeline                    |
+|---------------------- |--------------|------------------------------------|-----------------------------|
+| CERN Document Server  | cds          | https://cds.cern.ch/               | Invenio v1.x                |
+| ILC Document Server   | ilcdoc       | http://ilcdoc.linearcollider.org   | Invenio v1.x                |
+| CERN Open Data        | cod          | https://opendata.cern.ch/          | CERN Open Data              |
+| (Generic) Invenio v3  | inv3         |                                    | Invenio v3.x*               |
+| Zenodo                | zenodo       | https://zenodo.org/                | Invenio v3.x                |
+| (Generic) InvenioRDM  | invenio-rdm  |                                    | Invenio v3.x*               |
+
+\* requires additional configuration in `invenio.ini`
+
+### CLI
+
+```bash
+# CDS
+bic --recid 1 --source cds --dry-run
+bic --recid 1000 --source cds --dry-run
+1000571
+
+# CERN Open Data
+1
+bic --recid 8884 --source cod --dry-run --verbose --alternate-uri
+bic --recid 8884 --source cod --dry-run --verbose
+5200
+bic --recid 8888 --source cod --dry-run --verbose
+
+bic --recid 10101 --source cod --dry-run --verbose
+bic --recid 10102 --source cod --dry-run --verbose
+bic --recid 10103 --source cod --dry-run --verbose
+bic --recid 10104 --source cod --dry-run --verbose
+bic --recid 10105 --source cod --dry-run --verbose
+
+bic --recid 10101 --source cod --verbose
+bic --recid 10102 --source cod --verbose
+bic --recid 10103 --source cod --verbose
+bic --recid 10104 --source cod --verbose
+bic --recid 10105 --source cod --verbose
+
+# Zenodo
+bic --recid 3911261 --source zenodo --verbose
+bic --recid 3974864 --source zenodo --verbose
+
+# Invenio
+bic --recid gjgvm-4mq98 --source inveniordm --verbose
+```
+
 CLI options:
 
-- `--recid TEXT`, Unique ID of the record in the upstream source [required]
-- `--source [cds|ilcdoc|cod]`, Select source pipeline  [required]
-- `--skip-downloads`, Creates files but skip downloading the actual payloads
-- `--ark-json`, Generate a JSON metadata file for arkivum ingestions
-- `--ark-json-rel`, Generate a JSON metadata file for arkivum ingestions using relative paths
-- `-v`, Enable logging (verbose, 'info' level)
-- `-vv`, Enable logging (very verbose, 'debug' level)
-- `-b`,`--bibdoc`, Get metadata for a CDS record from the bibdocfile utility.
-	(`/opt/cdsweb/bin/bibdocfile` must be available in the system and the resource must be from CDS).
-	See [bibdocfile](#bibdocfile).
--  `--bd-ssh-host TEXT`, SSH host to run bibdocfile. See [bibdocfile](#bibdocfile).
+```
+Options:
+- --version                       Show the version and exit.
+- --recid TEXT                    Unique ID of the record in the upstream
+                                  source  [required]
+
+- -s, --source [cds|ilcdoc|cod|zenodo|inveniordm]
+                                  Select source pipeline  [required]
+- -d, --dry-run                   Skip downloads
+- -a, --alternate-uri             Use alternative uri instead of https for
+                                  fetch.txt (e.g. root endpoints  for CERN
+                                  Open Data instead of http)
+
+- -v, --verbose                   Enable logging (verbose, 'info' level)
+- -vv, --very-verbose             Enable logging (very verbose, 'debug' level)
+- -b, --bibdoc                    Get metadata for a CDS record from the
+                                  bibdocfile utility.
+                                  (`/opt/cdsweb/bin/bibdocfile` must be
+                                  available in the system and the resource
+                                  must be from CDS). See [bibdocfile](#bibdocfile).
+
+- --bd-ssh-host <HOSTNAME>        SSH host to run bibdocfile. See [bibdocfile](#bibdocfile).
+- --help                          Show this message and exit.
+```
 
 ### Module
 
@@ -75,41 +123,6 @@ from bagit_create.main import process
 process(recid=2272168, source="cds")
 ```
 
-
-### Supported sources
-
-Three pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data) are currently implemented, supporting the following digital repositories:
-
-| Name                 	| ID     	     | URL                              	| Pipeline                   	|
-|----------------------	|--------------|------------------------------------|-----------------------------|
-| CERN Document Server 	| cds    	     | https://cds.cern.ch/             	| Invenio v1.x 	              |
-| ILC Document Server  	| ilcdoc 	     | http://ilcdoc.linearcollider.org 	| Invenio v1.x              	|
-| CERN Open Data       	| cod          | https://opendata.cern.ch/        	| CERN Open Data             	|
-| (Generic) Invenio v3  | inv3         |                                    | Invenio v3.x*               |
-| Zenodo                | zenodo       | https://zenodo.org/                | Invenio v3.x                |
-| (Generic) InvenioRDM  | invenio-rdm  |                                    | Invenio v3.x*               |
-
-\* requires additional configuration in `invenio.ini`
-
-### CERN Document Server (CDS)
-
-To prepare a BagIt from a CDS Resource ID, using the CLI interface, run `python cli.py --recid=2272168 --source=cds`
-
-```
-> tree bagitexport_2272168
-bagitexport_2272168
-├── bagit.txt
-├── 2272168_1605200583
-│   ├── metadata.xml
-│   └── references.txt
-└── 2272168_bacc9427609e6509f172e6b2604659d6jfkob
-    └── 2272168.mp4
-
-2 directories, 3 files
-```
-
-CDS metadata is XML/[MARC21](https://cds.cern.ch/help/admin/howto-marc?ln=fr)
-
 ### bibdocfile
 
 The `bibdocfile` command line utility can be used to get metadata for CDS, exposing internal file paths and hashes normally not available through the CDS API.
@@ -117,7 +130,7 @@ The `bibdocfile` command line utility can be used to get metadata for CDS, expos
 If the executable is available in the path (i.e. you can run `/opt/cdsweb/bin/bibdocfile`) just append `--bibdoc`:
 
 ```bash
-bic --recid 2751237 --source cds --ark-json --bibdoc -v
+bic --recid 2751237 --source cds --bibdoc -v
 ```
 
 If this is not the case, you can pass a `--bd-ssh-host` parameter specifying the name of an SSH configured connection pointing to a machine able to run the command for you. Be aware that your machine must be able to establish such connection without any user interaction (the script will run `ssh <THE_PROVIDED_SSH_HOST> bibdocfile ..args`).
@@ -126,7 +139,7 @@ Since in a normal CERN scenario this can't be possible due to required ProxyJump
 
 Add an entry in `~/.ssh/config` to set up the SSH connection to the remote machine able to run `bibdocfile` for you in the following way:
 
-```
+```bash
 Host <SSH_NAME>
   User <YOUR_USER>
   Hostname <HOSTNAME.cern.ch>
@@ -138,20 +151,5 @@ Host <SSH_NAME>
 Then, run `ssh <SSH_NAME>` in a shell, authenticate and keep it open. OpenSSH will now reuse this socket everytime you run `<SSH_NAME>`, allowing BagItCreate tool to run `bibdocfile` over this ssh connection for you, if you pass the `bd-ssh-host` parameter:
 
 ```bash
-bic --recid 2751237 --source cds --ark-json --bibdoc --bd-ssh-host=<SSH_NAME> -v
+bic --recid 2751237 --source cds --bibdoc --bd-ssh-host=<SSH_NAME> -v
 ``` 
-
-
-### CERN Open Data
-
-To prepare a BagIt from a CERN Open Data Record ID, run `./cli.py --recid 1 --source cod`.
-
-CERN Open Data metadata follows [this](http://opendata.cern.ch/schema/records/record-v1.0.0.json) schema.
-
-### Examples
-
-- CDS `2272168` - DM entry
-- CDS `1000571` - bibdoc entry (merged results), hundreds of entries
-- COD `1`- packed in file lists
-- COD `5200` - non packed
-- COD `8884` - big record
