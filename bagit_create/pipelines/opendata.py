@@ -28,6 +28,7 @@ class OpenDataPipeline(base.BasePipeline):
         return metadata, metadata_url, status_code, metadata_filename
 
     def parse_metadata(self, metadata_file_path):
+        logging.info("Parsing metadata..")
         files = []
         with open(metadata_file_path) as jsonFile:
             metadata = json.load(jsonFile)
