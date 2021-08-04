@@ -34,6 +34,8 @@ class InvenioV1Pipeline(base.BasePipeline):
         if r.status_code != 200:
             raise Exception(f"Metadata request gave HTTP {r.status_code}.")
 
+        self.metadata_url = r.url
+        self.metadata_size = r.headers["Content-length"]
         return r.content, r.url, r.status_code, "metadata.xml"
 
     def parse_metadata(self, metadata_filename):
@@ -100,6 +102,19 @@ class InvenioV1Pipeline(base.BasePipeline):
                     f'Skipped entry "{f}". No basename found (probably an URL?)'
                 )
         logging.debug(f"Got {len(files)} files")
+
+        meta_file_entry = {
+            "filename": "metadata.xml",
+            "path": "metadata.xml",
+            "metadata": True,
+            "downloaded": True,
+            "localpath": f"data/{self.aic_name}/metadata.xml",
+            "localsavepath": f"{self.base_path}/data/{self.aic_name}",
+            "url": self.metadata_url,
+            "size": self.metadata_size,
+        }
+        files.append(meta_file_entry)
+
         return files
 
     def create_manifests(self, files, base_path, files_base_path):

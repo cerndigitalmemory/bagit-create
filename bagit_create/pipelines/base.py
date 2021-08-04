@@ -198,6 +198,8 @@ class BasePipeline:
         temp_relpath = f"temp_{source}_{recid}"
         os.mkdir(temp_path)
 
+        self.base_path = base_path
+
         logging.debug(f"Bag folder: {base_name}")
         return base_path, temp_path
 
@@ -210,6 +212,7 @@ class BasePipeline:
         aic_name = f"{recid}{delimiter_str}{str(timestamp)}"
         aic_path = f"{base_path}/data/{aic_name}"
         os.mkdir(aic_path)
+        self.aic_name = aic_name
         return aic_path, aic_name
 
     def move_files_to_aius(
