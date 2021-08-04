@@ -36,7 +36,7 @@ class InvenioV3Pipeline(base.BasePipeline):
                 # Some instances have the file endpoint separately where the parameters are the filenames
                 self.has_file_base_uri = self.config.getboolean("has_file_base_uri")
 
-        logging.info(f"Invenio v3 pipeline initialised.\nBase URL: {base_endpoint}")
+        logging.info(f"Invenio v3 pipeline initialised.\nBase URL: {self.base_endpoint}")
 
         if not self.config:
             logging.error("No such Invenio instance: " + source)
@@ -47,6 +47,7 @@ class InvenioV3Pipeline(base.BasePipeline):
         self.recid = recid
         self.metadata_url = res.url
         self.metadata = json.loads(res.text)
+        self.metadata_size = len(res.content)
         return self.metadata, self.metadata_url, res.status_code, "metadata.json"
 
     def create_manifests(self, files, base_path, files_base_path):
@@ -80,21 +81,20 @@ class InvenioV3Pipeline(base.BasePipeline):
                 sourcefile["downloaded"] = False
                 sourcefile["metadata"] = False
 
-        """
-        files.append(
-            {
-                "metadata": True,
-                "filename": "metadata." + self.response_type,
-                "localpath": f"data/{aic_name}/metadata." + self.response_type,
-                "path": "metadata." + self.response_type,
-                "url": self.metadata_url,
-                "size": 1,
-                "downloaded": True,
-            }
-        )
-        """
-
         logging.debug(f"Got {len(files)} files")
+        
+        meta_file_entry = {
+            "filename": "metadata.json",
+            "path": "metadata.json",
+            "metadata": True,
+            "downloaded": True,
+            "localpath": f"data/{self.aic_name}/metadata.json",
+            "localsavepath": f"{self.base_path}/data/{self.aic_name}",
+            "url": self.metadata_url,
+            "size": self.metadata_size,
+        }
+        files.append(meta_file_entry)
+        
         return files
 
     def get_fileslist(self):
