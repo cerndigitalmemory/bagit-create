@@ -1,0 +1,320 @@
+{
+    "access": {
+        "embargo": {
+            "reason": null,
+            "active": false
+        },
+        "files": "public",
+        "record": "public",
+        "status": "open"
+    },
+    "parent": {
+        "id": "dx1hg-55x44"
+    },
+    "files": {
+        "enabled": true,
+        "order": []
+    },
+    "is_published": true,
+    "created": "2021-07-23T13:40:32.598049+00:00",
+    "revision_id": 7,
+    "pids": {
+        "doi": {
+            "identifier": "10.81088/gjgvm-4mq98",
+            "client": "datacite",
+            "provider": "datacite"
+        }
+    },
+    "links": {
+        "self": "https://inveniordm.web.cern.ch/api/records/gjgvm-4mq98",
+        "self_html": "https://inveniordm.web.cern.ch/records/gjgvm-4mq98",
+        "self_doi": "https://inveniordm.web.cern.ch/doi/10.81088%2Fgjgvm-4mq98",
+        "files": "https://inveniordm.web.cern.ch/api/records/gjgvm-4mq98/files",
+        "latest": "https://inveniordm.web.cern.ch/api/records/gjgvm-4mq98/versions/latest",
+        "latest_html": "https://inveniordm.web.cern.ch/records/gjgvm-4mq98/latest",
+        "draft": "https://inveniordm.web.cern.ch/api/records/gjgvm-4mq98/draft",
+        "versions": "https://inveniordm.web.cern.ch/api/records/gjgvm-4mq98/versions",
+        "access_links": "https://inveniordm.web.cern.ch/api/records/gjgvm-4mq98/access/links",
+        "reserve_doi": "https://inveniordm.web.cern.ch/api/records/gjgvm-4mq98/draft/pids/doi"
+    },
+    "versions": {
+        "is_latest": true,
+        "index": 1
+    },
+    "id": "gjgvm-4mq98",
+    "metadata": {
+        "version": "v1",
+        "title": "Practice meets Principle: Tracking Software and Data Citations to Zenodo DOIs",
+        "description": "<p>Data and software citations are crucial for the transparency of research results and for the transmission of credit. But they are hard to track, because of the absence of a common citation standard. As a consequence, the FORCE11 recently proposed data and software citation principles as guidance for authors.&nbsp;</p><p>Zenodo is recognized for the implementation of DOIs for software on a large scale. The minting of complementary DOIs for the version and concept allows measuring the impact of dynamic software. This article investigates characteristics of 5,456 citations to Zenodo data and software that were captured by the Asclepias Broker in January 2019. We analyzed the current state of data and software citation practices and the quality of software citation recommendations with regard to the impact of recent standardization efforts. Our findings prove that current citation practices and recommendations do not match proposed citation standards. We consequently suggest practical first steps towards the implementation of the software citation principles.</p>",
+        "rights": [
+            {
+                "title": {
+                    "en": "Creative Commons Attribution 4.0 International"
+                },
+                "description": {
+                    "en": "The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited."
+                },
+                "props": {
+                    "url": "https://creativecommons.org/licenses/by/4.0/legalcode",
+                    "scheme": "spdx"
+                },
+                "id": "cc-by-4.0"
+            },
+            {
+                "title": {
+                    "en": "Copyright (C) 2019 CERN"
+                }
+            },
+            {
+                "title": {
+                    "en": "Test"
+                },
+                "description": {
+                    "en": "Data and software citations are crucial for the transparency of research results and for the transmission of credit. But they are hard to track, because of the absence of a common citation standard. As a consequence, the FORCE11 recently proposed data and software citation principles as guidance for authors. Zenodo is recognized for the implementation of DOIs for software on a large scale. The minting of complementary DOIs for the version and concept allows measuring the impact of dynamic software. This article investigates characteristics of 5,456 citations to Zenodo data and software that were captured by the Asclepias Broker in January 2019. We analyzed the current state of data and software citation practices and the quality of software citation recommendations with regard to the impact of recent standardization efforts. Our findings prove that current citation practices and recommendations do not match proposed citation standards. We consequently suggest practical first steps towards\n"
+                }
+            }
+        ],
+        "creators": [
+            {
+                "affiliations": [
+                    {
+                        "id": "01ggx4157",
+                        "name": "European Organization for Nuclear Research"
+                    }
+                ],
+                "person_or_org": {
+                    "type": "personal",
+                    "given_name": "Stephanie",
+                    "name": "van de Sandt, Stephanie",
+                    "family_name": "van de Sandt",
+                    "identifiers": [
+                        {
+                            "identifier": "0000-0002-9576-1974",
+                            "scheme": "orcid"
+                        }
+                    ]
+                }
+            },
+            {
+                "affiliations": [
+                    {
+                        "id": "01ggx4157",
+                        "name": "European Organization for Nuclear Research"
+                    }
+                ],
+                "person_or_org": {
+                    "type": "personal",
+                    "given_name": "Lars Holm",
+                    "name": "Nielsen, Lars Holm",
+                    "family_name": "Nielsen",
+                    "identifiers": [
+                        {
+                            "identifier": "0000-0001-8135-3489",
+                            "scheme": "orcid"
+                        }
+                    ]
+                }
+            },
+            {
+                "affiliations": [
+                    {
+                        "id": "01ggx4157",
+                        "name": "European Organization for Nuclear Research"
+                    }
+                ],
+                "person_or_org": {
+                    "type": "personal",
+                    "given_name": "Alexandros",
+                    "name": "Ioannidis, Alexandros",
+                    "family_name": "Ioannidis",
+                    "identifiers": [
+                        {
+                            "identifier": "0000-0002-5082-6404",
+                            "scheme": "orcid"
+                        }
+                    ]
+                }
+            },
+            {
+                "affiliations": [
+                    {
+                        "name": "American Astronomical Society"
+                    }
+                ],
+                "person_or_org": {
+                    "type": "personal",
+                    "given_name": "August",
+                    "name": "Muench, August",
+                    "family_name": "Muench",
+                    "identifiers": [
+                        {
+                            "identifier": "0000-0003-0666-6367",
+                            "scheme": "orcid"
+                        }
+                    ]
+                }
+            },
+            {
+                "affiliations": [
+                    {
+                        "name": "Harvard CfA"
+                    }
+                ],
+                "person_or_org": {
+                    "type": "personal",
+                    "given_name": "Edwin",
+                    "name": "Henneken, Edwin",
+                    "family_name": "Henneken",
+                    "identifiers": [
+                        {
+                            "identifier": "0000-0003-4264-2450",
+                            "scheme": "orcid"
+                        }
+                    ]
+                }
+            },
+            {
+                "affiliations": [
+                    {
+                        "name": "Harvard CfA"
+                    }
+                ],
+                "person_or_org": {
+                    "type": "personal",
+                    "given_name": "Alberto",
+                    "name": "Accomazzi, Alberto",
+                    "family_name": "Accomazzi",
+                    "identifiers": [
+                        {
+                            "identifier": "0000-0002-4110-3511",
+                            "scheme": "orcid"
+                        }
+                    ]
+                }
+            },
+            {
+                "affiliations": [
+                    {
+                        "id": "01ggx4157",
+                        "name": "European Organization for Nuclear Research"
+                    }
+                ],
+                "person_or_org": {
+                    "type": "personal",
+                    "given_name": "Chiara",
+                    "name": "Bigarella, Chiara",
+                    "family_name": "Bigarella"
+                }
+            },
+            {
+                "affiliations": [
+                    {
+                        "id": "01ggx4157",
+                        "name": "European Organization for Nuclear Research"
+                    }
+                ],
+                "person_or_org": {
+                    "type": "personal",
+                    "given_name": "Jose Benito",
+                    "name": "Gonzalez Lopez, Jose Benito",
+                    "family_name": "Gonzalez Lopez",
+                    "identifiers": [
+                        {
+                            "identifier": "0000-0002-0816-7126",
+                            "scheme": "orcid"
+                        }
+                    ]
+                }
+            },
+            {
+                "affiliations": [
+                    {
+                        "id": "01ggx4157",
+                        "name": "European Organization for Nuclear Research"
+                    }
+                ],
+                "person_or_org": {
+                    "type": "personal",
+                    "given_name": "S\u00fcnje",
+                    "name": "Dallmeier-Tiessen, S\u00fcnje",
+                    "family_name": "Dallmeier-Tiessen",
+                    "identifiers": [
+                        {
+                            "identifier": "0000-0002-6137-2348",
+                            "scheme": "orcid"
+                        }
+                    ]
+                }
+            }
+        ],
+        "resource_type": {
+            "id": "publication-preprint",
+            "title": {
+                "en": "Preprint"
+            }
+        },
+        "subjects": [
+            {
+                "subject": "Software citation"
+            },
+            {
+                "subject": "Zenodo"
+            },
+            {
+                "subject": "FAIR principles"
+            },
+            {
+                "subject": "Digital Libraries"
+            }
+        ],
+        "publisher": "arXiv",
+        "publication_date": "2019-11-01",
+        "identifiers": [
+            {
+                "identifier": "arXiv:1911.00295",
+                "scheme": "arxiv"
+            }
+        ],
+        "languages": [
+            {
+                "id": "eng",
+                "title": {
+                    "en": "English"
+                }
+            }
+        ]
+    },
+    "updated": "2021-07-27T05:03:55.396662+00:00"
+}
+###
+[
+    {
+        "file_id": "8f494ae2-42ee-42fa-9757-77d15e0906e0",
+        "size": 301875.0,
+        "checksum": "md5:2c0a8156137877bc84f4962d45e21a45",
+        "key": "1911.00295.pdf",
+        "created": "2021-07-23T13:40:32.675784+00:00",
+        "mimetype": "application/pdf",
+        "storage_class": "S",
+        "version_id": "3df10a1e-718c-480a-8990-39206a26a790",
+        "bucket_id": "fecbe7c9-c751-4ca0-bcfc-7b264f9d207e",
+        "metadata": false,
+        "updated": "2021-07-23T13:40:32.684472+00:00",
+        "status": "completed",
+        "url": "https://inveniordm.web.cern.ch/api/records/gjgvm-4mq98/files/1911.00295.pdf/content",
+        "filename": "1911.00295.pdf",
+        "path": "1911.00295.pdf",
+        "remote": "HTTP",
+        "downloaded": false
+    },
+    {
+        "filename": "metadata.json",
+        "path": "metadata.json",
+        "metadata": true,
+        "downloaded": true,
+        "localpath": "data/gjgvm-4mq98::1/metadata.json",
+        "localsavepath": "base_path/data/gjgvm-4mq98::1",
+        "url": "https://inveniordm.web.cern.ch/api/records/gjgvm-4mq98",
+        "size": 6842
+    }
+]
