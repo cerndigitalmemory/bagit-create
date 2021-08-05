@@ -44,6 +44,9 @@ class InvenioV3Pipeline(base.BasePipeline):
     def get_metadata(self, recid):
         res = requests.get(self.base_endpoint + str(recid), headers=self.headers)
 
+        if res.status_code != 200:
+            raise Exception(f"Metadata request gave HTTP {res.status_code}.")
+        
         self.recid = recid
         self.metadata_url = res.url
         self.metadata = json.loads(res.text)
@@ -106,13 +109,12 @@ class InvenioV3Pipeline(base.BasePipeline):
             )
 
             if res.status_code != 200:
-                logging.error(f"Getting files return status code {res.status_code}")
-                return None
-            else:
-                data = json.loads(res.text)
-                key_list = self.config["files"].split(",")
+                raise Exception(f"File list request gave HTTP {res.status_code}.")
+            
+            data = json.loads(res.text)
+            key_list = self.config["files"].split(",")
 
-                return get_dict_value(data, key_list)
+            return get_dict_value(data, key_list)
         else:
             return get_dict_value(self.metadata, key_list)
 
