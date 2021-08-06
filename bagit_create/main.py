@@ -70,10 +70,10 @@ def process(
         # Parse metadata for files
         files = pipeline.parse_metadata(f"{aic_path}/{metadata_filename}")
 
-        # Create fetch.txt
-        pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
-
-        if dry_run is False:
+        if dry_run is True:
+            # Create fetch.txt
+            pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
+        else:
             # Download files
             pipeline.download_files(files, temp_files_path)
 
