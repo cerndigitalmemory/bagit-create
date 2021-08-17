@@ -38,6 +38,16 @@ def test_api_zenodo_metadata():
 
     # Parsing the metadata to get the list of files
     files = zenodo_pipeline.parse_metadata("")
+
+    # Removing metadata.json file size from filelist
+    for file in zenodo_files:
+        if file["filename"] == "metadata.json":
+            file.pop("size")
+
+    for file in files:
+        if file["filename"] == "metadata.json":
+            file.pop("size")
+
     assert files == zenodo_files
 
 
