@@ -45,9 +45,9 @@ Three pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data) are currently impleme
 | CERN Document Server  | cds          | https://cds.cern.ch/               | Invenio v1.x                |
 | ILC Document Server   | ilcdoc       | http://ilcdoc.linearcollider.org   | Invenio v1.x                |
 | CERN Open Data        | cod          | https://opendata.cern.ch/          | CERN Open Data              |
-| (Generic) Invenio v3  | inv3         |                                    | Invenio v3.x*               |
+| (Generic) Invenio v3  | inv3         |                                    | Invenio v3.x\*              |    
 | Zenodo                | zenodo       | https://zenodo.org/                | Invenio v3.x                |
-| (Generic) InvenioRDM  | invenio-rdm  |                                    | Invenio v3.x*               |
+| (Generic) InvenioRDM  | invenio-rdm  |                                    | Invenio v3.x\*              |
 
 \* requires additional configuration in `invenio.ini`
 
@@ -90,27 +90,27 @@ CLI options:
 
 ```
 Options:
-- --version                       Show the version and exit.
-- --recid TEXT                    Unique ID of the record in the upstream
+--version                       Show the version and exit.
+--recid TEXT                    Unique ID of the record in the upstream
                                   source  [required]
 
-- -s, --source [cds|ilcdoc|cod|zenodo|inveniordm]
+-s, --source [cds|ilcdoc|cod|zenodo|inveniordm]
                                   Select source pipeline  [required]
-- -d, --dry-run                   Skip downloads
-- -a, --alternate-uri             Use alternative uri instead of https for
+-d, --dry-run                   Skip downloads
+-a, --alternate-uri             Use alternative uri instead of https for
                                   fetch.txt (e.g. root endpoints  for CERN
                                   Open Data instead of http)
 
-- -v, --verbose                   Enable logging (verbose, 'info' level)
-- -vv, --very-verbose             Enable logging (very verbose, 'debug' level)
-- -b, --bibdoc                    Get metadata for a CDS record from the
+-v, --verbose                   Enable logging (verbose, 'info' level)
+-vv, --very-verbose             Enable logging (very verbose, 'debug' level)
+-b, --bibdoc                    Get metadata for a CDS record from the
                                   bibdocfile utility.
                                   (`/opt/cdsweb/bin/bibdocfile` must be
                                   available in the system and the resource
                                   must be from CDS). See [bibdocfile](#bibdocfile).
 
-- --bd-ssh-host <HOSTNAME>        SSH host to run bibdocfile. See [bibdocfile](#bibdocfile).
-- --help                          Show this message and exit.
+--bd-ssh-host <HOSTNAME>        SSH host to run bibdocfile. See [bibdocfile](#bibdocfile).
+--help                          Show this message and exit.
 ```
 
 ### Module
