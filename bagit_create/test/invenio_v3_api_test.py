@@ -51,6 +51,7 @@ def test_api_zenodo_metadata():
     assert files == zenodo_files
 
 
+"""
 def test_api_inveniordm_metadata():
     rdm_pipeline = invenio_v3.InvenioV3Pipeline("inveniordm")
 
@@ -81,3 +82,4 @@ def test_api_inveniordm_metadata():
     # Parsing the metadata to get the list of files
     files = rdm_pipeline.parse_metadata("")
     assert files == rdm_files
+"""
