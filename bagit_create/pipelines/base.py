@@ -37,7 +37,7 @@ class BasePipeline:
         baginfo = (
             f"Bag-Software-Agent: bagit-create {__version__} <https://github.com/cerndigitalmemory/bagit-create>\n"
             f"Bagging-Date: {d}\n"
-            f"Payload-Oxum: {size}.{file_count}"
+            f"Payload-Oxum: {size}.{file_count}\n"
         )
         self.write_file(baginfo, dest)
 
@@ -110,7 +110,7 @@ class BasePipeline:
         Creates "bagit.txt", the Bag Declaration file (BagIt specification)
         """
         bagittxt = (
-            f"BagIt-Version: {version}\n" f"Tag-File-Character-Encoding: {encoding}"
+            f"BagIt-Version: {version}\n" f"Tag-File-Character-Encoding: {encoding}\n"
         )
         self.write_file(bagittxt, dest)
         return bagittxt
