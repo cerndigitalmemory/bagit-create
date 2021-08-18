@@ -90,6 +90,8 @@ def process(
         # Create manifest files
         pipeline.create_manifests(files, base_path, temp_files_path)
 
+        pipeline.add_bag_info(base_path, f"{base_path}/bag-info.txt")
+
         # Verify created Bag
         pipeline.verify_bag(base_path)
 
@@ -97,17 +99,17 @@ def process(
 
         logging.info(f"SUCCESS. Final bic-meta wrote in {aic_path}/bic-meta.json")
 
-        return {"status": 0, "errormsg" : None}
+        return {"status": 0, "errormsg": None}
     except FileExistsError as e:
         # Folder exists, gracefully stop.
         logging.error(f"Job failed with error: {e}")
 
-        return {"status": 1, "errormsg" : e}
+        return {"status": 1, "errormsg": e}
     except Exception as e:
         # For any other error, print details and clean up
         #  any folder created
         logging.error(f"Job failed with error: {e}")
         pipeline.delete_folder(temp_files_path)
         pipeline.delete_folder(base_path)
-        
-        return {"status": 1, "errormsg" : e}
+
+        return {"status": 1, "errormsg": e}

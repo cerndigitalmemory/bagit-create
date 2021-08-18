@@ -10,6 +10,8 @@ import bagit
 import shutil
 from itertools import chain
 from zlib import adler32
+from datetime import date
+from pathlib import Path
 
 my_fs = open_fs("/")
 
@@ -17,6 +19,27 @@ my_fs = open_fs("/")
 class BasePipeline:
     def __init__(self) -> None:
         pass
+
+    def add_bag_info(self, path, dest):
+        """
+        The "bag-info.txt" file is a tag file that contains metadata elements
+        describing the bag and the payload.  The metadata elements contained
+        in the "bag-info.txt" file are intended primarily for human use.
+        """
+
+        payload_path = Path(f"{path}/data")
+        today = date.today()
+        d = today.strftime("%Y-%m-%d")
+
+        file_count = sum(len(files) for _, _, files in os.walk(payload_path))
+        size = sum(f.stat().st_size for f in payload_path.glob("**/*") if f.is_file())
+
+        baginfo = (
+            f"Bag-Software-Agent: bagit-create {__version__} <https://github.com/cerndigitalmemory/bagit-create>\n"
+            f"Bagging-Date: {d}\n"
+            f"Payload-Oxum: {size}.{file_count}"
+        )
+        self.write_file(baginfo, dest)
 
     def downloadRemoteFile(self, src, dest):
         r = requests.get(src)
