@@ -2,9 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/bagit-create.svg)](https://pypi.org/project/bagit-create/)
 
-CLI tool to prepare BagIt ([RFC](https://tools.ietf.org/html/rfc8493)) packages harvesting metadata and files from digital repositories powered by Invenio software.
-
-The produced exports are "bags" following the BagIt File Packaging Format [V0.97](https://tools.ietf.org/id/draft-kunze-bagit-09.html). The bag payload (`data/`) is structured to follow the CERN Archival Information Packages (AIP) [specification](https://digital-repositories.web.cern.ch/digital-repositories/dm/oais-platform/cern-aips/).
+Python module and CLI tool to prepare SIPs (according to the [CERN SIP specification](https://gitlab.cern.ch/digitalmemory/sip-spec)), harvesting metadata and files from various souces, such as digital repositories powered by Invenio software.
 
 
 ## Install
@@ -25,13 +23,19 @@ For development, you can clone this repository and then install it with the `-e`
 # Clone the repository
 git clone https://gitlab.cern.ch/digitalmemory/bagit-create
 cd bagit-create
+
+# Create a virtual environment and activate it
+python -m venv env
+source env/bin/activate
+
+# Install the project in editable mode
 pip install -e .
 
 # Check installed version
 bic --version
 
 # Run tests
-pytest
+python -m pytest
 ```
 
 ## Usage
