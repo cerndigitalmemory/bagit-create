@@ -1,4 +1,3 @@
-from posixpath import basename
 import requests
 import json
 import os
@@ -7,7 +6,6 @@ import time
 import re
 import fs
 from fs import open_fs
-from fs.move import move_fs
 from ..version import __version__
 import bagit
 import shutil
