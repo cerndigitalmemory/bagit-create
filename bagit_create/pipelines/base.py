@@ -170,7 +170,7 @@ class BasePipeline:
                 checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
             else:
                 pass
-            line = f'{checksum} {file["localpath"]}\n'
+            line = f"{checksum} TODO \n"
             contents += line
         return contents
 
@@ -215,6 +215,8 @@ class BasePipeline:
         os.mkdir(base_path)
         # Create data/ subfolder (bagit payload)
         os.mkdir(f"{base_path}/data")
+        os.mkdir(f"{base_path}/data/meta")
+        os.mkdir(f"{base_path}/data/content")
 
         # Create temporary folder to download the resource content
         temp_path = f"{path}/temp_{source}_{recid}"
@@ -277,9 +279,7 @@ class BasePipeline:
 
         return files
 
-    def create_bic_meta(
-        self, files, metadata_filename, metadata_url, aic_path, aic_name, base_path
-    ):
+    def create_bic_meta(self, files, metadata_filename, metadata_url, base_path):
         bic_meta = {
             "created_by": f"bagit-create {__version__}",
             "metadataFile_upstream": metadata_url,
@@ -288,7 +288,7 @@ class BasePipeline:
 
         self.write_file(
             json.dumps(bic_meta, indent=4),
-            f"{aic_path}/bic-meta.json",
+            f"{base_path}/data/meta/bic-meta.json",
         )
 
         bic_meta_file_entry = {
@@ -296,8 +296,8 @@ class BasePipeline:
             "path": "bic-meta.json",
             "metadata": False,
             "downloaded": True,
-            "localpath": f"data/{aic_name}/bic-meta.json",
-            "localsavepath": f"{base_path}/data/{aic_name}",
+            "localpath": f"data/meta/bic-meta.json",
+            "localsavepath": f"{base_path}/data/meta",
         }
         files.append(bic_meta_file_entry)
 

@@ -108,8 +108,8 @@ class InvenioV1Pipeline(base.BasePipeline):
             "path": "metadata.xml",
             "metadata": True,
             "downloaded": True,
-            "localpath": f"data/{self.aic_name}/metadata.xml",
-            "localsavepath": f"{self.base_path}/data/{self.aic_name}",
+            "localpath": f"data/meta/metadata.xml",
+            "localsavepath": f"{self.base_path}/data/meta",
             "url": self.metadata_url,
             "size": self.metadata_size,
         }

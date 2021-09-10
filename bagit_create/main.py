@@ -56,39 +56,32 @@ def process(
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
 
-        # Create AIC
-        aic_path, aic_name = pipeline.prepare_AIC(base_path, recid, timestamp)
-
         # Get metadata
         metadata, metadata_url, status_code, metadata_filename = pipeline.get_metadata(
             recid
         )
 
         # Save metadata file in the AIC
-        pipeline.write_file(metadata, f"{aic_path}/{metadata_filename}")
+        pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
 
         # Parse metadata for files
-        files = pipeline.parse_metadata(f"{aic_path}/{metadata_filename}")
+        files = pipeline.parse_metadata(f"{base_path}/data/meta/{metadata_filename}")
 
         if dry_run is True:
             # Create fetch.txt
             pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
         else:
             # Download files
-            pipeline.download_files(files, temp_files_path)
+            pipeline.download_files(files, f"{base_path}/data/content")
 
-        # Copy files to final locations (AIUs)
-        files = pipeline.move_files_to_aius(files, base_path, temp_files_path, recid)
-        # `localpath` gets added here to files
-
-        # Save bic-meta.json in the AIC
+        # Save sip.json
         files = pipeline.create_bic_meta(
-            files, metadata_filename, metadata_url, aic_path, aic_name, base_path
+            files, metadata_filename, metadata_url, base_path
         )
-        # an entry for "bic-meta.json" gets added to files
+        # an entry for "sip.json" gets added to files
 
         # Create manifest files
-        pipeline.create_manifests(files, base_path, temp_files_path)
+        # pipeline.create_manifests(files, base_path, f"{base_path}/data/content")
 
         pipeline.add_bag_info(base_path, f"{base_path}/bag-info.txt")
 
@@ -97,7 +90,7 @@ def process(
 
         pipeline.delete_folder(temp_files_path)
 
-        logging.info(f"SUCCESS. Final bic-meta wrote in {aic_path}/bic-meta.json")
+        logging.info(f"SUCCESS")
 
         return {"status": 0, "errormsg": None}
     except FileExistsError as e:
@@ -105,11 +98,11 @@ def process(
         logging.error(f"Job failed with error: {e}")
 
         return {"status": 1, "errormsg": e}
-    except Exception as e:
+        # except Exception as e:
         # For any other error, print details and clean up
         #  any folder created
-        logging.error(f"Job failed with error: {e}")
-        pipeline.delete_folder(temp_files_path)
-        pipeline.delete_folder(base_path)
+        # logging.error(f"Job failed with error: {e}")
+        # pipeline.delete_folder(temp_files_path)
+        # pipeline.delete_folder(base_path)
 
         return {"status": 1, "errormsg": e}
