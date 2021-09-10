@@ -21,11 +21,13 @@ def process(
     recid,
     source,
     loglevel,
+    target,
     dry_run=False,
     alternate_uri=False,
     bibdoc=False,
     bd_ssh_host=None,
     timestamp=0,
+
 ):
     # Setup logging
     # DEBUG, INFO, WARNING, ERROR logging levels
@@ -51,7 +53,7 @@ def process(
             pipeline = invenio_v3.InvenioV3Pipeline(source)
 
         # Prepare folders
-        base_path, temp_files_path = pipeline.prepare_folders(source, recid)
+        base_path, temp_files_path, name = pipeline.prepare_folders(source, recid)
 
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
@@ -94,6 +96,19 @@ def process(
 
         # Verify created Bag
         pipeline.verify_bag(base_path)
+
+        # move folder to specified path
+        if (target):
+            # Catch an exception so if the move folder fails, the original folder is deleted
+            try:
+                pipeline.move_folders(base_path, name, target)
+                pipeline.delete_folder(base_path)
+            except FileExistsError as e:
+                logging.error(f"Job failed with error: {e}")
+                pipeline.delete_folder(temp_files_path)
+                pipeline.delete_folder(base_path)
+
+                return {"status": 1, "errormsg": e}
 
         pipeline.delete_folder(temp_files_path)
 

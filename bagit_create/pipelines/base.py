@@ -4,6 +4,7 @@ import os
 import logging
 import time
 import re
+import fs
 from fs import open_fs
 from ..version import __version__
 import bagit
@@ -211,6 +212,7 @@ class BasePipeline:
         #  e.g. "bagitexport::cds::42"
         base_name = f"bagitexport{delimiter_str}{source}{delimiter_str}{recid}"
         base_path = f"{path}/{base_name}"
+        name = base_name
 
         os.mkdir(base_path)
         # Create data/ subfolder (bagit payload)
@@ -224,7 +226,7 @@ class BasePipeline:
         self.base_path = base_path
 
         logging.debug(f"Bag folder: {base_name}")
-        return base_path, temp_path
+        return base_path, temp_path, name
 
     def prepare_AIC(self, base_path, recid, timestamp=0, delimiter_str="::"):
         logging.info("Creating AIC..")
@@ -314,3 +316,19 @@ class BasePipeline:
         if valid:
             logging.info(f"Bag successfully validated")
         return valid
+    
+    def move_folders(self, base_path, name, target):
+        logging.info(f"Moving files to {target} ..")
+
+        #Check if destination folder exists
+        if not os.path.isdir(target):
+            os.mkdir(target)
+        
+        #make a new folder at the target folder with the original name
+        new_path = f"{target}/{name}"
+        os.mkdir(new_path)
+
+        #move folder to the target location
+        fs.move.move_fs(base_path, new_path)
+
+
