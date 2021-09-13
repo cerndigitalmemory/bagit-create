@@ -50,6 +50,14 @@ def process(
         elif source == "zenodo" or source == "inveniordm":
             pipeline = invenio_v3.InvenioV3Pipeline(source)
 
+        # Save job details (Audit step 0)
+        audit = [
+            {
+                "tool": f"BagIt Create tool {__version__}",
+                "param": {"recid": recid, "source": source},
+            }
+        ]
+
         # Prepare folders
         base_path, temp_files_path = pipeline.prepare_folders(source, recid)
 
@@ -74,14 +82,14 @@ def process(
             # Download files
             pipeline.download_files(files, f"{base_path}/data/content")
 
-        # Save sip.json
+        # Create sip.json
         files = pipeline.create_bic_meta(
-            files, metadata_filename, metadata_url, base_path
+            files, audit, metadata_filename, metadata_url, base_path
         )
         # an entry for "sip.json" gets added to files
 
         # Create manifest files
-        # pipeline.create_manifests(files, base_path, f"{base_path}/data/content")
+        pipeline.create_manifests(files, base_path, f"{base_path}/data/content")
 
         pipeline.add_bag_info(base_path, f"{base_path}/bag-info.txt")
 

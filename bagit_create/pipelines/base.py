@@ -170,7 +170,7 @@ class BasePipeline:
                 checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
             else:
                 pass
-            line = f"{checksum} TODO \n"
+            line = f"{checksum} {file['filename']}\n"
             contents += line
         return contents
 
@@ -279,24 +279,27 @@ class BasePipeline:
 
         return files
 
-    def create_bic_meta(self, files, metadata_filename, metadata_url, base_path):
+    def create_bic_meta(self, files, audit, metadata_filename, metadata_url, base_path):
         bic_meta = {
             "created_by": f"bagit-create {__version__}",
+            "audit": audit,
+            "source": audit[0]["param"]["source"],
+            "recid": audit[0]["param"]["recid"],
             "metadataFile_upstream": metadata_url,
             "contentFiles": files,
         }
 
         self.write_file(
             json.dumps(bic_meta, indent=4),
-            f"{base_path}/data/meta/bic-meta.json",
+            f"{base_path}/data/meta/sip.json",
         )
 
         bic_meta_file_entry = {
-            "filename": "bic-meta.json",
-            "path": "bic-meta.json",
+            "filename": "sip.json",
+            "path": "sip.json",
             "metadata": False,
             "downloaded": True,
-            "localpath": f"data/meta/bic-meta.json",
+            "localpath": f"data/meta/sip.json",
             "localsavepath": f"{base_path}/data/meta",
         }
         files.append(bic_meta_file_entry)
