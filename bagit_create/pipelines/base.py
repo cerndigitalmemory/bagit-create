@@ -127,7 +127,10 @@ class BasePipeline:
         if alg == "adler32":
             computedhash = self.adler32sum(filename)
         else:
+            print("filename:", filename)
             computedhash = my_fs.hash(filename, alg)
+            
+                
         return computedhash
 
     def generate_manifest(self, files, algorithm, temp_relpath=""):
@@ -168,6 +171,8 @@ class BasePipeline:
             elif file["downloaded"]:
                 logging.debug(f"No checksum available for {file['filename']}")
                 logging.debug(f"Computing {algorithm} of {file['filename']}")
+                print("generate manifest filename",file['filename'])
+                print("generate manifest path",f"{path}/{file['filename']}")
                 checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
             else:
                 pass
@@ -257,7 +262,6 @@ class BasePipeline:
                 files[idx][
                     "localpath"
                 ] = f"data/{recid}{delimiter_str}{filehash}/{file['filename']}"
-
                 my_fs.copy(
                     f"{temp_relpath}/{file['filename']}",
                     f"{base_path}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
@@ -268,7 +272,6 @@ class BasePipeline:
                     m = p.match(file["checksum"])
                     alg = m.groups()[0].lower()
                     matched_checksum = m.groups()[1]
-
                     files[idx][
                         "localpath"
                     ] = f"data/{recid}{delimiter_str}{matched_checksum}/{file['filename']}"

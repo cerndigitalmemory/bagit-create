@@ -94,6 +94,7 @@ class InvenioV1Pipeline(base.BasePipeline):
 
             obj["metadata"] = False
             obj["downloaded"] = False
+            
 
             if obj["filename"]:
                 files.append(obj)
