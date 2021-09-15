@@ -7,6 +7,7 @@ import requests
 import json
 import ntpath
 import os
+import configparser
 
 
 try:
@@ -23,39 +24,17 @@ class IndicoV1Pipeline(base.BasePipeline):
     #get metadata according to indico api guidelines
     def get_metadata(self, search_id):
 
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        #       API Keys must be changed 
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        endpoint = f"https://indico.cern.ch/export/event/{search_id}.json?detail=contributions&occ=yes&pretty=yes"
+        self.config_file = configparser.ConfigParser()
+        self.config_file.read(os.path.join(os.path.dirname(__file__), "indico.ini"))
+        self.config = self.config_file['indico']
+        api_key = self.config["api_key"]
         
-        self.api_key = 'API_KEY'
-        self.secret_key = 'SECRET_KEY'
-        self.path = f"https://indico.cern.ch/export/event/{search_id}.json?detail=contributions&occ=yes&pretty=yes"
-        self.params = {
-            'limit': 123
-        }
-        self.persistent=False
-        self.items = list(self.params.items()) if hasattr(self.params, 'items') else list(self.params)
-        if self.api_key:
-            self.items.append(('apikey', self.api_key))
-        # if only_public:
-        #     items.append(('onlypublic', 'yes'))
-        if self.secret_key:
-            if not self.persistent:
-                self.items.append(('timestamp', str(int(time.time()))))
-            items = sorted(self.items, key=lambda x: x[0].lower())
-            url = '%s?%s' % (self.path, urlencode(items))
-            signature = hmac.new(self.secret_key.encode('utf-8'), url.encode('utf-8'),
-                                hashlib.sha1).hexdigest()
-            items.append(('signature', signature))
-        if not items:
-            return self.path
+        headers = {'Authorization': "Bearer "+ api_key}
 
-        search_link = '%s?%s' % (self.path, urlencode(items))
-        #print(search_link)
         
-        
-        
-        response = requests.get(search_link)
+        response = requests.get(endpoint, headers = headers)
+        print(response.url)
         metadata_filename = "metadata.json"
         return response.content, response.status_code, response.url, metadata_filename
     
