@@ -127,7 +127,6 @@ class BasePipeline:
         if alg == "adler32":
             computedhash = self.adler32sum(filename)
         else:
-            print("filename:", filename)
             computedhash = my_fs.hash(filename, alg)
             
                 
@@ -171,8 +170,7 @@ class BasePipeline:
             elif file["downloaded"]:
                 logging.debug(f"No checksum available for {file['filename']}")
                 logging.debug(f"Computing {algorithm} of {file['filename']}")
-                print("generate manifest filename",file['filename'])
-                print("generate manifest path",f"{path}/{file['filename']}")
+
                 checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
             else:
                 break
@@ -262,10 +260,14 @@ class BasePipeline:
                 files[idx][
                     "localpath"
                 ] = f"data/{recid}{delimiter_str}{filehash}/{file['filename']}"
-                my_fs.copy(
-                    f"{temp_relpath}/{file['filename']}",
-                    f"{base_path}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
-                )
+                try:
+                    my_fs.copy(
+                        f"{temp_relpath}/{file['filename']}",
+                        f"{base_path}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
+                    )
+                except:
+                    logging.warning(f"{temp_relpath}/{file['filename']} already exists")
+
             if file["downloaded"] == False and file["metadata"] == False:
                 if "checksum" in file:
                     p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")

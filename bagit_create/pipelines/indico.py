@@ -27,8 +27,8 @@ class IndicoV1Pipeline(base.BasePipeline):
         #       API Keys must be changed 
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         
-        self.api_key = 'PUT API KEY'
-        self.secret_key = 'PUT SECRET KEY'
+        self.api_key = 'a9e2f652-bc6c-4de3-b892-543a39d71f5e'
+        self.secret_key = '5b804a16-2199-4b06-81fb-195a67601e63'
         self.path = f"https://indico.cern.ch/export/event/{search_id}.json?detail=contributions&occ=yes&pretty=yes"
         self.params = {
             'limit': 123
@@ -51,6 +51,7 @@ class IndicoV1Pipeline(base.BasePipeline):
             return self.path
 
         search_link = '%s?%s' % (self.path, urlencode(items))
+        #print(search_link)
         
         
         
@@ -63,13 +64,11 @@ class IndicoV1Pipeline(base.BasePipeline):
     #Download Remote Folders at cwd
     def download_files(self, files, files_base_path):
         logging.info(f"Downloading {len(files)} files to {files_base_path}..")
-        print(f'{files_base_path}')
-        print("files in download", files)
+
         for sourcefile in files:
             if sourcefile["metadata"] == False:
                 destination = f'{files_base_path}/{sourcefile["filename"]}'
                 src = sourcefile["url"]
-                print(src)   #<--------------------------------------------
                 r = requests.get(src)
                 with open(destination, "wb") as f:
                     f.write(r.content)
@@ -80,8 +79,8 @@ class IndicoV1Pipeline(base.BasePipeline):
     def create_manifests(self, files, base_path, files_base_path):
         algs = ["md5", "sha1"]
         for alg in algs:
-            print("create manifests")
-            print(base_path, files_base_path)
+            # print("create manifests")
+            # print(base_path, files_base_path)
             logging.info(f"Generating manifest {alg}..")
             content = self.generate_manifest(files, alg, files_base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
@@ -90,7 +89,6 @@ class IndicoV1Pipeline(base.BasePipeline):
     def parse_metadata(self, metadataFilename):
         
         #Gets metadata and transforms to JSON
-        print("parse_metadata",metadataFilename)
 
         logging.info("Parsing metadata..")
         files = []
@@ -101,80 +99,12 @@ class IndicoV1Pipeline(base.BasePipeline):
         
         
         for results in metadataFile['results']:
-            for folders in results['folders']:
+            for folders in results['folders'] :
                 #Check for attachments
                 for att in folders['attachments']:
-                    obj = {}
-            
-                    # Unknown size fallback
-                    obj["size"] = 0
+                    obj = self.get_data_from_json(att)
 
-                    #Take useful information
-                    if 'size' in att:
-                        obj['size'] = att['size']
-                    if 'download_url' in att:
-                        obj['url'] = att['download_url']
-                        obj["filename"] = ntpath.basename(obj["url"])
-                        #print(ntpath.basename(obj["download_url"]))
-                        obj["path"] = obj["filename"]
-                    if 'title' in att:
-                        obj['title'] = att['title']
-                    if 'content_type' in att:
-                        obj['content_type'] = att['content_type']
-                    if 'link_url' in att:
-                        continue
-                        #obj['url'] = att['link_url']
-
-                    
-                    obj["metadata"] = False
-                    obj["downloaded"] = False
-                    obj["localpath"] = f"data/{self.aic_name}/metadata.json"
-                    #obj["localsavepath"] = f"{self.base_path}/data/{self.aic_name}"
-
-                    #if there is a filename append to the folder
-                    if obj["filename"]:
-                        files.append(obj)
-                    else:
-                        logging.warning(
-                            f'Skipped entry. No basename found (probably an URL?)'
-                        )
-            for contributions in results['contributions']:
-                for folders in contributions['folders']:
-                    for att in folders['attachments']:
-                        obj = {}
-
-                        '''
-                        
-                        SHOULD DO!
-
-                        Merge the functions above and below into one
-
-
-                        '''
-                        obj["size"] = 0
-                        if 'size' in att:
-                            obj['size'] = att['size']
-                        if 'download_url' in att:
-                            obj['url'] = att['download_url']
-                            obj["filename"] = ntpath.basename(obj["url"]) 
-                            #print(ntpath.basename(obj["download_url"]))
-                            obj["path"] = obj["filename"]
-                        if 'title' in att:
-                            obj['title'] = att['title']
-                        if 'content_type' in att:
-                            obj['content_type'] = att['content_type']
-                        if 'link_url' in att:
-                            continue
-                            #obj['url'] = att['link_url']
-                            #obj["filename"] = att['link_url'].rsplit('/', 2)[2]+".html"
-                            #obj["path"] = obj["filename"]
-                            
-
-                        obj["metadata"] = False
-                        obj["downloaded"] = False
-                        obj["localpath"] = f"data/{self.aic_name}/metadata.json"
-                        #obj["localsavepath"] = f"{self.base_path}/data/{self.aic_name}"
-
+                    if obj is not None:
                         if obj["filename"]:
                             files.append(obj)
                         else:
@@ -182,9 +112,28 @@ class IndicoV1Pipeline(base.BasePipeline):
                                 f'Skipped entry. No basename found (probably an URL?)'
                             )
 
+            for contributions in results['contributions']:
+                for folders in contributions['folders']:
+                    for att in folders['attachments']:
+                        obj = self.get_data_from_json(att)
+                        
+                        if obj is not None:
+                            if obj["filename"]:
+                                files.append(obj)
+                            else:
+                                logging.warning(
+                                    f'Skipped entry. No basename found (probably an URL?)'
+                                )
+        
+                
+
+
             # add extra metadata
             obj = {}
             
+            if 'title' in results['title']:
+                obj['title'] = results['title']
+
             if 'startDate' in results:
                 obj['startDate'] = results['startDate']
                 
@@ -196,6 +145,10 @@ class IndicoV1Pipeline(base.BasePipeline):
                 
             if 'location' in results['location']:
                 obj['location'] = results['location']
+            
+
+                
+            
                 
             obj["metadata"] = True #is metadata no files
             obj["downloaded"] = False
@@ -205,6 +158,39 @@ class IndicoV1Pipeline(base.BasePipeline):
                 
             files.append(obj)
         return files
+
+    
+    def get_data_from_json(self, att):
+        obj = {}
+
+        obj["size"] = 0
+
+        if 'link_url' in att:
+            return None
+        if 'size' in att:
+            obj['size'] = att['size']
+        if 'download_url' in att:
+            obj['url'] = att['download_url']
+            obj["filename"] = ntpath.basename(obj["url"]) 
+            obj["path"] = obj["filename"]
+        if 'title' in att:
+            obj['title'] = att['title']
+        if 'content_type' in att:
+            obj['content_type'] = att['content_type']
+
+            #obj['url'] = att['link_url']
+            #obj["filename"] = att['link_url'].rsplit('/', 2)[2]+".html"
+            #obj["path"] = obj["filename"]
+            
+
+        obj["metadata"] = False
+        obj["downloaded"] = False
+        obj["localpath"] = f"data/{self.aic_name}/metadata.json"
+        #obj["localsavepath"] = f"{self.base_path}/data/{self.aic_name}"
+        
+        return obj
+
+        
 
             
 
