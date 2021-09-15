@@ -129,7 +129,7 @@ class BasePipeline:
             computedhash = my_fs.hash(filename, alg)
         return computedhash
 
-    def generate_manifest(self, files, algorithm, temp_relpath=""):
+    def generate_manifest(self, files, algorithm, basepath):
         """
         Given an array of File objects (with `filename` and optionally `checksum`
         key), generate a manifest (BagIt specification) file listing every file
@@ -145,10 +145,8 @@ class BasePipeline:
         """
         contents = ""
         for file in files:
-            if "localsavepath" in file:
-                path = file["localsavepath"]
-            else:
-                path = temp_relpath
+
+            path = f"{basepath}/{file['localpath']}"
             if "checksum" in file:
                 p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
                 m = p.match(file["checksum"])
@@ -167,10 +165,10 @@ class BasePipeline:
             elif file["downloaded"]:
                 logging.debug(f"No checksum available for {file['filename']}")
                 logging.debug(f"Computing {algorithm} of {file['filename']}")
-                checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
+                checksum = self.compute_hash(f"{path}", algorithm)
             else:
                 pass
-            line = f"{checksum} {file['filename']}\n"
+            line = f"{checksum} {file['localpath']}\n"
             contents += line
         return contents
 

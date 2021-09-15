@@ -37,7 +37,9 @@ def process(
 
     if dry_run:
         logging.warning(
-            f"This will be a DRY RUN. A 'light' bag will be created, not downloading or moving any payload file, but checksums *must* be available from the metadata, or no valid CERN AIP will be created."
+            f"This will be a DRY RUN. A 'light' bag will be created, not downloading \
+            or moving any payload file, but checksums *must* be available from the \
+            metadata, or no valid CERN AIP will be created."
         )
     try:
         # Initialize the pipeline
@@ -69,7 +71,7 @@ def process(
             recid
         )
 
-        # Save metadata file in the AIC
+        # Save metadata file in the meta folder
         pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
 
         # Parse metadata for files
@@ -89,7 +91,7 @@ def process(
         # an entry for "sip.json" gets added to files
 
         # Create manifest files
-        pipeline.create_manifests(files, base_path, f"{base_path}/data/content")
+        pipeline.create_manifests(files, base_path)
 
         pipeline.add_bag_info(base_path, f"{base_path}/bag-info.txt")
 
@@ -98,7 +100,7 @@ def process(
 
         pipeline.delete_folder(temp_files_path)
 
-        logging.info(f"SUCCESS")
+        logging.info("SUCCESS")
 
         return {"status": 0, "errormsg": None}
     except FileExistsError as e:
@@ -106,11 +108,11 @@ def process(
         logging.error(f"Job failed with error: {e}")
 
         return {"status": 1, "errormsg": e}
-        # except Exception as e:
+    except Exception as e:
         # For any other error, print details and clean up
         #  any folder created
-        # logging.error(f"Job failed with error: {e}")
-        # pipeline.delete_folder(temp_files_path)
-        # pipeline.delete_folder(base_path)
+        logging.error(f"Job failed with error: {e}")
+        pipeline.delete_folder(temp_files_path)
+        pipeline.delete_folder(base_path)
 
         return {"status": 1, "errormsg": e}
