@@ -130,7 +130,7 @@ class BasePipeline:
             computedhash = my_fs.hash(filename, alg)
         return computedhash
 
-    def generate_manifest(self, files, algorithm, temp_relpath=""):
+    def generate_manifest(self, files, algorithm, basepath):
         """
         Given an array of File objects (with `filename` and optionally `checksum`
         key), generate a manifest (BagIt specification) file listing every file
@@ -146,10 +146,8 @@ class BasePipeline:
         """
         contents = ""
         for file in files:
-            if "localsavepath" in file:
-                path = file["localsavepath"]
-            else:
-                path = temp_relpath
+
+            path = f"{basepath}/{file['localpath']}"
             if "checksum" in file:
                 p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
                 m = p.match(file["checksum"])
@@ -168,10 +166,10 @@ class BasePipeline:
             elif file["downloaded"]:
                 logging.debug(f"No checksum available for {file['filename']}")
                 logging.debug(f"Computing {algorithm} of {file['filename']}")
-                checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
+                checksum = self.compute_hash(f"{path}", algorithm)
             else:
                 pass
-            line = f'{checksum} {file["localpath"]}\n'
+            line = f"{checksum} {file['localpath']}\n"
             contents += line
         return contents
 
@@ -217,6 +215,8 @@ class BasePipeline:
         os.mkdir(base_path)
         # Create data/ subfolder (bagit payload)
         os.mkdir(f"{base_path}/data")
+        os.mkdir(f"{base_path}/data/meta")
+        os.mkdir(f"{base_path}/data/content")
 
         # Create temporary folder to download the resource content
         temp_path = f"{path}/temp_{source}_{recid}"
@@ -279,27 +279,28 @@ class BasePipeline:
 
         return files
 
-    def create_bic_meta(
-        self, files, metadata_filename, metadata_url, aic_path, aic_name, base_path
-    ):
+    def create_bic_meta(self, files, audit, metadata_filename, metadata_url, base_path):
         bic_meta = {
             "created_by": f"bagit-create {__version__}",
+            "audit": audit,
+            "source": audit[0]["param"]["source"],
+            "recid": audit[0]["param"]["recid"],
             "metadataFile_upstream": metadata_url,
             "contentFiles": files,
         }
 
         self.write_file(
             json.dumps(bic_meta, indent=4),
-            f"{aic_path}/bic-meta.json",
+            f"{base_path}/data/meta/sip.json",
         )
 
         bic_meta_file_entry = {
-            "filename": "bic-meta.json",
-            "path": "bic-meta.json",
+            "filename": "sip.json",
+            "path": "sip.json",
             "metadata": False,
             "downloaded": True,
-            "localpath": f"data/{aic_name}/bic-meta.json",
-            "localsavepath": f"{base_path}/data/{aic_name}",
+            "localpath": f"data/meta/sip.json",
+            "localsavepath": f"{base_path}/data/meta",
         }
         files.append(bic_meta_file_entry)
 
