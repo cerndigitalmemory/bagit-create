@@ -175,7 +175,7 @@ class BasePipeline:
                 print("generate manifest path",f"{path}/{file['filename']}")
                 checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
             else:
-                pass
+                break
             line = f'{checksum} {file["localpath"]}\n'
             contents += line
         return contents
