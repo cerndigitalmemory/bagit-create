@@ -27,8 +27,8 @@ class IndicoV1Pipeline(base.BasePipeline):
         #       API Keys must be changed 
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         
-        self.api_key = 'a9e2f652-bc6c-4de3-b892-543a39d71f5e'
-        self.secret_key = '5b804a16-2199-4b06-81fb-195a67601e63'
+        self.api_key = 'API_KEY'
+        self.secret_key = 'SECRET_KEY'
         self.path = f"https://indico.cern.ch/export/event/{search_id}.json?detail=contributions&occ=yes&pretty=yes"
         self.params = {
             'limit': 123
