@@ -90,7 +90,9 @@ class InvenioV1Pipeline(base.BasePipeline):
             # Get basename
             if obj["url"]:
                 obj["filename"] = ntpath.basename(obj["url"])
+                # We suppose no folder structure
                 obj["path"] = obj["filename"]
+                obj["localpath"] = f"data/content/{obj['path']}"
 
             obj["metadata"] = False
             obj["downloaded"] = False
@@ -108,8 +110,7 @@ class InvenioV1Pipeline(base.BasePipeline):
             "path": "metadata.xml",
             "metadata": True,
             "downloaded": True,
-            "localpath": f"data/{self.aic_name}/metadata.xml",
-            "localsavepath": f"{self.base_path}/data/{self.aic_name}",
+            "localpath": "data/meta/metadata.xml",
             "url": self.metadata_url,
             "size": self.metadata_size,
         }
@@ -117,11 +118,11 @@ class InvenioV1Pipeline(base.BasePipeline):
 
         return files
 
-    def create_manifests(self, files, base_path, files_base_path):
+    def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
         for alg in algs:
             logging.info(f"Generating manifest {alg}..")
-            content = self.generate_manifest(files, alg, files_base_path)
+            content = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
 
     def download_files(self, files, files_base_path):

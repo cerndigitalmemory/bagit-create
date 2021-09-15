@@ -39,7 +39,9 @@ def process(
 
     if dry_run:
         logging.warning(
-            f"This will be a DRY RUN. A 'light' bag will be created, not downloading or moving any payload file, but checksums *must* be available from the metadata, or no valid CERN AIP will be created."
+            f"This will be a DRY RUN. A 'light' bag will be created, not downloading \
+            or moving any payload file, but checksums *must* be available from the \
+            metadata, or no valid CERN AIP will be created."
         )
     try:
         # Initialize the pipeline
@@ -52,45 +54,46 @@ def process(
         elif source == "zenodo" or source == "inveniordm":
             pipeline = invenio_v3.InvenioV3Pipeline(source)
 
+        # Save job details (Audit step 0)
+        audit = [
+            {
+                "tool": f"BagIt Create tool {__version__}",
+                "param": {"recid": recid, "source": source},
+            }
+        ]
+
         # Prepare folders
         base_path, temp_files_path, name = pipeline.prepare_folders(source, recid)
 
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
 
-        # Create AIC
-        aic_path, aic_name = pipeline.prepare_AIC(base_path, recid, timestamp)
-
         # Get metadata
         metadata, metadata_url, status_code, metadata_filename = pipeline.get_metadata(
             recid
         )
 
-        # Save metadata file in the AIC
-        pipeline.write_file(metadata, f"{aic_path}/{metadata_filename}")
+        # Save metadata file in the meta folder
+        pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
 
         # Parse metadata for files
-        files = pipeline.parse_metadata(f"{aic_path}/{metadata_filename}")
+        files = pipeline.parse_metadata(f"{base_path}/data/meta/{metadata_filename}")
 
         if dry_run is True:
             # Create fetch.txt
             pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
         else:
             # Download files
-            pipeline.download_files(files, temp_files_path)
+            pipeline.download_files(files, f"{base_path}/data/content")
 
-        # Copy files to final locations (AIUs)
-        files = pipeline.move_files_to_aius(files, base_path, temp_files_path, recid)
-        # `localpath` gets added here to files
-
-        # Save bic-meta.json in the AIC
+        # Create sip.json
         files = pipeline.create_bic_meta(
-            files, metadata_filename, metadata_url, aic_path, aic_name, base_path
+            files, audit, metadata_filename, metadata_url, base_path
         )
-        # an entry for "bic-meta.json" gets added to files
+        # an entry for "sip.json" gets added to files
 
         # Create manifest files
-        pipeline.create_manifests(files, base_path, temp_files_path)
+        pipeline.create_manifests(files, base_path)
 
         pipeline.add_bag_info(base_path, f"{base_path}/bag-info.txt")
 
@@ -112,7 +115,7 @@ def process(
 
         pipeline.delete_folder(temp_files_path)
 
-        logging.info(f"SUCCESS. Final bic-meta wrote in {aic_path}/bic-meta.json")
+        logging.info("SUCCESS")
 
         return {"status": 0, "errormsg": None}
     except FileExistsError as e:
