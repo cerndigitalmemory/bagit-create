@@ -9,14 +9,6 @@ from .version import __version__
 
 my_fs = open_fs(".")
 
-try:
-    commit_hash = subprocess.check_output(
-        ["git", "rev-parse", "--short", "HEAD"]
-    ).decode("utf-8")
-except:
-    commit_hash = ""
-
-
 def process(
     recid,
     source,
@@ -33,7 +25,7 @@ def process(
     # DEBUG, INFO, WARNING, ERROR logging levels
     loglevels = [10, 20, 30, 40]
     logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
-    logging.info(f"BagIt Create tool {__version__} {commit_hash}")
+    logging.info(f"BagIt Create tool {__version__}")
     logging.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     logging.debug(f"Set log level: {loglevels[loglevel]}")
 
