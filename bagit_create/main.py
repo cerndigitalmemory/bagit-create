@@ -3,7 +3,6 @@ from .pipelines import invenio_v3
 from .pipelines import opendata
 
 import logging
-import subprocess
 from fs import open_fs
 from .version import __version__
 
@@ -31,7 +30,7 @@ def process(
 
     if dry_run:
         logging.warning(
-            f"This will be a DRY RUN. A 'light' bag will be created, not downloading \
+            "This will be a DRY RUN. A 'light' bag will be created, not downloading \
             or moving any payload file, but checksums *must* be available from the \
             metadata, or no valid CERN AIP will be created."
         )

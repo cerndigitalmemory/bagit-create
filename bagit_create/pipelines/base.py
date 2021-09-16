@@ -307,7 +307,7 @@ class BasePipeline:
         return files
 
     def verify_bag(self, path):
-        logging.info(f"Validating created Bag {path} ..")
+        logging.info(f"\n--\nValidating created Bag {path} ..")
         bag = bagit.Bag(path)
         valid = False
         try:
@@ -316,20 +316,19 @@ class BasePipeline:
             print(f"Bag validation failed: {err}")
         if valid:
             logging.info(f"Bag successfully validated")
+        logging.info("--\n")
         return valid
-    
+
     def move_folders(self, base_path, name, target):
         logging.info(f"Moving files to {target} ..")
 
-        #Check if destination folder exists
+        # Check if destination folder exists
         if not os.path.isdir(target):
             os.mkdir(target)
-        
-        #make a new folder at the target folder with the original name
+
+        # make a new folder at the target folder with the original name
         new_path = f"{target}/{name}"
         os.mkdir(new_path)
 
-        #move folder to the target location
+        # move folder to the target location
         fs.move.move_fs(base_path, new_path)
-
-
