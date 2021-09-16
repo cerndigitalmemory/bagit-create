@@ -9,6 +9,7 @@ from .version import __version__
 
 my_fs = open_fs(".")
 
+
 def process(
     recid,
     source,
@@ -19,7 +20,6 @@ def process(
     bibdoc=False,
     bd_ssh_host=None,
     timestamp=0,
-
 ):
     # Setup logging
     # DEBUG, INFO, WARNING, ERROR logging levels
@@ -92,9 +92,6 @@ def process(
         # Verify created Bag
         pipeline.verify_bag(base_path)
 
-        # move folder to specified path
-        if (target):
-            # Catch an exception so if the move folder fails, the original folder is deleted
         # If a target folder is specified, move the created Bag there
         if target:
             # If the move fails, the original folder is deleted
