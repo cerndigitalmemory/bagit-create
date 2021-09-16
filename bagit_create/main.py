@@ -9,14 +9,6 @@ from .version import __version__
 
 my_fs = open_fs(".")
 
-try:
-    commit_hash = subprocess.check_output(
-        ["git", "rev-parse", "--short", "HEAD"]
-    ).decode("utf-8")
-except subprocess.CalledProcessError:
-    commit_hash = ""
-
-
 def process(
     recid,
     source,
@@ -27,18 +19,19 @@ def process(
     bibdoc=False,
     bd_ssh_host=None,
     timestamp=0,
+
 ):
     # Setup logging
     # DEBUG, INFO, WARNING, ERROR logging levels
     loglevels = [10, 20, 30, 40]
     logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
-    logging.info(f"BagIt Create tool {__version__} {commit_hash}")
+    logging.info(f"BagIt Create tool {__version__}")
     logging.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     logging.debug(f"Set log level: {loglevels[loglevel]}")
 
     if dry_run:
         logging.warning(
-            "This will be a DRY RUN. A 'light' bag will be created, not downloading \
+            f"This will be a DRY RUN. A 'light' bag will be created, not downloading \
             or moving any payload file, but checksums *must* be available from the \
             metadata, or no valid CERN AIP will be created."
         )
@@ -99,6 +92,9 @@ def process(
         # Verify created Bag
         pipeline.verify_bag(base_path)
 
+        # move folder to specified path
+        if (target):
+            # Catch an exception so if the move folder fails, the original folder is deleted
         # If a target folder is specified, move the created Bag there
         if target:
             # If the move fails, the original folder is deleted
