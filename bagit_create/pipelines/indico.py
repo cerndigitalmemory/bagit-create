@@ -55,13 +55,13 @@ class IndicoV1Pipeline(base.BasePipeline):
         #return True
 
 
-    def create_manifests(self, files, base_path, files_base_path):
+    def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
         for alg in algs:
             # print("create manifests")
             # print(base_path, files_base_path)
             logging.info(f"Generating manifest {alg}..")
-            content = self.generate_manifest(files, alg, files_base_path)
+            content = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
 
 
@@ -131,7 +131,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                 
             obj["metadata"] = True #is metadata no files
             obj["downloaded"] = False
-            obj["localpath"] = f"data/{self.aic_name}/metadata.json"
+            obj["localpath"] = f"data/meta/metadata.json"
             #obj["localsavepath"] = f"{self.base_path}/data/{self.aic_name}"
                 
                 
@@ -151,9 +151,11 @@ class IndicoV1Pipeline(base.BasePipeline):
         if 'download_url' in att:
             obj['url'] = att['download_url']
             obj["filename"] = ntpath.basename(obj["url"]) 
+            self.filename1 = ntpath.basename(obj["url"]) 
             obj["path"] = obj["filename"]
         if 'title' in att:
             obj['title'] = att['title']
+            
         if 'content_type' in att:
             obj['content_type'] = att['content_type']
 
@@ -164,7 +166,7 @@ class IndicoV1Pipeline(base.BasePipeline):
 
         obj["metadata"] = False
         obj["downloaded"] = False
-        obj["localpath"] = f"data/{self.aic_name}/metadata.json"
+        obj["localpath"] = f"data/content/{self.filename1}"
         #obj["localsavepath"] = f"{self.base_path}/data/{self.aic_name}"
         
         return obj

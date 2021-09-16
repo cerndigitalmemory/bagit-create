@@ -2,20 +2,16 @@ from .pipelines import invenio_v1
 from .pipelines import invenio_v3
 from .pipelines import opendata
 from .pipelines import indico
+#from .pipelines import local
 
 import logging
 import subprocess
+import checksumdir
+import os
 from fs import open_fs
 from .version import __version__
 
 my_fs = open_fs(".")
-
-try:
-    commit_hash = subprocess.check_output(
-        ["git", "rev-parse", "--short", "HEAD"]
-    ).decode("utf-8")
-except subprocess.CalledProcessError:
-    commit_hash = ""
 
 
 def process(
@@ -23,24 +19,26 @@ def process(
     source,
     loglevel,
     target,
+    #localsource,
     dry_run=False,
     alternate_uri=False,
     bibdoc=False,
     bd_ssh_host=None,
     timestamp=0,
-
 ):
     # Setup logging
     # DEBUG, INFO, WARNING, ERROR logging levels
     loglevels = [10, 20, 30, 40]
     logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
-    logging.info(f"BagIt Create tool {__version__} {commit_hash}")
+    logging.info(f"BagIt Create tool {__version__}")
     logging.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     logging.debug(f"Set log level: {loglevels[loglevel]}")
 
     if dry_run:
         logging.warning(
-            f"This will be a DRY RUN. A 'light' bag will be created, not downloading or moving any payload file, but checksums *must* be available from the metadata, or no valid CERN AIP will be created."
+            f"This will be a DRY RUN. A 'light' bag will be created, not downloading \
+            or moving any payload file, but checksums *must* be available from the \
+            metadata, or no valid CERN AIP will be created."
         )
     try:
         # Initialize the pipeline
@@ -54,6 +52,24 @@ def process(
             pipeline = invenio_v3.InvenioV3Pipeline(source)
         elif source == "indico":
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/")
+        # elif source == "local":
+        #     if os.path.exists(localsource):
+        #         pipeline = local.LocalV1Pipeline(localsource)
+        #         recid = checksumdir.dirhash(localsource)
+        #         print(recid)
+        #     else:
+        #         logging.error(f"Source folder error: {e}")
+        #         return {"status": 1, "errormsg": e}
+
+
+
+        # Save job details (Audit step 0)
+        audit = [
+            {
+                "tool": f"BagIt Create tool {__version__}",
+                "param": {"recid": recid, "source": source},
+            }
+        ]
 
         # Prepare folders
         base_path, temp_files_path, name = pipeline.prepare_folders(source, recid)
@@ -61,46 +77,46 @@ def process(
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
 
-        # Create AIC
-        aic_path, aic_name = pipeline.prepare_AIC(base_path, recid, timestamp)
-        
-        # Get metadata
-        metadata, metadata_url, status_code, metadata_filename = pipeline.get_metadata(recid)
+        if source == "local":
+            # metadata, metadata_filename = generate_metadata(localsource)
 
-        # Save metadata file in the AIC
-        pipeline.write_file(metadata, f"{aic_path}/{metadata_filename}")
+            # pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
+            pass
 
-        # Parse metadata for files
-        files = pipeline.parse_metadata(f"{aic_path}/{metadata_filename}")
-
-        if dry_run is True:
-            # Create fetch.txt
-            pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
         else:
-            # Download files
-            pipeline.download_files(files, temp_files_path)
+        # Get metadata
+            metadata, metadata_url, status_code, metadata_filename = pipeline.get_metadata(recid)
 
-        # Copy files to final locations (AIUs)
-        files = pipeline.move_files_to_aius(files, base_path, temp_files_path, recid)
-        # `localpath` gets added here to files
+            # Save metadata file in the meta folder
+            pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
 
-        # Save bic-meta.json in the AIC
+            # Parse metadata for files
+            files = pipeline.parse_metadata(f"{base_path}/data/meta/{metadata_filename}")
+
+            if dry_run is True:
+                # Create fetch.txt
+                pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
+            else:
+                # Download files
+                pipeline.download_files(files, f"{base_path}/data/content")
+
+        # Create sip.json
         files = pipeline.create_bic_meta(
-            files, metadata_filename, metadata_url, aic_path, aic_name, base_path
+            files, audit, metadata_filename, metadata_url, base_path
         )
-        # an entry for "bic-meta.json" gets added to files
+        # an entry for "sip.json" gets added to files
 
         # Create manifest files
-        pipeline.create_manifests(files, base_path, temp_files_path)
+        pipeline.create_manifests(files, base_path)
 
         pipeline.add_bag_info(base_path, f"{base_path}/bag-info.txt")
 
         # Verify created Bag
         pipeline.verify_bag(base_path)
 
-        # move folder to specified path
-        if (target):
-            # Catch an exception so if the move folder fails, the original folder is deleted
+        # If a target folder is specified, move the created Bag there
+        if target:
+            # If the move fails, the original folder is deleted
             try:
                 pipeline.move_folders(base_path, name, target)
                 pipeline.delete_folder(base_path)
@@ -113,17 +129,19 @@ def process(
 
         pipeline.delete_folder(temp_files_path)
 
-        logging.info(f"SUCCESS. Final bic-meta wrote in {aic_path}/bic-meta.json")
+        logging.info("SIP successfully created")
 
         return {"status": 0, "errormsg": None}
+
+    # Folder exists, gracefully stop
     except FileExistsError as e:
-        # Folder exists, gracefully stop.
+
         logging.error(f"Job failed with error: {e}")
 
         return {"status": 1, "errormsg": e}
+    # For any other error, print details about what happened and clean up
+    #  any created file and folder
     except Exception as e:
-        # For any other error, print details and clean up
-        #  any folder created
         logging.error(f"Job failed with error: {e}")
         pipeline.delete_folder(temp_files_path)
         pipeline.delete_folder(base_path)
