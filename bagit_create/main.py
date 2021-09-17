@@ -3,7 +3,6 @@ from .pipelines import invenio_v3
 from .pipelines import opendata
 from .pipelines import indico
 
-# from .pipelines import local
 
 import logging
 from fs import open_fs

@@ -116,7 +116,7 @@ class IndicoV1Pipeline(base.BasePipeline):
             obj["metadata"] = True  # is metadata no files
             obj["downloaded"] = False
             obj["localpath"] = f"data/meta/metadata.json"
-            # obj["localsavepath"] = f"{self.base_path}/data/{self.aic_name}"
+
 
             files.append(obj)
         return files
@@ -141,13 +141,10 @@ class IndicoV1Pipeline(base.BasePipeline):
         if "content_type" in att:
             obj["content_type"] = att["content_type"]
 
-            # obj['url'] = att['link_url']
-            # obj["filename"] = att['link_url'].rsplit('/', 2)[2]+".html"
-            # obj["path"] = obj["filename"]
 
         obj["metadata"] = False
         obj["downloaded"] = False
         obj["localpath"] = f"data/content/{self.filename1}"
-        # obj["localsavepath"] = f"{self.base_path}/data/{self.aic_name}"
+
 
         return obj
