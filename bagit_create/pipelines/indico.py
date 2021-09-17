@@ -30,9 +30,16 @@ class IndicoV1Pipeline(base.BasePipeline):
         headers = {"Authorization": "Bearer " + api_key}
 
         response = requests.get(endpoint, headers=headers)
-        print(response.url)
-        metadata_filename = "metadata.json"
-        return response.content, response.status_code, response.url, metadata_filename
+
+        if (response.status_code == 200):
+            if(response.json()["count"] == 1):
+                metadata_filename = "metadata.json"
+                return response.content, response.status_code, response.url, metadata_filename
+            else:
+                raise Exception("Wrong recid. This url is not valid.")
+        else:
+            raise Exception("Authentication error.")
+
 
     # Download Remote Folders at cwd
     def download_files(self, files, files_base_path):
@@ -46,7 +53,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                 with open(destination, "wb") as f:
                     f.write(r.content)
                 sourcefile["downloaded"] = True
-        # return True
+
 
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
