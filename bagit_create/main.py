@@ -2,7 +2,8 @@ from .pipelines import invenio_v1
 from .pipelines import invenio_v3
 from .pipelines import opendata
 from .pipelines import indico
-#from .pipelines import local
+
+# from .pipelines import local
 
 import logging
 from fs import open_fs
@@ -49,7 +50,6 @@ def process(
         elif source == "indico":
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/")
 
-
         # Save job details (Audit step 0)
         audit = [
             {
@@ -58,7 +58,6 @@ def process(
             }
         ]
 
-
         # Prepare folders
         base_path, temp_files_path, name = pipeline.prepare_folders(source, recid)
 
@@ -66,7 +65,9 @@ def process(
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
 
         # Get metadata
-        metadata, metadata_url, status_code, metadata_filename = pipeline.get_metadata(recid)
+        metadata, metadata_url, status_code, metadata_filename = pipeline.get_metadata(
+            recid
+        )
 
         # Save metadata file in the meta folder
         pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
