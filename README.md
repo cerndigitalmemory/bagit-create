@@ -2,8 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/bagit-create.svg)](https://pypi.org/project/bagit-create/)
 
-Python module and CLI tool to prepare SIPs (according to the [CERN SIP specification](https://gitlab.cern.ch/digitalmemory/sip-spec)), harvesting metadata and files from various souces, such as digital repositories powered by Invenio software.
-
+Python module and CLI tool to prepare SIPs (according to the [CERN SIP specification](https://gitlab.cern.ch/digitalmemory/sip-spec)), harvesting metadata and files from various souces, such as digital repositories powered by Invenio software, Invenio, CERN Open Data,..
 
 ## Install
 
@@ -42,7 +41,7 @@ python -m pytest
 
 ### Supported sources
 
-Three pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data) are currently implemented, supporting the following digital repositories:
+Four pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data, Indico) are currently implemented, supporting the following digital repositories:
 
 | Name                  | ID           | URL                                | Pipeline                    |
 |---------------------- |--------------|------------------------------------|-----------------------------|
@@ -52,8 +51,10 @@ Three pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data) are currently impleme
 | (Generic) Invenio v3  | inv3         |                                    | Invenio v3.x\*              |    
 | Zenodo                | zenodo       | https://zenodo.org/                | Invenio v3.x                |
 | (Generic) InvenioRDM  | invenio-rdm  |                                    | Invenio v3.x\*              |
+| CERN Indico           | indico       | https://indico.cern.ch/            | Invenio v3.0.x\*            |
 
-\* requires additional configuration in `invenio.ini`
+
+\* requires additional configuration (See .ini files in pipelines/)
 
 ### CLI
 
@@ -97,29 +98,32 @@ bic --recid 1024767 --source indico
 CLI options:
 
 ```
+Usage: bic [OPTIONS]
+
 Options:
---version                       Show the version and exit.
---recid TEXT                    Unique ID of the record in the upstream
+  --version                       Show the version and exit.
+  --recid TEXT                    Unique ID of the record in the upstream
                                   source  [required]
 
--s, --source [cds|ilcdoc|cod|zenodo|inveniordm|indico]
+  -s, --source [cds|ilcdoc|cod|zenodo|inveniordm|indico]
                                   Select source pipeline  [required]
--d, --dry-run                   Skip downloads
--a, --alternate-uri             Use alternative uri instead of https for
+  -d, --dry-run                   Skip downloads
+  -a, --alternate-uri             Use alternative uri instead of https for
                                   fetch.txt (e.g. root endpoints  for CERN
                                   Open Data instead of http)
 
--v, --verbose                   Enable logging (verbose, 'info' level)
--vv, --very-verbose             Enable logging (very verbose, 'debug' level)
--b, --bibdoc                    Get metadata for a CDS record from the
+  -v, --verbose                   Enable logging (verbose, 'info' level)
+  -vv, --very-verbose             Enable logging (very verbose, 'debug' level)
+  -b, --bibdoc                    Get metadata for a CDS record from the
                                   bibdocfile utility.
                                   (`/opt/cdsweb/bin/bibdocfile` must be
                                   available in the system and the resource
-                                  must be from CDS). See [bibdocfile](#bibdocfile).
--t, --target			 Select a target folder for output
+                                  must be from CDS)
 
---bd-ssh-host <HOSTNAME>        SSH host to run bibdocfile. See [bibdocfile](#bibdocfile).
---help                          Show this message and exit.
+  --bd-ssh-host TEXT              SSH host to run bibdocfile
+  -t, --target TEXT               Select destination folder
+  --help                          Show this message and exit.
+
 ```
 
 ### Module
