@@ -6,8 +6,6 @@ from .pipelines import indico
 
 import logging
 import subprocess
-import checksumdir
-import os
 from fs import open_fs
 from .version import __version__
 
@@ -19,7 +17,6 @@ def process(
     source,
     loglevel,
     target,
-    #localsource,
     dry_run=False,
     alternate_uri=False,
     bibdoc=False,
@@ -52,15 +49,6 @@ def process(
             pipeline = invenio_v3.InvenioV3Pipeline(source)
         elif source == "indico":
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/")
-        # elif source == "local":
-        #     if os.path.exists(localsource):
-        #         pipeline = local.LocalV1Pipeline(localsource)
-        #         recid = checksumdir.dirhash(localsource)
-        #         print(recid)
-        #     else:
-        #         logging.error(f"Source folder error: {e}")
-        #         return {"status": 1, "errormsg": e}
-
 
 
         # Save job details (Audit step 0)
@@ -77,28 +65,21 @@ def process(
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
 
-        if source == "local":
-            # metadata, metadata_filename = generate_metadata(localsource)
-
-            # pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
-            pass
-
-        else:
         # Get metadata
-            metadata, metadata_url, status_code, metadata_filename = pipeline.get_metadata(recid)
+        metadata, metadata_url, status_code, metadata_filename = pipeline.get_metadata(recid)
 
-            # Save metadata file in the meta folder
-            pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
+        # Save metadata file in the meta folder
+        pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
 
-            # Parse metadata for files
-            files = pipeline.parse_metadata(f"{base_path}/data/meta/{metadata_filename}")
+        # Parse metadata for files
+        files = pipeline.parse_metadata(f"{base_path}/data/meta/{metadata_filename}")
 
-            if dry_run is True:
-                # Create fetch.txt
-                pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
-            else:
-                # Download files
-                pipeline.download_files(files, f"{base_path}/data/content")
+        if dry_run is True:
+            # Create fetch.txt
+            pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
+        else:
+            # Download files
+            pipeline.download_files(files, f"{base_path}/data/content")
 
         # Create sip.json
         files = pipeline.create_bic_meta(
