@@ -7,10 +7,6 @@ import os
 import configparser
 
 
-try:
-    from urllib.parse import urlencode
-except ImportError:
-    from urllib import urlencode
 
 
 class IndicoV1Pipeline(base.BasePipeline):
@@ -36,9 +32,9 @@ class IndicoV1Pipeline(base.BasePipeline):
                 metadata_filename = "metadata.json"
                 return response.content, response.status_code, response.url, metadata_filename
             else:
-                raise Exception("Wrong recid. This url is not valid.")
+                raise Exception(f"Wrong recid. The {search_id} does not exist or it is not available.")
         else:
-            raise Exception("Authentication error.")
+            raise Exception(f"API responded with error {response.status_code}")
 
 
     # Download Remote Folders at cwd
