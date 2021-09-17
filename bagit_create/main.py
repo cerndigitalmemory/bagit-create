@@ -59,6 +59,14 @@ def process(
             }
         ]
 
+        # Save job details (Audit step 0)
+        audit = [
+            {
+                "tool": f"BagIt Create tool {__version__}",
+                "param": {"recid": recid, "source": source},
+            }
+        ]
+
         # Prepare folders
         base_path, temp_files_path, name = pipeline.prepare_folders(source, recid)
 
