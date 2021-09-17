@@ -88,6 +88,10 @@ bic --recid 3974864 --source zenodo --verbose
 
 # Invenio
 bic --recid gjgvm-4mq98 --source inveniordm --verbose
+
+# Indico
+bic --recid 1024767 --source indico 
+
 ```
 
 CLI options:
@@ -98,7 +102,7 @@ Options:
 --recid TEXT                    Unique ID of the record in the upstream
                                   source  [required]
 
--s, --source [cds|ilcdoc|cod|zenodo|inveniordm]
+-s, --source [cds|ilcdoc|cod|zenodo|inveniordm|indico]
                                   Select source pipeline  [required]
 -d, --dry-run                   Skip downloads
 -a, --alternate-uri             Use alternative uri instead of https for
@@ -112,6 +116,7 @@ Options:
                                   (`/opt/cdsweb/bin/bibdocfile` must be
                                   available in the system and the resource
                                   must be from CDS). See [bibdocfile](#bibdocfile).
+-t, --target			 Select a target folder for output
 
 --bd-ssh-host <HOSTNAME>        SSH host to run bibdocfile. See [bibdocfile](#bibdocfile).
 --help                          Show this message and exit.
