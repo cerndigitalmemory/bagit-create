@@ -26,15 +26,14 @@ class IndicoV1Pipeline(base.BasePipeline):
         headers = {"Authorization": "Bearer " + api_key}
 
         response = requests.get(endpoint, headers=headers)
-
         if (response.status_code == 200):
             if(response.json()["count"] == 1):
                 metadata_filename = "metadata.json"
                 return response.content, response.status_code, response.url, metadata_filename
             else:
-                raise Exception(f"Wrong recid. The {search_id} does not exist or it is not available.")
+                raise RecidException(f"Wrong recid. The {search_id} does not exist or it is not available.")
         else:
-            raise Exception(f"API responded with error {response.status_code}")
+            raise APIException(f"API responded with error {response.status_code}")
 
 
     # Download Remote Folders at cwd
@@ -63,7 +62,6 @@ class IndicoV1Pipeline(base.BasePipeline):
     def parse_metadata(self, metadataFilename):
 
         # Gets metadata and transforms to JSON
-
         logging.info("Parsing metadata..")
         files = []
 
@@ -151,3 +149,11 @@ class IndicoV1Pipeline(base.BasePipeline):
 
 
         return obj
+
+class RecidException(Exception):
+    # This exception handles recid errors (incorrect recid or page not accessible)
+    pass
+
+class APIException(Exception):
+    # This exception handles API errors (wrong API key or wrong url)
+    pass
