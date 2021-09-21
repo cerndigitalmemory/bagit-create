@@ -7,8 +7,6 @@ import os
 import configparser
 
 
-
-
 class IndicoV1Pipeline(base.BasePipeline):
     def __init__(self, base_url):
         logging.info(f"Indico v1 pipeline initialised.\nBase URL: {base_url}")
@@ -18,26 +16,35 @@ class IndicoV1Pipeline(base.BasePipeline):
     def get_metadata(self, search_id):
 
         endpoint = f"https://indico.cern.ch/export/event/{search_id}.json?detail=contributions&occ=yes&pretty=yes"
-        self.config_file = configparser.ConfigParser()
-        self.config_file.read(os.path.join(os.path.dirname(__file__), "indico.ini"))
-        self.config = self.config_file["indico"]
-        api_key = self.config["api_key"]
 
-        if api_key == 'PUT YOUR API KEY HERE':
+        if os.environ.get('INDICO_KEY'):
             api_key = os.environ.get('INDICO_KEY')
+        else:
+            self.config_file = configparser.ConfigParser()
+            self.config_file.read(os.path.join(os.path.dirname(__file__), "indico.ini"))
+            self.config = self.config_file["indico"]
+            api_key = self.config["api_key"]
+        print(f"{api_key}")
 
         headers = {"Authorization": "Bearer " + api_key}
 
         response = requests.get(endpoint, headers=headers)
-        if (response.status_code == 200):
-            if(response.json()["count"] == 1):
+        if response.status_code == 200:
+            if response.json()["count"] == 1:
                 metadata_filename = "metadata.json"
-                return response.content, response.status_code, response.url, metadata_filename
+                return (
+                    response.content,
+                    response.status_code,
+                    response.url,
+                    metadata_filename,
+                )
             else:
-                raise RecidException(f"Wrong recid. The {search_id} does not exist or it is not available.")
+                raise RecidException(
+                    f"Wrong recid. The {search_id} does not exist or it is not"
+                    " available."
+                )
         else:
             raise APIException(f"API responded with error {response.status_code}")
-
 
     # Download Remote Folders at cwd
     def download_files(self, files, files_base_path):
@@ -51,7 +58,6 @@ class IndicoV1Pipeline(base.BasePipeline):
                 with open(destination, "wb") as f:
                     f.write(r.content)
                 sourcefile["downloaded"] = True
-
 
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
@@ -96,7 +102,8 @@ class IndicoV1Pipeline(base.BasePipeline):
                                 files.append(obj)
                             else:
                                 logging.warning(
-                                    f"Skipped entry. No basename found (probably an URL?)"
+                                    f"Skipped entry. No basename found (probably an"
+                                    f" URL?)"
                                 )
 
             # add extra metadata
@@ -121,7 +128,6 @@ class IndicoV1Pipeline(base.BasePipeline):
             obj["downloaded"] = False
             obj["localpath"] = f"data/meta/metadata.json"
 
-
             files.append(obj)
         return files
 
@@ -145,17 +151,17 @@ class IndicoV1Pipeline(base.BasePipeline):
         if "content_type" in att:
             obj["content_type"] = att["content_type"]
 
-
         obj["metadata"] = False
         obj["downloaded"] = False
         obj["localpath"] = f"data/content/{self.filename1}"
 
-
         return obj
+
 
 class RecidException(Exception):
     # This exception handles recid errors (incorrect recid or page not accessible)
     pass
+
 
 class APIException(Exception):
     # This exception handles API errors (wrong API key or wrong url)
