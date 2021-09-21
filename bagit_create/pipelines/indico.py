@@ -24,7 +24,7 @@ class IndicoV1Pipeline(base.BasePipeline):
         api_key = self.config["api_key"]
 
         if api_key == 'PUT YOUR API KEY HERE':
-            os.environ.get('INDICO_KEY')
+            api_key = os.environ.get('INDICO_KEY')
 
         headers = {"Authorization": "Bearer " + api_key}
 
