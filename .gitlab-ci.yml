@@ -11,9 +11,8 @@ test:
     matrix:
       - IMAGE: ['python:3.6', 'python:3.7']
   script:
-    - INDICO_KEY="$INDICO_KEY"
     - pip install tox flake8
-    - python -m tox
+    - INDICO_KEY="$INDICO_KEY" python -m tox
   artifacts:
     when: always
     reports:
