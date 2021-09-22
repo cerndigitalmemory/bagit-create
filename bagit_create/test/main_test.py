@@ -62,4 +62,4 @@ def test_fetch_txt():
 
 
 def test_manifest_md5():
-    assert pipeline.generate_manifest(files, "md5") == manifest_md5
+    assert pipeline.generate_manifest(files, "md5", "") == manifest_md5
