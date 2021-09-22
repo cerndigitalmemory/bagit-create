@@ -41,7 +41,9 @@ def process(
         if source == "cds":
             pipeline = invenio_v1.InvenioV1Pipeline("https://cds.cern.ch/record/")
         elif source == "ilcdoc":
-            pipeline = invenio_v1.InvenioV1Pipeline("http://ilcdoc.linearcollider.org/")
+            pipeline = invenio_v1.InvenioV1Pipeline(
+                "http://ilcdoc.linearcollider.org/record/"
+            )
         elif source == "cod":
             pipeline = opendata.OpenDataPipeline("http://opendata.cern.ch")
         elif source == "zenodo" or source == "inveniordm":
