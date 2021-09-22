@@ -21,7 +21,7 @@ import click
     help="Select source pipeline",
     required=True,
     type=click.Choice(
-        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm"], case_sensitive=False
+        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm", "indico", "local"], case_sensitive=False
     ),
 )
 @click.option(
@@ -79,10 +79,19 @@ import click
     default=None,
     is_flag=False,
 )
+@click.option(
+    "--localsource",
+    "-ls",
+    help="Select the local source folder.",
+    type=Text,
+    default=None,
+    is_flag=False,
+)
 def cli(
     recid,
     source,
     target,
+    localsource,
     dry_run,
     alternate_uri,
     verbose,
@@ -107,6 +116,7 @@ def cli(
         source,
         loglevel,
         target,
+        localsource,
         dry_run,
         alternate_uri,
         bibdoc,

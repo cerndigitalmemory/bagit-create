@@ -35,7 +35,10 @@ class InvenioV1Pipeline(base.BasePipeline):
             raise Exception(f"Metadata request gave HTTP {r.status_code}.")
 
         self.metadata_url = r.url
-        self.metadata_size = r.headers["Content-length"]
+        try:
+            self.metadata_size = r.headers["Content-length"]
+        except:
+            self.metadata_size = ""
         return r.content, r.url, r.status_code, "metadata.xml"
 
     def parse_metadata(self, metadata_filename):
