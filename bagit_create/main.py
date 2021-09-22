@@ -27,7 +27,6 @@ def process(
     bibdoc=False,
     bd_ssh_host=None,
     timestamp=0,
-
 ):
     # Setup logging
     # DEBUG, INFO, WARNING, ERROR logging levels
@@ -39,7 +38,7 @@ def process(
 
     if dry_run:
         logging.warning(
-            f"This will be a DRY RUN. A 'light' bag will be created, not downloading \
+            "This will be a DRY RUN. A 'light' bag will be created, not downloading \
             or moving any payload file, but checksums *must* be available from the \
             metadata, or no valid CERN AIP will be created."
         )
@@ -100,9 +99,9 @@ def process(
         # Verify created Bag
         pipeline.verify_bag(base_path)
 
-        # move folder to specified path
-        if (target):
-            # Catch an exception so if the move folder fails, the original folder is deleted
+        # If a target folder is specified, move the created Bag there
+        if target:
+            # If the move fails, the original folder is deleted
             try:
                 pipeline.move_folders(base_path, name, target)
                 pipeline.delete_folder(base_path)
@@ -115,17 +114,19 @@ def process(
 
         pipeline.delete_folder(temp_files_path)
 
-        logging.info("SUCCESS")
+        logging.info("SIP successfully created")
 
         return {"status": 0, "errormsg": None}
+
+    # Folder exists, gracefully stop
     except FileExistsError as e:
-        # Folder exists, gracefully stop.
+
         logging.error(f"Job failed with error: {e}")
 
         return {"status": 1, "errormsg": e}
+    # For any other error, print details about what happened and clean up
+    #  any created file and folder
     except Exception as e:
-        # For any other error, print details and clean up
-        #  any folder created
         logging.error(f"Job failed with error: {e}")
         pipeline.delete_folder(temp_files_path)
         pipeline.delete_folder(base_path)
