@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from typing import Text
 from .main import process
 from .version import __version__
 import click
@@ -70,15 +71,25 @@ import click
     default=None,
     is_flag=False,
 )
+@click.option(
+    "--target",
+    "-t",
+    help="Select destination folder",
+    type=Text,
+    default=None,
+    is_flag=False,
+)
 def cli(
     recid,
     source,
+    target,
     dry_run,
     alternate_uri,
     verbose,
     very_verbose,
     bibdoc,
     bd_ssh_host,
+
 ):
 
     # Select the desired log level (default is 2, warning)
@@ -95,6 +106,7 @@ def cli(
         recid,
         source,
         loglevel,
+        target,
         dry_run,
         alternate_uri,
         bibdoc,
