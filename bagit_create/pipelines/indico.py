@@ -15,20 +15,27 @@ class IndicoV1Pipeline(base.BasePipeline):
     # get metadata according to indico api guidelines
     def get_metadata(self, search_id):
 
-        endpoint = f"https://indico.cern.ch/export/event/{search_id}.json?detail=contributions&occ=yes&pretty=yes"
-
-        if os.environ.get('INDICO_KEY'):
-            api_key = os.environ.get('INDICO_KEY')
+        # Get Indico API Key from environment variable (or indico.ini)
+        if os.environ.get("INDICO_KEY"):
+            api_key = os.environ.get("INDICO_KEY")
         else:
             self.config_file = configparser.ConfigParser()
             self.config_file.read(os.path.join(os.path.dirname(__file__), "indico.ini"))
             self.config = self.config_file["indico"]
             api_key = self.config["api_key"]
-        print(f"{api_key}")
 
+        ## Prepare call Indico API
+        # Authenticate with API Key
         headers = {"Authorization": "Bearer " + api_key}
 
-        response = requests.get(endpoint, headers=headers)
+        # Indico API export base endpoint
+        endpoint = f"https://indico.cern.ch/export/event/{search_id}.json"
+
+        # Query params
+        payload = {"detail": "contributions", "occ": "yes", "pretty": "yes"}
+
+        response = requests.get(endpoint, headers=headers, params=payload)
+
         if response.status_code == 200:
             if response.json()["count"] == 1:
                 metadata_filename = "metadata.json"
@@ -44,9 +51,9 @@ class IndicoV1Pipeline(base.BasePipeline):
                     " available."
                 )
         else:
-            raise APIException(f"API responded with error {response.status_code}")
+            raise APIException(f"Indico API returned HTTP {response.status_code}.")
 
-    # Download Remote Folders at cwd
+    # Download Remote Folders in the cwd
     def download_files(self, files, files_base_path):
         logging.info(f"Downloading {len(files)} files to {files_base_path}..")
 
@@ -62,8 +69,6 @@ class IndicoV1Pipeline(base.BasePipeline):
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
         for alg in algs:
-            # print("create manifests")
-            # print(base_path, files_base_path)
             logging.info(f"Generating manifest {alg}..")
             content = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
