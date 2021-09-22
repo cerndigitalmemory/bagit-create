@@ -51,6 +51,7 @@ setup(
         "six==1.15.0",
         "urllib3==1.26.4",
         "bagit==1.8.1",
+        "checksumdir==1.2.0",
     ],
     entry_points={
         "console_scripts": [
