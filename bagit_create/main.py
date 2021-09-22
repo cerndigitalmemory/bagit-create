@@ -1,20 +1,14 @@
 from .pipelines import invenio_v1
 from .pipelines import invenio_v3
 from .pipelines import opendata
+from .pipelines import indico
+
 
 import logging
-import subprocess
 from fs import open_fs
 from .version import __version__
 
 my_fs = open_fs(".")
-
-try:
-    commit_hash = subprocess.check_output(
-        ["git", "rev-parse", "--short", "HEAD"]
-    ).decode("utf-8")
-except subprocess.CalledProcessError:
-    commit_hash = ""
 
 
 def process(
@@ -32,7 +26,7 @@ def process(
     # DEBUG, INFO, WARNING, ERROR logging levels
     loglevels = [10, 20, 30, 40]
     logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
-    logging.info(f"BagIt Create tool {__version__} {commit_hash}")
+    logging.info(f"BagIt Create tool {__version__}")
     logging.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     logging.debug(f"Set log level: {loglevels[loglevel]}")
 
@@ -52,6 +46,8 @@ def process(
             pipeline = opendata.OpenDataPipeline("http://opendata.cern.ch")
         elif source == "zenodo" or source == "inveniordm":
             pipeline = invenio_v3.InvenioV3Pipeline(source)
+        elif source == "indico":
+            pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/")
 
         # Save job details (Audit step 0)
         audit = [

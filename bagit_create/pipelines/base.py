@@ -128,6 +128,8 @@ class BasePipeline:
             computedhash = self.adler32sum(filename)
         else:
             computedhash = my_fs.hash(filename, alg)
+            
+                
         return computedhash
 
     def generate_manifest(self, files, algorithm, basepath):
@@ -257,18 +259,20 @@ class BasePipeline:
                 files[idx][
                     "localpath"
                 ] = f"data/{recid}{delimiter_str}{filehash}/{file['filename']}"
+                try:
+                    my_fs.copy(
+                        f"{temp_relpath}/{file['filename']}",
+                        f"{base_path}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
+                    )
+                except:
+                    logging.warning(f"{temp_relpath}/{file['filename']} already exists")
 
-                my_fs.copy(
-                    f"{temp_relpath}/{file['filename']}",
-                    f"{base_path}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
-                )
             if file["downloaded"] == False and file["metadata"] == False:
                 if "checksum" in file:
                     p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
                     m = p.match(file["checksum"])
                     alg = m.groups()[0].lower()
                     matched_checksum = m.groups()[1]
-
                     files[idx][
                         "localpath"
                     ] = f"data/{recid}{delimiter_str}{matched_checksum}/{file['filename']}"
@@ -307,7 +311,7 @@ class BasePipeline:
         return files
 
     def verify_bag(self, path):
-        logging.info(f"Validating created Bag {path} ..")
+        logging.info(f"\n--\nValidating created Bag {path} ..")
         bag = bagit.Bag(path)
         valid = False
         try:
@@ -316,20 +320,19 @@ class BasePipeline:
             print(f"Bag validation failed: {err}")
         if valid:
             logging.info(f"Bag successfully validated")
+        logging.info("--\n")
         return valid
-    
+
     def move_folders(self, base_path, name, target):
         logging.info(f"Moving files to {target} ..")
 
-        #Check if destination folder exists
+        # Check if destination folder exists
         if not os.path.isdir(target):
             os.mkdir(target)
-        
-        #make a new folder at the target folder with the original name
+
+        # make a new folder at the target folder with the original name
         new_path = f"{target}/{name}"
         os.mkdir(new_path)
 
-        #move folder to the target location
+        # move folder to the target location
         fs.move.move_fs(base_path, new_path)
-
-

@@ -21,7 +21,7 @@ import click
     help="Select source pipeline",
     required=True,
     type=click.Choice(
-        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm"], case_sensitive=False
+        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm", "indico"], case_sensitive=False
     ),
 )
 @click.option(
@@ -79,6 +79,7 @@ import click
     default=None,
     is_flag=False,
 )
+
 def cli(
     recid,
     source,
