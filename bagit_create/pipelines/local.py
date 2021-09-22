@@ -1,17 +1,12 @@
 from posixpath import relpath
 from . import base
 import logging
-import hashlib
-import hmac
 import fs
 from fs import open_fs
 from fs import copy
-import requests
 import json
-import re
 import os
 from os import walk
-import configparser
 import checksumdir
 from datetime import datetime
 
