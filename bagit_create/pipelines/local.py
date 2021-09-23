@@ -22,9 +22,8 @@ class LocalV1Pipeline(base.BasePipeline):
         folder_checksum = checksumdir.dirhash(src)
         return folder_checksum
 
-    def prepare_folders_ls(self, src, checksum, delimiter_str="::"):
+    def prepare_folders_ls(self, src, checksum, target=None, delimiter_str="::"):
 
-        # Get current path
         path = os.getcwd()
 
         splitted = src.split("/")
@@ -45,9 +44,14 @@ class LocalV1Pipeline(base.BasePipeline):
         base_name = f"bagitexport{delimiter_str}local{delimiter_str}{dst_folder}{delimiter_str}{timestamp}"
         base_path = f"{path}/{base_name}"
         name = base_name
+        if target:
+            path = f'{path}/{target}'
+            folder_list = [name for name in os.listdir(target) if os.path.isdir(f'{target}/{name}') and search_name in name]
+        else:
+            #Check if folder exists
+            folder_list = [name for name in os.listdir() if os.path.isdir(name) and search_name in name]
 
-        #Check if folder exists
-        folder_list = [name for name in os.listdir(".") if os.path.isdir(name) and search_name in name]
+        
         if len(folder_list) == 0:
             os.mkdir(base_path)
             os.mkdir(f"{base_path}/data")

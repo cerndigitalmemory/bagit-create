@@ -64,7 +64,7 @@ def process(
 
         if source == "local":
             checksum = pipeline.get_folder_checksum(localsource)
-            base_path, name = pipeline.prepare_folders_ls(localsource, checksum)
+            base_path, name = pipeline.prepare_folders_ls(localsource, checksum, target)
 
         else:
             # Prepare folders
