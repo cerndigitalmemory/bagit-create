@@ -24,7 +24,6 @@ class IndicoV1Pipeline(base.BasePipeline):
             self.config_file.read(os.path.join(os.path.dirname(__file__), "indico.ini"))
             self.config = self.config_file["indico"]
             api_key = self.config["api_key"]
-        print(f"{api_key}")
 
         headers = {"Authorization": "Bearer " + api_key}
 
@@ -62,8 +61,6 @@ class IndicoV1Pipeline(base.BasePipeline):
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
         for alg in algs:
-            # print("create manifests")
-            # print(base_path, files_base_path)
             logging.info(f"Generating manifest {alg}..")
             content = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
@@ -125,7 +122,8 @@ class IndicoV1Pipeline(base.BasePipeline):
                 obj["location"] = results["location"]
 
             obj["metadata"] = True  # is metadata no files
-            obj["downloaded"] = False
+            obj["downloaded"] = True
+            obj["filename"] = "metadata.json"
             obj["localpath"] = f"data/meta/metadata.json"
 
             files.append(obj)
