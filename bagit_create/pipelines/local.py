@@ -44,21 +44,27 @@ class LocalV1Pipeline(base.BasePipeline):
         base_name = f"bagitexport{delimiter_str}local{delimiter_str}{dst_folder}{delimiter_str}{timestamp}"
         base_path = f"{path}/{base_name}"
         name = base_name
+
+        # Check if the target option is enabled
         if target:
             path = f'{path}/{target}'
+
+            # Check if there are folders with the same path at the target directory
             folder_list = [name for name in os.listdir(target) if os.path.isdir(f'{target}/{name}') and search_name in name]
         else:
-            #Check if folder exists
+            #Check if there are folders with the same path at the target directory
             folder_list = [name for name in os.listdir() if os.path.isdir(name) and search_name in name]
 
-        
+        # If there are no other folders with the same base path at the target location
         if len(folder_list) == 0:
+
             os.mkdir(base_path)
             os.mkdir(f"{base_path}/data")
             os.mkdir(f"{base_path}/data/meta")
             os.mkdir(f"{base_path}/data/content")
             return (base_path, name) 
 
+        # If there are check if they contain a sip.json and they have the same original source
         else:
             for folder in folder_list:
                 search_path = f"{path}/{folder}"

@@ -9,19 +9,22 @@ def test_create_temp_folders():
     
     # Prepare the mock folders and expected result from file
     with tempfile.TemporaryDirectory() as tmpdir1:
-        print('created temporary directory', tmpdir1)
         with tempfile.TemporaryDirectory(dir = tmpdir1) as tmpdir2:
-            print('created temporary directory', tmpdir2)
-            
+            #Creates two temp directories and two files
             f1 = tempfile.NamedTemporaryFile('w+t',dir = tmpdir1)
-            #f1.name = "temp_1.txt"
             f1.write('Hello World. This is temp_1!') 
             f1.seek(0)
 
             f2 = tempfile.NamedTemporaryFile('w+t',dir = tmpdir2)
-            #f2.name = "temp_11.txt"
             f2.write('Hello World. This is temp_11!') 
             f2.seek(0)
+
+            #Temp directory structure
+            # - tmpdir1
+            #   - f1
+            #   - tmpdir2
+            #       - f2
+            # We want to check if the resulting sip.json will contain this information   
 
             local_pipeline = local.LocalV1Pipeline(tmpdir1)
             checksum = local_pipeline.get_folder_checksum(tmpdir1)
