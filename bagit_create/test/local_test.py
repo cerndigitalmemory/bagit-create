@@ -26,23 +26,25 @@ def test_create_temp_folders():
             local_pipeline = local.LocalV1Pipeline(tmpdir1)
             checksum = local_pipeline.get_folder_checksum(tmpdir1)
             base_path, name = local_pipeline.prepare_folders_ls(tmpdir1, checksum)
+            try: 
+                local_pipeline.folder_creation(tmpdir1, checksum, base_path)
 
-            local_pipeline.folder_creation(tmpdir1, checksum, base_path)
+                with open(f"{base_path}/data/meta/sip.json", 'r') as sip_json:
+                    parsed_sip_json = json.load(sip_json)
+                    print(parsed_sip_json)
 
-            with open(f"{base_path}/data/meta/sip.json", 'r') as sip_json:
-                parsed = json.load(sip_json)
-                print(parsed)
+                parsed_sip_json.pop("checksum")
 
-            parsed.pop("checksum")
+                assert_json = {'src': f'{tmpdir1}', 
+                        'content_files': [{'title': ntpath.basename(f1.name), 'path': '/', 'file': ntpath.basename(f1.name), 'type': ''}, 
+                        {'title': ntpath.basename(f2.name), 'path': f'/{ntpath.basename(tmpdir2)}', 'file': ntpath.basename(f2.name), 'type': ''}]}
 
-            assert_json = {'src': f'{tmpdir1}', 
-                    'content_files': [{'title': ntpath.basename(f1.name), 'path': '/', 'file': ntpath.basename(f1.name), 'type': ''}, 
-                    {'title': ntpath.basename(f2.name), 'path': f'/{ntpath.basename(tmpdir2)}', 'file': ntpath.basename(f2.name), 'type': ''}]}
-
-            f1.close()
-            f2.close()
+                f1.close()
+                f2.close()
+            except:
+                local_pipeline.delete_folder(base_path)
     local_pipeline.delete_folder(base_path)
 
-    assert parsed == assert_json
+    assert parsed_sip_json == assert_json
 
 
