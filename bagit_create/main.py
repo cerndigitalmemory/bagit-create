@@ -66,7 +66,7 @@ def process(
             recid = pipeline.get_folder_checksum(localsource)
         
         base_path, name = pipeline.prepare_folders(source, recid)
-
+        
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
 
@@ -74,7 +74,6 @@ def process(
             #Files first
             files = pipeline.get_parse_metadata(localsource)
             metadata_url = None
-        
         else:
             # Get metadata
             metadata, metadata_url, status_code, metadata_filename = pipeline.get_metadata(

@@ -19,22 +19,21 @@ class LocalV1Pipeline(base.BasePipeline):
         self.src = src
 
     def get_parse_metadata(self, src):
-        # Gets metadata and transforms to JSON
+        # Gets source folder and makes the file
         logging.info("Parsing metadata..")
         files = []
-
+        #walk through the whole directory and get append all file names in the list
         for (dirpath, dirnames, filenames) in walk(src):
-            if dirpath == src:
-                relpath = "/"
-            else:
-                relpath = dirpath[len(src) - len(dirpath):]            
-            
+            relpath = dirpath[len(src) - len(dirpath) + 1:]                  
             for found_files in filenames:
                 obj = {}
                 filename, file_extension = os.path.splitext(found_files)
                 obj["filename"] = found_files
                 obj["title"] = filename
-                obj["path"] = f'{relpath}'
+                if dirpath == src:
+                    obj["path"] = f'{found_files}'
+                else:
+                    obj["path"] = f'{relpath}/{found_files}'
                 obj["abs_path"] = f'{dirpath}/{found_files}'
                 obj["localpath"] = f"data/content/{found_files}" 
                 obj["content-type"] = file_extension
@@ -43,16 +42,8 @@ class LocalV1Pipeline(base.BasePipeline):
 
                 files.append(obj)
         
-        obj = {}
 
-        obj["abs_path"] = src
-        obj["metadata"] = True  # is metadata no files
-        obj["downloaded"] = False
-        obj["filename"] = "metadata.json"
-        obj["localpath"] = f"data/meta/metadata.json"      
-        
-        files.append(obj)
-
+        # I don't have metadata json here. If we add, fields will be added here    
         return files
 
 
@@ -66,6 +57,7 @@ class LocalV1Pipeline(base.BasePipeline):
                 my_fs.copy(source, destination)
                 file["downloaded"] = True
 
+    #needed in case we use the folder name
     def get_local_folder_name(self, src):
         splitted = src.split("/")
         folder_name = ""
@@ -76,6 +68,7 @@ class LocalV1Pipeline(base.BasePipeline):
         folder_name+=splitted[-1]
         return folder_name
 
+    #gwts the checksum
     def get_folder_checksum(self, src):
         folder_checksum = checksumdir.dirhash(src)
         return folder_checksum

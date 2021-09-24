@@ -148,7 +148,7 @@ class BasePipeline:
         """
         contents = ""
         for file in files:
-
+            
             path = f"{basepath}/{file['localpath']}"
             if "checksum" in file:
                 p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
@@ -171,7 +171,7 @@ class BasePipeline:
                 checksum = self.compute_hash(f"{path}", algorithm)
             else:
                 #Here may needs additional checks
-                continue
+                pass
             line = f"{checksum} {file['localpath']}\n"
             contents += line
         return contents

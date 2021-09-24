@@ -29,7 +29,7 @@ def test_local_files():
                 {
                     'filename': ntpath.basename(f1.name), 
                     'title': ntpath.basename(f1.name), 
-                    'path': '/', 
+                    'path': ntpath.basename(f1.name), 
                     'abs_path': f'/tmp/{ntpath.basename(tmpdir1)}/{ntpath.basename(f1.name)}', 
                     'localpath': f'data/content/{ntpath.basename(f1.name)}', 
                     'content-type': '', 
@@ -39,19 +39,12 @@ def test_local_files():
                 {
                     'filename': ntpath.basename(f2.name), 
                     'title': ntpath.basename(f2.name), 
-                    'path': f'/{ntpath.basename(tmpdir2)}', 
+                    'path': f'{ntpath.basename(tmpdir2)}/{ntpath.basename(f2.name)}', 
                     'abs_path': f'/tmp/{ntpath.basename(tmpdir1)}/{ntpath.basename(tmpdir2)}/{ntpath.basename(f2.name)}', 
                     'localpath': f'data/content/{ntpath.basename(f2.name)}', 
                     'content-type': '', 
                     'metadata': False, 
                     'downloaded': False
-                }, 
-                {
-                    'abs_path': f'/tmp/{ntpath.basename(tmpdir1)}', 
-                    'metadata': True, 
-                    'downloaded': False, 
-                    'filename': 'metadata.json', 
-                    'localpath': 'data/meta/metadata.json'
                 }
             ] 
 
@@ -107,13 +100,7 @@ def test_local_move():
                         'metadata': False, 
                         'downloaded': False
                     }, 
-                    {
-                        'abs_path': f'/tmp/{ntpath.basename(tmpdir1)}', 
-                        'metadata': True, 
-                        'downloaded': False, 
-                        'filename': 'metadata.json', 
-                        'localpath': 'data/meta/metadata.json'
-                    }] 
+                ] 
 
                 pipeline = local.LocalV1Pipeline(tmpdir1)
 
