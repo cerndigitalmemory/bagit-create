@@ -33,8 +33,8 @@ class IndicoV1Pipeline(base.BasePipeline):
                 metadata_filename = "metadata.json"
                 return (
                     response.content,
-                    response.status_code,
                     response.url,
+                    response.status_code,
                     metadata_filename,
                 )
             else:

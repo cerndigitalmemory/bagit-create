@@ -66,8 +66,8 @@ def test_api_response1():
     # Get metadata for ID 1024767
     (
         metadata,
-        status_code,
         metadata_url,
+        status_code,
         metadata_filename,
     ) = indico_pipeline.get_metadata(1024767)
 
