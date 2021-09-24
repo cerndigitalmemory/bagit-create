@@ -170,7 +170,8 @@ class BasePipeline:
                 logging.debug(f"Computing {algorithm} of {file['filename']}")
                 checksum = self.compute_hash(f"{path}", algorithm)
             else:
-                pass
+                #Here may needs additional checks
+                continue
             line = f"{checksum} {file['localpath']}\n"
             contents += line
         return contents
@@ -220,15 +221,10 @@ class BasePipeline:
         os.mkdir(f"{base_path}/data/meta")
         os.mkdir(f"{base_path}/data/content")
 
-        # Create temporary folder to download the resource content
-        temp_path = f"{path}/temp_{source}_{recid}"
-        temp_relpath = f"temp_{source}_{recid}"
-        os.mkdir(temp_path)
-
         self.base_path = base_path
 
         logging.debug(f"Bag folder: {base_name}")
-        return base_path, temp_path, name
+        return base_path, name
 
     def prepare_AIC(self, base_path, recid, timestamp=0, delimiter_str="::"):
         logging.info("Creating AIC..")
@@ -283,7 +279,7 @@ class BasePipeline:
 
         return files
 
-    def create_bic_meta(self, files, audit, metadata_filename, metadata_url, base_path):
+    def create_bic_meta(self, files, audit, base_path, metadata_url = None):
         bic_meta = {
             "created_by": f"bagit-create {__version__}",
             "audit": audit,

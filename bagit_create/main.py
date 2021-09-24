@@ -63,20 +63,17 @@ def process(
         ]
 
         if source == "local":
-            checksum = pipeline.get_folder_checksum(localsource)
-            base_path, name = pipeline.prepare_folders_ls(localsource, checksum, target)
-
-        else:
-            # Prepare folders
-            base_path, temp_files_path, name = pipeline.prepare_folders(source, recid)
+            recid = pipeline.get_folder_checksum(localsource)
+        
+        base_path, name = pipeline.prepare_folders(source, recid)
 
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
 
         if source == "local":
-            pipeline.folder_creation(localsource, checksum, base_path)
-
-            pipeline.create_manifests_ls(base_path)
+            #Files first
+            files = pipeline.get_parse_metadata(localsource)
+            metadata_url = None
         
         else:
             # Get metadata
@@ -90,18 +87,24 @@ def process(
             # Parse metadata for files
             files = pipeline.parse_metadata(f"{base_path}/data/meta/{metadata_filename}")
 
-            if dry_run is True:
-                # Create fetch.txt
-                pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
+        if dry_run is True:
+            # Create fetch.txt
+            pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
+        else:
+
+            if source == "local":
+                pipeline.move_local_files(files, f"{base_path}/data/content")
+            
             else:
                 # Download files
                 pipeline.download_files(files, f"{base_path}/data/content")
 
-            # Create sip.json
-            files = pipeline.create_bic_meta(
-                files, audit, metadata_filename, metadata_url, base_path
-            )
-            pipeline.create_manifests(files, base_path)
+        # Create sip.json
+        files = pipeline.create_bic_meta(
+            files, audit, base_path, metadata_url
+        )
+
+        pipeline.create_manifests(files, base_path)
         # an entry for "sip.json" gets added to files
 
         # Create manifest files
@@ -118,13 +121,10 @@ def process(
                 pipeline.delete_folder(base_path)
             except FileExistsError as e:
                 logging.error(f"Job failed with error: {e}")
-                pipeline.delete_folder(temp_files_path)
                 pipeline.delete_folder(base_path)
 
                 return {"status": 1, "errormsg": e}
         
-        if not source == "local":
-            pipeline.delete_folder(temp_files_path)
 
         logging.info("SIP successfully created")
 
@@ -140,8 +140,6 @@ def process(
     #  any created file and folder
     except Exception as e:
         logging.error(f"Job failed with error: {e}")
-        if not source == "local": 
-            pipeline.delete_folder(temp_files_path)
         pipeline.delete_folder(base_path)
 
         return {"status": 1, "errormsg": e}
