@@ -54,6 +54,9 @@ def process(
         elif source == "local":
             pipeline = local.LocalV1Pipeline(localsource)
 
+        if source == "local":
+            recid = pipeline.get_folder_checksum(localsource)
+
         # Save job details (Audit step 0)
         audit = [
             {
@@ -62,23 +65,23 @@ def process(
             }
         ]
 
-        if source == "local":
-            recid = pipeline.get_folder_checksum(localsource)
-        
         base_path, name = pipeline.prepare_folders(source, recid)
-        
+
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
 
         if source == "local":
-            #Files first
-            files = pipeline.get_parse_metadata(localsource)
+            # Look for files in the source folder and prepare the files object
+            files = pipeline.scan_files(localsource)
             metadata_url = None
         else:
-            # Get metadata
-            metadata, metadata_url, status_code, metadata_filename = pipeline.get_metadata(
-                recid
-            )
+            # Get metadata from upstream
+            (
+                metadata,
+                metadata_url,
+                status_code,
+                metadata_filename,
+            ) = pipeline.get_metadata(recid)
 
             # Save metadata file in the meta folder
             pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
@@ -92,16 +95,16 @@ def process(
         else:
 
             if source == "local":
-                pipeline.move_local_files(files, f"{base_path}/data/content")
-            
+                files = pipeline.copy_files(
+                    files, localsource, f"{base_path}/data/content"
+                )
+
             else:
                 # Download files
                 pipeline.download_files(files, f"{base_path}/data/content")
 
         # Create sip.json
-        files = pipeline.create_bic_meta(
-            files, audit, base_path, metadata_url
-        )
+        files = pipeline.create_bic_meta(files, audit, base_path, metadata_url)
 
         pipeline.create_manifests(files, base_path)
         # an entry for "sip.json" gets added to files
@@ -123,7 +126,6 @@ def process(
                 pipeline.delete_folder(base_path)
 
                 return {"status": 1, "errormsg": e}
-        
 
         logging.info("SIP successfully created")
 

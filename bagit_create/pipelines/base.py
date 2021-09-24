@@ -128,8 +128,7 @@ class BasePipeline:
             computedhash = self.adler32sum(filename)
         else:
             computedhash = my_fs.hash(filename, alg)
-            
-                
+
         return computedhash
 
     def generate_manifest(self, files, algorithm, basepath):
@@ -148,7 +147,7 @@ class BasePipeline:
         """
         contents = ""
         for file in files:
-            
+
             path = f"{basepath}/{file['localpath']}"
             if "checksum" in file:
                 p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
@@ -170,7 +169,7 @@ class BasePipeline:
                 logging.debug(f"Computing {algorithm} of {file['filename']}")
                 checksum = self.compute_hash(f"{path}", algorithm)
             else:
-                #Here may needs additional checks
+                # Here may needs additional checks
                 pass
             line = f"{checksum} {file['localpath']}\n"
             contents += line
@@ -213,9 +212,9 @@ class BasePipeline:
         #  e.g. "bagitexport::cds::42"
         base_name = f"bagitexport{delimiter_str}{source}{delimiter_str}{recid}"
         base_path = f"{path}/{base_name}"
-        name = base_name
 
         os.mkdir(base_path)
+
         # Create data/ subfolder (bagit payload)
         os.mkdir(f"{base_path}/data")
         os.mkdir(f"{base_path}/data/meta")
@@ -224,7 +223,7 @@ class BasePipeline:
         self.base_path = base_path
 
         logging.debug(f"Bag folder: {base_name}")
-        return base_path, name
+        return base_path, base_name
 
     def prepare_AIC(self, base_path, recid, timestamp=0, delimiter_str="::"):
         logging.info("Creating AIC..")
@@ -279,7 +278,7 @@ class BasePipeline:
 
         return files
 
-    def create_bic_meta(self, files, audit, base_path, metadata_url = None):
+    def create_bic_meta(self, files, audit, base_path, metadata_url=None):
         bic_meta = {
             "created_by": f"bagit-create {__version__}",
             "audit": audit,
