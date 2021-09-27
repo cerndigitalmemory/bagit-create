@@ -37,7 +37,7 @@ class InvenioV1Pipeline(base.BasePipeline):
         self.metadata_url = r.url
         try:
             self.metadata_size = r.headers["Content-length"]
-        except:
+        except Exception:
             self.metadata_size = ""
         return r.content, r.url, r.status_code, "metadata.xml"
 
@@ -57,7 +57,7 @@ class InvenioV1Pipeline(base.BasePipeline):
         logging.debug("Parsing metadata..")
         try:
             record = marcxml.parse_xml_to_array(metadata_filename)[0]
-        except:
+        except Exception:
             raise Exception("Malformed metadata. Check if the record is public.")
         # Look for 856 entries
         #  MARC21: 856 - Electronic Location and Access (R)
@@ -140,16 +140,12 @@ class InvenioV1Pipeline(base.BasePipeline):
 
                 if sourcefile["remote"] == "HTTP":
                     sourcefile["downloaded"] = cds.downloadRemoteFile(
-                        sourcefile["url"],
-                        destination,
+                        sourcefile["url"], destination
                     )
                 elif sourcefile["remote"] == "EOS":
-                    cds.downloadEOSfile(
-                        sourcefile["url"],
-                        destination,
-                    )
+                    cds.downloadEOSfile(sourcefile["url"], destination)
             else:
                 logging.debug(
-                    f'Skipped downloading of {sourcefile["filename"]} from \
-                    {sourcefile["url"]}..'
+                    f'Skipped downloading of {sourcefile["filename"]} from              '
+                    f'       {sourcefile["url"]}..'
                 )
