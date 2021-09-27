@@ -7,6 +7,7 @@ from .pipelines import local
 import logging
 from fs import open_fs
 from .version import __version__
+import time
 
 my_fs = open_fs(".")
 
@@ -31,11 +32,14 @@ def process(
     logging.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     logging.debug(f"Set log level: {loglevels[loglevel]}")
 
+    # Save timestamp
+    timestamp = int(time.time())
+
     if dry_run:
         logging.warning(
-            "This will be a DRY RUN. A 'light' bag will be created, not downloading \
-            or moving any payload file, but checksums *must* be available from the \
-            metadata, or no valid CERN AIP will be created."
+            "This will be a DRY RUN. A 'light' bag will be created, not downloading"
+            "or moving any payload file, but checksums *must* be available from"
+            "the metadata, or no valid CERN SIP will be created."
         )
     try:
         # Initialize the pipeline
@@ -104,7 +108,9 @@ def process(
                 pipeline.download_files(files, f"{base_path}/data/content")
 
         # Create sip.json
-        files = pipeline.create_bic_meta(files, audit, base_path, metadata_url)
+        files = pipeline.create_sip_meta(
+            files, audit, timestamp, base_path, metadata_url
+        )
 
         pipeline.create_manifests(files, base_path)
         # an entry for "sip.json" gets added to files
