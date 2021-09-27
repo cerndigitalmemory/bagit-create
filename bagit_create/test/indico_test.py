@@ -39,7 +39,8 @@ def test_parse_indico_metadata():
             'endDate': {'date': '2021-06-15', 'time': '16:00:00', 'tz': 'Europe/Zurich'},
             'room': '',
             'metadata': True,
-            'downloaded': False,
+            'downloaded': True,
+            'filename' : 'metadata.json',
             'localpath': 'data/meta/metadata.json',
         },
     ]
@@ -65,8 +66,8 @@ def test_api_response1():
     # Get metadata for ID 1024767
     (
         metadata,
-        status_code,
         metadata_url,
+        status_code,
         metadata_filename,
     ) = indico_pipeline.get_metadata(1024767)
 
