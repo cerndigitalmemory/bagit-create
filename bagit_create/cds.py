@@ -97,9 +97,12 @@ def getRawFilesLocs(metadata_filename):
 
 
 def downloadRemoteFile(src, dest):
-    r = requests.get(src)
-    with open(dest, "wb") as f:
-        f.write(r.content)
+    try:
+        r = requests.get(src)
+        with open(dest, "wb") as f:
+            f.write(r.content)
+    except Exception as e:
+        logging.warning(f"Couldn't not download file {src}. Error {e}")
     return True
 
 
