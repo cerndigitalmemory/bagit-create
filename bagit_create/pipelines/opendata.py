@@ -50,6 +50,8 @@ class OpenDataPipeline(base.BasePipeline):
                         )
                         # Append the final path
                         el["path"] = el["filename"]
+                        localpath = el["path"]
+                        el["localpath"] = f"data/content/{localpath}"
                         el["metadata"] = False
                         el["downloaded"] = False
                         if type not in el or (type in el and el["type"] != "index.txt"):
@@ -60,6 +62,8 @@ class OpenDataPipeline(base.BasePipeline):
                 )
                 sourcefile["filename"] = sourcefile["key"]
                 sourcefile["path"] = sourcefile["filename"]
+                localpath = sourcefile["path"]
+                sourcefile["localpath"] = f"data/content/{localpath}"
                 sourcefile["metadata"] = False
                 sourcefile["downloaded"] = False
                 files.append(sourcefile)
@@ -91,7 +95,7 @@ class OpenDataPipeline(base.BasePipeline):
     but won't be computed locally."
             )
 
-    def create_manifests(self, files, base_path, files_base_path):
+    def create_manifests(self, files, base_path):
         algs = ["adler32"]
         logging.warning(
             "adler32 was selected because it's the only checksum available in CERN Open Data. This will create an invalid Bag, as adler32 is not supported."
@@ -99,5 +103,5 @@ class OpenDataPipeline(base.BasePipeline):
 
         for alg in algs:
             logging.info(f"Generating manifest {alg}..")
-            content = self.generate_manifest(files, alg, files_base_path)
+            content = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")

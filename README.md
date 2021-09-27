@@ -58,17 +58,22 @@ Four pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data, Indico) are currently 
 
 ### CLI
 
+Some examples:
+
 ```bash
 # CDS
 bic --recid 1 --source cds --dry-run
 bic --recid 1000 --source cds --dry-run
-1000571
+bic --recid 1000571 --source cds --dry-run
+
+# ilcdoc
+bic --source ilcdoc --recid 62959 --verbose
 
 # CERN Open Data
-1
+bic --recid 1 --source cod --dry-run --verbose
 bic --recid 8884 --source cod --dry-run --verbose --alternate-uri
 bic --recid 8884 --source cod --dry-run --verbose
-5200
+bic --recid 5200 --source cod --dry-run --verbose
 bic --recid 8888 --source cod --dry-run --verbose
 
 bic --recid 10101 --source cod --dry-run --verbose
@@ -92,7 +97,6 @@ bic --recid gjgvm-4mq98 --source inveniordm --verbose
 
 # Indico
 bic --recid 1024767 --source indico 
-
 ```
 
 CLI options:
@@ -124,6 +128,32 @@ Options:
   -t, --target TEXT               Select destination folder
   --help                          Show this message and exit.
 
+```
+
+### Accessing CERN firewalled websites
+
+If the upstream source you're trying to access is firewalled, you can set up a SOCKS5 proxy via a SSH tunnel through LXPLUS and then run `bic` through it with tools like `proxychains` or `tsocks`. E.g.:
+
+
+Bring up the SSH tunnel:
+```bash
+ssh -D 1337 -q -N -f -C lxplus.cern.ch
+```
+
+The proxy will be up at `socks5://localhost:1337`. After having installed `tsocks`, edit the its configuration file (`/etc/tsocks.conf`) as follows:
+
+```bash
+[...]
+server = localhost
+server_type = 5
+server_port = 1337
+[...]
+```
+
+Now, just run `bic` as documented here but prepend `tsocks` to the command:
+
+```bash
+tsocks bic --recid 1024767 --source indico -vv
 ```
 
 ### Module

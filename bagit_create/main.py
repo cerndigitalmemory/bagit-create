@@ -2,11 +2,12 @@ from .pipelines import invenio_v1
 from .pipelines import invenio_v3
 from .pipelines import opendata
 from .pipelines import indico
-
+from .pipelines import local
 
 import logging
 from fs import open_fs
 from .version import __version__
+import time
 
 my_fs = open_fs(".")
 
@@ -16,6 +17,7 @@ def process(
     source,
     loglevel,
     target,
+    localsource,
     dry_run=False,
     alternate_uri=False,
     bibdoc=False,
@@ -30,11 +32,14 @@ def process(
     logging.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     logging.debug(f"Set log level: {loglevels[loglevel]}")
 
+    # Save timestamp
+    timestamp = int(time.time())
+
     if dry_run:
         logging.warning(
-            "This will be a DRY RUN. A 'light' bag will be created, not downloading \
-            or moving any payload file, but checksums *must* be available from the \
-            metadata, or no valid CERN AIP will be created."
+            "This will be a DRY RUN. A 'light' bag will be created, not downloading"
+            "or moving any payload file, but checksums *must* be available from"
+            "the metadata, or no valid CERN SIP will be created."
         )
     try:
         # Initialize the pipeline
@@ -50,6 +55,11 @@ def process(
             pipeline = invenio_v3.InvenioV3Pipeline(source)
         elif source == "indico":
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/")
+        elif source == "local":
+            pipeline = local.LocalV1Pipeline(localsource)
+
+        if source == "local":
+            recid = pipeline.get_folder_checksum(localsource)
 
         # Save job details (Audit step 0)
         audit = [
@@ -59,39 +69,53 @@ def process(
             }
         ]
 
-        # Prepare folders
-        base_path, temp_files_path, name = pipeline.prepare_folders(source, recid)
+        base_path, name = pipeline.prepare_folders(source, recid)
 
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
 
-        # Get metadata
-        metadata, metadata_url, status_code, metadata_filename = pipeline.get_metadata(
-            recid
-        )
+        if source == "local":
+            # Look for files in the source folder and prepare the files object
+            files = pipeline.scan_files(localsource)
+            metadata_url = None
+        else:
+            # Get metadata from upstream
+            (
+                metadata,
+                metadata_url,
+                status_code,
+                metadata_filename,
+            ) = pipeline.get_metadata(recid)
 
-        # Save metadata file in the meta folder
-        pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
+            # Save metadata file in the meta folder
+            pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
 
-        # Parse metadata for files
-        files = pipeline.parse_metadata(f"{base_path}/data/meta/{metadata_filename}")
+            # Parse metadata for files
+            files = pipeline.parse_metadata(f"{base_path}/data/meta/{metadata_filename}")
 
         if dry_run is True:
             # Create fetch.txt
             pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
         else:
-            # Download files
-            pipeline.download_files(files, f"{base_path}/data/content")
+
+            if source == "local":
+                files = pipeline.copy_files(
+                    files, localsource, f"{base_path}/data/content"
+                )
+
+            else:
+                # Download files
+                pipeline.download_files(files, f"{base_path}/data/content")
 
         # Create sip.json
-        files = pipeline.create_bic_meta(
-            files, audit, metadata_filename, metadata_url, base_path
+        files = pipeline.create_sip_meta(
+            files, audit, timestamp, base_path, metadata_url
         )
+
+        pipeline.create_manifests(files, base_path)
         # an entry for "sip.json" gets added to files
 
         # Create manifest files
-        pipeline.create_manifests(files, base_path)
-
         pipeline.add_bag_info(base_path, f"{base_path}/bag-info.txt")
 
         # Verify created Bag
@@ -105,12 +129,9 @@ def process(
                 pipeline.delete_folder(base_path)
             except FileExistsError as e:
                 logging.error(f"Job failed with error: {e}")
-                pipeline.delete_folder(temp_files_path)
                 pipeline.delete_folder(base_path)
 
                 return {"status": 1, "errormsg": e}
-
-        pipeline.delete_folder(temp_files_path)
 
         logging.info("SIP successfully created")
 
@@ -126,7 +147,6 @@ def process(
     #  any created file and folder
     except Exception as e:
         logging.error(f"Job failed with error: {e}")
-        pipeline.delete_folder(temp_files_path)
         pipeline.delete_folder(base_path)
 
         return {"status": 1, "errormsg": e}

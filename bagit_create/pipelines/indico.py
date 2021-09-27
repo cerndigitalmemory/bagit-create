@@ -41,8 +41,8 @@ class IndicoV1Pipeline(base.BasePipeline):
                 metadata_filename = "metadata.json"
                 return (
                     response.content,
-                    response.status_code,
                     response.url,
+                    response.status_code,
                     metadata_filename,
                 )
             else:
@@ -130,7 +130,8 @@ class IndicoV1Pipeline(base.BasePipeline):
                 obj["location"] = results["location"]
 
             obj["metadata"] = True  # is metadata no files
-            obj["downloaded"] = False
+            obj["downloaded"] = True
+            obj["filename"] = "metadata.json"
             obj["localpath"] = f"data/meta/metadata.json"
 
             files.append(obj)

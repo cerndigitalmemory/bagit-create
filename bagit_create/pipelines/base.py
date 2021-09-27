@@ -36,9 +36,9 @@ class BasePipeline:
         size = sum(f.stat().st_size for f in payload_path.glob("**/*") if f.is_file())
 
         baginfo = (
-            f"Bag-Software-Agent: bagit-create {__version__} <https://github.com/cerndigitalmemory/bagit-create>\n"
-            f"Bagging-Date: {d}\n"
-            f"Payload-Oxum: {size}.{file_count}\n"
+            f"Bag-Software-Agent: bagit-create {__version__}"
+            " <https://github.com/cerndigitalmemory/bagit-create>\nBagging-Date:"
+            f" {d}\nPayload-Oxum: {size}.{file_count}\n"
         )
         self.write_file(baginfo, dest)
 
@@ -110,9 +110,7 @@ class BasePipeline:
         """
         Creates "bagit.txt", the Bag Declaration file (BagIt specification)
         """
-        bagittxt = (
-            f"BagIt-Version: {version}\n" f"Tag-File-Character-Encoding: {encoding}\n"
-        )
+        bagittxt = f"BagIt-Version: {version}\nTag-File-Character-Encoding: {encoding}\n"
         self.write_file(bagittxt, dest)
         return bagittxt
 
@@ -128,8 +126,7 @@ class BasePipeline:
             computedhash = self.adler32sum(filename)
         else:
             computedhash = my_fs.hash(filename, alg)
-            
-                
+
         return computedhash
 
     def generate_manifest(self, files, algorithm, basepath):
@@ -159,8 +156,8 @@ class BasePipeline:
                     checksum = matched_checksum
                 elif file["downloaded"]:
                     logging.info(
-                        f"Checksum {alg} found for {file['filename']} \
-                        but {algorithm} was requested."
+                        f"Checksum {alg} found for {file['filename']}                   "
+                        f"      but {algorithm} was requested."
                     )
                     logging.debug(f"Computing {algorithm} of {file['filename']}")
                     checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
@@ -170,6 +167,7 @@ class BasePipeline:
                 logging.debug(f"Computing {algorithm} of {file['filename']}")
                 checksum = self.compute_hash(f"{path}", algorithm)
             else:
+                # Here may needs additional checks
                 pass
             line = f"{checksum} {file['localpath']}\n"
             contents += line
@@ -212,23 +210,18 @@ class BasePipeline:
         #  e.g. "bagitexport::cds::42"
         base_name = f"bagitexport{delimiter_str}{source}{delimiter_str}{recid}"
         base_path = f"{path}/{base_name}"
-        name = base_name
 
         os.mkdir(base_path)
+
         # Create data/ subfolder (bagit payload)
         os.mkdir(f"{base_path}/data")
         os.mkdir(f"{base_path}/data/meta")
         os.mkdir(f"{base_path}/data/content")
 
-        # Create temporary folder to download the resource content
-        temp_path = f"{path}/temp_{source}_{recid}"
-        temp_relpath = f"temp_{source}_{recid}"
-        os.mkdir(temp_path)
-
         self.base_path = base_path
 
         logging.debug(f"Bag folder: {base_name}")
-        return base_path, temp_path, name
+        return base_path, base_name
 
     def prepare_AIC(self, base_path, recid, timestamp=0, delimiter_str="::"):
         logging.info("Creating AIC..")
@@ -254,7 +247,8 @@ class BasePipeline:
                     os.mkdir(aiufoldername)
                 except:
                     logging.warning(
-                        "Trying to create an already existing AIU. Duplicate files or colliding checksums?"
+                        "Trying to create an already existing AIU. Duplicate files or"
+                        " colliding checksums?"
                     )
                 files[idx][
                     "localpath"
@@ -278,12 +272,13 @@ class BasePipeline:
                     ] = f"data/{recid}{delimiter_str}{matched_checksum}/{file['filename']}"
                 else:
                     logging.error(
-                        "File was not downloaded and there's not checksum available from metadata."
+                        "File was not downloaded and there's not checksum available from"
+                        " metadata."
                     )
 
         return files
 
-    def create_bic_meta(self, files, audit, metadata_filename, metadata_url, base_path):
+    def create_sip_meta(self, files, audit, timestamp, base_path, metadata_url=None):
         bic_meta = {
             "created_by": f"bagit-create {__version__}",
             "audit": audit,
@@ -291,11 +286,11 @@ class BasePipeline:
             "recid": audit[0]["param"]["recid"],
             "metadataFile_upstream": metadata_url,
             "contentFiles": files,
+            "sip_creation_timestamp": timestamp,
         }
 
         self.write_file(
-            json.dumps(bic_meta, indent=4),
-            f"{base_path}/data/meta/sip.json",
+            json.dumps(bic_meta, indent=4), f"{base_path}/data/meta/sip.json"
         )
 
         bic_meta_file_entry = {
