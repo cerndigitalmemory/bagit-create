@@ -126,6 +126,32 @@ Options:
 
 ```
 
+### Accessing CERN firewalled websites
+
+If the upstream source you're trying to access is firewalled, you can set up a SOCKS5 proxy via a SSH tunnel through LXPLUS and then run `bic` through it with tools like `proxychains` or `tsocks`. E.g.:
+
+
+Bring up the SSH tunnel:
+```bash
+ssh -D 1337 -q -N -f -C lxplus.cern.ch
+```
+
+The proxy will be up at `socks5://localhost:1337`. After having installed `tsocks`, edit the its configuration file (`/etc/tsocks.conf`) as follows:
+
+```bash
+[...]
+server = localhost
+server_type = 5
+server_port = 1337
+[...]
+```
+
+Now, just run `bic` as documented here but prepend `tsocks` to the command:
+
+```bash
+tsocks bic --recid 1024767 --source indico -vv
+```
+
 ### Module
 
 The BagIt-Create tool can be used from other python scripts easily:
