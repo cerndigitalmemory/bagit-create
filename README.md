@@ -58,17 +58,22 @@ Four pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data, Indico) are currently 
 
 ### CLI
 
+Some examples:
+
 ```bash
 # CDS
 bic --recid 1 --source cds --dry-run
 bic --recid 1000 --source cds --dry-run
-1000571
+bic --recid 1000571 --source cds --dry-run
+
+# ilcdoc
+bic --source ilcdoc --recid 62959 --verbose
 
 # CERN Open Data
-1
+bic --recid 1 --source cod --dry-run --verbose
 bic --recid 8884 --source cod --dry-run --verbose --alternate-uri
 bic --recid 8884 --source cod --dry-run --verbose
-5200
+bic --recid 5200 --source cod --dry-run --verbose
 bic --recid 8888 --source cod --dry-run --verbose
 
 bic --recid 10101 --source cod --dry-run --verbose
@@ -92,7 +97,6 @@ bic --recid gjgvm-4mq98 --source inveniordm --verbose
 
 # Indico
 bic --recid 1024767 --source indico 
-
 ```
 
 CLI options:
