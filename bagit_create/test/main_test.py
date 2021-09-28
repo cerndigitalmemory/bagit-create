@@ -1,8 +1,9 @@
 from ..pipelines import invenio_v1
 from ..pipelines import base
 import tempfile
-import ntpath
+import ntpath, os
 from os import walk
+import shutil
 
 pipeline = invenio_v1.InvenioV1Pipeline("https://some/invenio/v1/instance")
 
@@ -70,42 +71,60 @@ def test_manifest_md5():
 
 def test_target_option():
    
-    # Prepare the mock folders and expected result from file
-    with tempfile.TemporaryDirectory() as tmpdir1:
-        with tempfile.TemporaryDirectory(dir = tmpdir1) as tmpdir2:
-            with tempfile.TemporaryDirectory() as destdir:
-                #Creates two temp directories and two files
-                f1 = tempfile.NamedTemporaryFile('w+t',dir = tmpdir1)
-                f1.write('Hello World. This is temp_1!') 
-                f1.seek(0)
+    src = "/tmp/test_temp_folder_1"
+    dest = "/tmp/destination_temp_folder"
 
-                f2 = tempfile.NamedTemporaryFile('w+t',dir = tmpdir2)
-                f2.write('Hello World. This is temp_11!') 
-                f2.seek(0)
+    try:
+        os.mkdir(src)
+    except:
+        shutil.rmtree(src)
+        os.mkdir(src)
+    os.mkdir(f"{src}/test_temp_folder_2")
+    f1 = open(f"{src}/test_temp_file_1", 'w')
+    f2 = open(f"{src}/test_temp_folder_2/test_temp_file_2", 'w')
 
-                #Temp directory structure
-                # - tmpdir1
-                #   - f1
-                #   - tmpdir2
-                #       - f2
-                # We want to check if the two files will be moved at the destination folder  
+    #Temp directory structure
+    # - tmpdir1
+    #   - f1
+    #   - tmpdir2
+    #       - f2
+    # We want to check if the two files will be moved at the destination folder  
 
-                pipeline = base.BasePipeline()
+    f1.close()
+    f2.close()
 
-                pipeline.move_folders(tmpdir1, ntpath.basename(tmpdir1), destdir)
-                
-                f1_is_here = False
-                f2_is_here = False
+    # Make destination temp folder
+    try:
+        os.mkdir(dest)
+    except:
+        shutil.rmtree(dest)
+        os.mkdir(dest)
 
-                for (dirpath, dirnames, filenames) in walk(destdir):
-                    print(filenames)
-                
-                    for i in filenames:
-                        if ntpath.basename(f1.name) == i:
-                            f1_is_here = True
-                            print(1, i)
-                        if ntpath.basename(f2.name) == i:
-                            f2_is_here = True
-                            print(2, i)
-                assert f1_is_here == True
-                assert f2_is_here == True
+    try:
+        # Run the move folders function
+        pipeline = base.BasePipeline()
+        pipeline.move_folders(src, "test_temp_folder_1", dest)
+
+        # Create two flags to assert the test
+        file_1_exists = False
+        file_2_exists = False
+
+        # Check if the folders have been moved to the target directory
+        # No need to check if the directories have been created. We do it by checking the folders
+    
+        if os.path.isfile(f"{dest}/test_temp_folder_1/test_temp_file_1"):
+            file_1_exists = True
+        if os.path.isfile(f"{dest}/test_temp_folder_1/test_temp_folder_2/test_temp_file_2"):
+            file_2_exists = True
+    except:
+        shutil.rmtree(dest)
+        shutil.rmtree(src) 
+
+    # Clear src and destination folders
+    shutil.rmtree(dest)
+    shutil.rmtree(src)
+
+    assert file_1_exists == True
+    assert file_2_exists == True
+
+

@@ -60,12 +60,7 @@ def test_copy_files():
             with tempfile.TemporaryDirectory() as destdir:
                 #Creates two temp directories and two files
                 f1 = tempfile.NamedTemporaryFile('w+t',dir = tmpdir1)
-                f1.write('Hello World. This is temp_1!') 
-                f1.seek(0)
-
                 f2 = tempfile.NamedTemporaryFile('w+t',dir = tmpdir2)
-                f2.write('Hello World. This is temp_11!') 
-                f2.seek(0)
 
                 #Temp directory structure
                 # - tmpdir1
@@ -73,6 +68,8 @@ def test_copy_files():
                 #   - tmpdir2
                 #       - f2
                 # We want to check if the two files will be moved at the destination folder  
+
+                #Initial files structure
                 test_files = [
                 {
                     'filename': ntpath.basename(f1.name), 
@@ -92,6 +89,7 @@ def test_copy_files():
                 }
                 ] 
 
+                #Resulting files structure that we want to check (downloaded turns to True)
                 test_result_files = [
                 {
                     'filename': ntpath.basename(f1.name), 
@@ -111,11 +109,11 @@ def test_copy_files():
                 }
                 ] 
 
-
+                # Call the function
                 pipeline = local.LocalV1Pipeline(tmpdir1)
-
                 new_files = pipeline.copy_files(test_files,tmpdir1, destdir)
                 
+                # Flags to be checked
                 f1_is_here = False
                 f2_is_here = False
                 dirpath_1 = f'/tmp/{ntpath.basename(destdir)}'
@@ -134,6 +132,10 @@ def test_copy_files():
                             f2_is_here = True
                             if dirpath == dirpath_2:
                                 dirpath_2_flag = True
+                
+
+                f1.close()
+                f2.close()
                 
                 #Check if file 1 and 2 have been moved
                 assert f1_is_here == True, f2_is_here == True
