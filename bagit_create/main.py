@@ -5,6 +5,7 @@ from .pipelines import indico
 from .pipelines import local
 
 import logging
+import fs
 from fs import open_fs
 from .version import __version__
 import time
@@ -134,8 +135,24 @@ def process(
             files, audit, timestamp, base_path, metadata_url
         )
 
+        # To allow consistency and hashing of the attached log,
+        # No events after this point will be logged to the file
+
+        # Close the stream and release the lock on the file
+        log.handlers[1].stream.close()
+        # Remove the FileHandler (this allows to keep logging to the shell)
+        log.removeHandler(log.handlers[1])
+
+        # Move log file inside the meta folder
+        fs.move.move_file(
+            ".",
+            "bagitcreate.tmp",
+            f"{base_path}/data/meta",
+            "bagitcreate.log",
+        )
+
         pipeline.create_manifests(files, base_path)
-        # an entry for "sip.json" gets added to files
+        # file entries for "sip.json" and "bagitcreate.log" get added there
 
         # Create manifest files
         pipeline.add_bag_info(base_path, f"{base_path}/bag-info.txt")
@@ -150,25 +167,25 @@ def process(
                 pipeline.move_folders(base_path, name, target)
                 pipeline.delete_folder(base_path)
             except FileExistsError as e:
-                logging.error(f"Job failed with error: {e}")
+                log.error(f"Job failed with error: {e}")
                 pipeline.delete_folder(base_path)
 
                 return {"status": 1, "errormsg": e}
 
-        logging.info("SIP successfully created")
+        log.info("SIP successfully created")
 
         return {"status": 0, "errormsg": None}
 
     # Folder exists, gracefully stop
     except FileExistsError as e:
 
-        logging.error(f"Job failed with error: {e}")
+        log.error(f"Job failed with error: {e}")
 
         return {"status": 1, "errormsg": e}
     # For any other error, print details about what happened and clean up
     #  any created file and folder
     except Exception as e:
-        logging.error(f"Job failed with error: {e}")
+        log.error(f"Job failed with error: {e}")
         pipeline.delete_folder(base_path)
 
         return {"status": 1, "errormsg": e}
