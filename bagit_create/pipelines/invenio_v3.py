@@ -3,13 +3,15 @@ import logging
 import os, requests, json
 import configparser
 
+log = logging.getLogger("basic-logger")
+
 
 def get_dict_value(dct, keys):
     for key in keys:
         try:
             dct = dct[key]
         except KeyError:
-            logging.error("Key:" + key + " not found in dict: " + str(dct))
+            log.error("Key:" + key + " not found in dict: " + str(dct))
             return None
     return dct
 

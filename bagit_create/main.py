@@ -24,19 +24,41 @@ def process(
     bd_ssh_host=None,
     timestamp=0,
 ):
-    # Setup logging
-    # DEBUG, INFO, WARNING, ERROR logging levels
+    ## Setup log
+
+    # DEBUG, INFO, WARNING, ERROR log levels
     loglevels = [10, 20, 30, 40]
-    logging.basicConfig(level=loglevels[loglevel], format="%(message)s")
-    logging.info(f"BagIt Create tool {__version__}")
-    logging.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
-    logging.debug(f"Set log level: {loglevels[loglevel]}")
+    log = logging.getLogger("basic-logger")
+    log.setLevel(logging.DEBUG)
+
+    log.propagate = False
+
+    ## Console Handler
+    # create console handler logging to the shell
+    # what has been requested by the user (-v or -vv)
+    ch_formatter = logging.Formatter("%(message)s")
+    ch = logging.StreamHandler()
+    ch.setLevel(loglevels[loglevel])
+    ch.setFormatter(ch_formatter)
+    log.addHandler(ch)
+
+    ## File Handler
+    # create file handler logging everything
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    fh = logging.FileHandler("bagitcreate.tmp")
+    fh.setLevel(10)
+    fh.setFormatter(formatter)
+    log.addHandler(fh)
+
+    log.info(f"BagIt Create tool {__version__}")
+    log.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
+    log.debug(f"Set log level: {loglevels[loglevel]}")
 
     # Save timestamp
     timestamp = int(time.time())
 
     if dry_run:
-        logging.warning(
+        log.warning(
             "This will be a DRY RUN. A 'light' bag will be created, not downloading"
             "or moving any payload file, but checksums *must* be available from"
             "the metadata, or no valid CERN SIP will be created."

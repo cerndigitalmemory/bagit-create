@@ -16,6 +16,8 @@ from pathlib import Path
 
 my_fs = open_fs("/")
 
+log = logging.getLogger("basic-logger")
+
 
 class BasePipeline:
     def __init__(self) -> None:
@@ -24,7 +26,7 @@ class BasePipeline:
     def add_bag_info(self, path, dest):
         """
         The "bag-info.txt" file is a tag file that contains metadata elements
-        describing the bag and the payload.  The metadata elements contained
+        describing the bag and the payload. The metadata elements contained
         in the "bag-info.txt" file are intended primarily for human use.
         """
 
@@ -52,7 +54,7 @@ class BasePipeline:
         try:
             my_fs.copy(src, dest)
         except (FileNotFoundError, fs.errors.ResourceNotFound):
-            logging.debug(f"  Path '{src}' not found. Skipping file. ")
+            log.debug(f"  Path '{src}' not found. Skipping file. ")
             return False
 
     def adler32sum(self, filepath):
@@ -86,7 +88,7 @@ class BasePipeline:
         return None
 
     def delete_folder(self, path):
-        logging.info(f"Deleted {path}")
+        log.info(f"Deleted {path}")
         shutil.rmtree(path)
 
     def write_file(self, content, dest):
@@ -96,8 +98,8 @@ class BasePipeline:
             open(f"{dest}", "w").write(json.dumps(content, indent=4))
         else:
             open(f"{dest}", "w").write(content)
-        logging.info(f"Wrote {os.path.basename(dest)}")
-        logging.debug(f"({dest})")
+        log.info(f"Wrote {os.path.basename(dest)}")
+        log.debug(f"({dest})")
 
     def download_file(self, sourcefile, dest):
         r = requests.get(sourcefile["url"])
@@ -155,16 +157,16 @@ class BasePipeline:
                 if alg == algorithm:
                     checksum = matched_checksum
                 elif file["downloaded"]:
-                    logging.info(
+                    log.info(
                         f"Checksum {alg} found for {file['filename']}                   "
                         f"      but {algorithm} was requested."
                     )
-                    logging.debug(f"Computing {algorithm} of {file['filename']}")
+                    log.debug(f"Computing {algorithm} of {file['filename']}")
                     checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
 
             elif file["downloaded"]:
-                logging.debug(f"No checksum available for {file['filename']}")
-                logging.debug(f"Computing {algorithm} of {file['filename']}")
+                log.debug(f"No checksum available for {file['filename']}")
+                log.debug(f"Computing {algorithm} of {file['filename']}")
                 checksum = self.compute_hash(f"{path}", algorithm)
             else:
                 # Here may needs additional checks
@@ -220,14 +222,15 @@ class BasePipeline:
 
         self.base_path = base_path
 
-        logging.debug(f"Bag folder: {base_name}")
+        log.debug(f"Bag folder: {base_name}")
+
         return base_path, base_name
 
     def prepare_AIC(self, base_path, recid, timestamp=0, delimiter_str="::"):
-        logging.info("Creating AIC..")
+        log.info("Creating AIC..")
         # Set timestamp to now if 0 is passed
         if timestamp == 0:
-            logging.debug("No timestamp provided. Using 'now'")
+            log.debug("No timestamp provided. Using 'now'")
             timestamp = int(time.time())
         aic_name = f"{recid}{delimiter_str}{str(timestamp)}"
         aic_path = f"{base_path}/data/{aic_name}"
@@ -246,7 +249,7 @@ class BasePipeline:
                 try:
                     os.mkdir(aiufoldername)
                 except:
-                    logging.warning(
+                    log.warning(
                         "Trying to create an already existing AIU. Duplicate files or"
                         " colliding checksums?"
                     )
@@ -259,7 +262,7 @@ class BasePipeline:
                         f"{base_path}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
                     )
                 except:
-                    logging.warning(f"{temp_relpath}/{file['filename']} already exists")
+                    log.warning(f"{temp_relpath}/{file['filename']} already exists")
 
             if file["downloaded"] == False and file["metadata"] == False:
                 if "checksum" in file:
@@ -271,7 +274,7 @@ class BasePipeline:
                         "localpath"
                     ] = f"data/{recid}{delimiter_str}{matched_checksum}/{file['filename']}"
                 else:
-                    logging.error(
+                    log.error(
                         "File was not downloaded and there's not checksum available from"
                         " metadata."
                     )
@@ -289,6 +292,16 @@ class BasePipeline:
             "sip_creation_timestamp": timestamp,
         }
 
+        bic_log_file_entry = {
+            "filename": "bagitcreate.log",
+            "path": "bagitcreate.log",
+            "metadata": False,
+            "downloaded": True,
+            "localpath": f"data/meta/bagitcreate.log",
+        }
+
+        files.append(bic_log_file_entry)
+
         self.write_file(
             json.dumps(bic_meta, indent=4), f"{base_path}/data/meta/sip.json"
         )
@@ -299,14 +312,13 @@ class BasePipeline:
             "metadata": False,
             "downloaded": True,
             "localpath": f"data/meta/sip.json",
-            "localsavepath": f"{base_path}/data/meta",
         }
-        files.append(bic_meta_file_entry)
 
+        files.append(bic_meta_file_entry)
         return files
 
     def verify_bag(self, path):
-        logging.info(f"\n--\nValidating created Bag {path} ..")
+        log.info(f"\n--\nValidating created Bag {path} ..")
         bag = bagit.Bag(path)
         valid = False
         try:
@@ -314,12 +326,12 @@ class BasePipeline:
         except bagit.BagValidationError as err:
             print(f"Bag validation failed: {err}")
         if valid:
-            logging.info(f"Bag successfully validated")
-        logging.info("--\n")
+            log.info(f"Bag successfully validated")
+        log.info("--\n")
         return valid
 
     def move_folders(self, base_path, name, target):
-        logging.info(f"Moving files to {target} ..")
+        log.info(f"Moving files to {target} ..")
 
         # Check if destination folder exists
         if not os.path.isdir(target):

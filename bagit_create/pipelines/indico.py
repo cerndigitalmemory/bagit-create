@@ -6,10 +6,12 @@ import ntpath
 import os
 import configparser
 
+log = logging.getLogger("basic-logger")
+
 
 class IndicoV1Pipeline(base.BasePipeline):
     def __init__(self, base_url):
-        logging.info(f"Indico v1 pipeline initialised.\nBase URL: {base_url}")
+        log.info(f"Indico v1 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
 
     # get metadata according to indico api guidelines
@@ -55,7 +57,7 @@ class IndicoV1Pipeline(base.BasePipeline):
 
     # Download Remote Folders in the cwd
     def download_files(self, files, files_base_path):
-        logging.info(f"Downloading {len(files)} files to {files_base_path}..")
+        log.info(f"Downloading {len(files)} files to {files_base_path}..")
 
         for sourcefile in files:
             if sourcefile["metadata"] == False:
@@ -69,14 +71,14 @@ class IndicoV1Pipeline(base.BasePipeline):
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
         for alg in algs:
-            logging.info(f"Generating manifest {alg}..")
+            log.info(f"Generating manifest {alg}..")
             content = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
 
     def parse_metadata(self, metadataFilename):
 
         # Gets metadata and transforms to JSON
-        logging.info("Parsing metadata..")
+        log.info("Parsing metadata..")
         files = []
 
         with open(metadataFilename) as jsonFile:
@@ -93,7 +95,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                         if obj["filename"]:
                             files.append(obj)
                         else:
-                            logging.warning(
+                            log.warning(
                                 f"Skipped entry. No basename found (probably an URL?)"
                             )
 
@@ -106,7 +108,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                             if obj["filename"]:
                                 files.append(obj)
                             else:
-                                logging.warning(
+                                log.warning(
                                     f"Skipped entry. No basename found (probably an"
                                     f" URL?)"
                                 )

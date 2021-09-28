@@ -10,10 +10,12 @@ from os import walk
 import checksumdir
 from datetime import datetime
 
+log = logging.getLogger("basic-logger")
+
 
 class LocalV1Pipeline(base.BasePipeline):
     def __init__(self, src):
-        logging.info(f"Local v1 pipeline initialised.\nLocal source: {src}")
+        log.info(f"Local v1 pipeline initialised.\nLocal source: {src}")
         self.src = src
 
     def scan_files(self, src):
@@ -21,7 +23,7 @@ class LocalV1Pipeline(base.BasePipeline):
         Walks through the source folder and prepare the "files" object
         """
 
-        logging.info("Scanning source folder..")
+        log.info("Scanning source folder..")
         files = []
         # Walk through the whole directory and prepare an object for each found file
         for (dirpath, dirnames, filenames) in walk(src):
@@ -78,6 +80,6 @@ class LocalV1Pipeline(base.BasePipeline):
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
         for alg in algs:
-            logging.info(f"Generating manifest {alg}..")
+            log.info(f"Generating manifest {alg}..")
             content = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
