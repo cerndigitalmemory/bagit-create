@@ -41,7 +41,7 @@ class InvenioV1Pipeline(base.BasePipeline):
         try:
             self.metadata_size = r.headers["Content-length"]
         except Exception:
-            self.metadata_size = ""
+            self.metadata_size = 0
         return r.content, r.url, r.status_code, "metadata.xml"
 
     def parse_metadata(self, metadata_filename):
