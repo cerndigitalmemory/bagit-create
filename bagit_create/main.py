@@ -63,7 +63,8 @@ def process(
     ## File Handler
     # create file handler logging everything
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    fh = logging.FileHandler("bagitcreate.tmp")
+    logfilename = f"biclog::{recid}::{source}.tmp"
+    fh = logging.FileHandler(logfilename)
     fh.setLevel(10)
     fh.setFormatter(formatter)
     log.addHandler(fh)
@@ -71,9 +72,7 @@ def process(
     log.info(f"BagIt Create tool {__version__}")
     log.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     log.debug(f"Set log level: {loglevels[loglevel]}")
-
-    # Save timestamp
-    timestamp = int(time.time())
+    log.debug(f"Parametrs: {params}")
 
     if dry_run:
         log.warning(
@@ -169,7 +168,7 @@ def process(
         # Move log file inside the meta folder
         fs.move.move_file(
             ".",
-            "bagitcreate.tmp",
+            logfilename,
             f"{base_path}/data/meta",
             "bagitcreate.log",
         )
