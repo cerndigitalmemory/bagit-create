@@ -285,8 +285,8 @@ class BasePipeline:
         bic_meta = {
             "created_by": f"bagit-create {__version__}",
             "audit": audit,
-            "source": audit[0]["param"]["source"],
-            "recid": audit[0]["param"]["recid"],
+            "source": audit[0]["tool"]["params"]["source"],
+            "recid": audit[0]["tool"]["params"]["recid"],
             "metadataFile_upstream": metadata_url,
             "contentFiles": files,
             "sip_creation_timestamp": timestamp,
