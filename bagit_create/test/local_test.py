@@ -46,7 +46,12 @@ def test_local_files():
             pipeline = local.LocalV1Pipeline(tmpdir1)
 
             files = pipeline.scan_files(tmpdir1)
-            
+
+            for file in files:
+                file.pop("size")
+                file.pop("creator")
+                file.pop("date")
+
             f1.close()
             f2.close()
 

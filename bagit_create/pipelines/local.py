@@ -8,6 +8,8 @@ import json
 import os
 from os import walk
 import checksumdir
+from os import stat
+from pwd import getpwuid
 from datetime import datetime
 
 
@@ -38,6 +40,10 @@ class LocalV1Pipeline(base.BasePipeline):
 
                 obj["abs_path"] = f"{dirpath}/{file}"
                 obj["localpath"] = f"data/content/{obj['path']}"
+
+                obj["size"] = os.path.getsize(f"{dirpath}/{file}")
+                obj["date"] = (os.path.getmtime(f"{dirpath}/{file}"))
+                obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
 
                 obj["metadata"] = False
                 obj["downloaded"] = False
