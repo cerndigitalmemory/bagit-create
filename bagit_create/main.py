@@ -25,6 +25,23 @@ def process(
     bd_ssh_host=None,
     timestamp=0,
 ):
+    # Save timestamp
+    timestamp = int(time.time())
+
+    # Save parameters with which bagit-create was called
+    params = {
+        "recid": recid,
+        "source": source,
+        "loglevel": loglevel,
+        "target": target,
+        "localsource": localsource,
+        "dry_run": dry_run,
+        "alternate_uri": alternate_uri,
+        "bibdoc": bibdoc,
+        "bd_ssh_host": bd_ssh_host,
+        "timestamp": timestamp,
+    }
+
     ## Setup log
 
     # DEBUG, INFO, WARNING, ERROR log levels
@@ -87,8 +104,14 @@ def process(
         # Save job details (Audit step 0)
         audit = [
             {
-                "tool": f"BagIt Create tool {__version__}",
-                "param": {"recid": recid, "source": source},
+                "tool": {
+                    "name": "CERN BagIt Create",
+                    "version": __version__,
+                    "url": "https://gitlab.cern.ch/digitalmemory/bagit-create",
+                    "params": params,
+                },
+                "action": "sip_create",
+                "timestamp": timestamp,
             }
         ]
 
