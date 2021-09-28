@@ -62,12 +62,25 @@ Some examples:
 
 ```bash
 # CDS
-bic --recid 1 --source cds --dry-run
-bic --recid 1000 --source cds --dry-run
+
+# (Expect error) Removed resource
+bic --recid 1 --source cds
+
+# (Expect error) Public resource but metadata requires authorisation
+bic --recid 1000 --source cds
+
+# Resource with a lot of large videos
 bic --recid 1000571 --source cds --dry-run
 
 # ilcdoc
 bic --source ilcdoc --recid 62959 --verbose
+
+# Zenodo
+bic --recid 3911261 --source zenodo --verbose
+bic --recid 3974864 --source zenodo --verbose
+
+# Indico
+bic --recid 1024767 --source indico 
 
 # CERN Open Data
 bic --recid 1 --source cod --dry-run --verbose
@@ -87,16 +100,6 @@ bic --recid 10102 --source cod --verbose
 bic --recid 10103 --source cod --verbose
 bic --recid 10104 --source cod --verbose
 bic --recid 10105 --source cod --verbose
-
-# Zenodo
-bic --recid 3911261 --source zenodo --verbose
-bic --recid 3974864 --source zenodo --verbose
-
-# Invenio
-bic --recid gjgvm-4mq98 --source inveniordm --verbose
-
-# Indico
-bic --recid 1024767 --source indico 
 ```
 
 CLI options:
