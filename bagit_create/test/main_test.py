@@ -1,4 +1,8 @@
 from ..pipelines import invenio_v1
+from ..pipelines import base
+import tempfile
+import ntpath
+from os import walk
 
 pipeline = invenio_v1.InvenioV1Pipeline("https://some/invenio/v1/instance")
 
@@ -63,3 +67,45 @@ def test_fetch_txt():
 
 def test_manifest_md5():
     assert pipeline.generate_manifest(files, "md5", "") == manifest_md5
+
+def test_target_option():
+   
+    # Prepare the mock folders and expected result from file
+    with tempfile.TemporaryDirectory() as tmpdir1:
+        with tempfile.TemporaryDirectory(dir = tmpdir1) as tmpdir2:
+            with tempfile.TemporaryDirectory() as destdir:
+                #Creates two temp directories and two files
+                f1 = tempfile.NamedTemporaryFile('w+t',dir = tmpdir1)
+                f1.write('Hello World. This is temp_1!') 
+                f1.seek(0)
+
+                f2 = tempfile.NamedTemporaryFile('w+t',dir = tmpdir2)
+                f2.write('Hello World. This is temp_11!') 
+                f2.seek(0)
+
+                #Temp directory structure
+                # - tmpdir1
+                #   - f1
+                #   - tmpdir2
+                #       - f2
+                # We want to check if the two files will be moved at the destination folder  
+
+                pipeline = base.BasePipeline()
+
+                pipeline.move_folders(tmpdir1, ntpath.basename(tmpdir1), destdir)
+                
+                f1_is_here = False
+                f2_is_here = False
+
+                for (dirpath, dirnames, filenames) in walk(destdir):
+                    print(filenames)
+                
+                    for i in filenames:
+                        if ntpath.basename(f1.name) == i:
+                            f1_is_here = True
+                            print(1, i)
+                        if ntpath.basename(f2.name) == i:
+                            f2_is_here = True
+                            print(2, i)
+                assert f1_is_here == True
+                assert f2_is_here == True
