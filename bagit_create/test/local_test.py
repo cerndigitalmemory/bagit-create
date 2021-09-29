@@ -160,10 +160,14 @@ def test_sip_json():
 
     # Prepare the mock folders and expected result from file
     with tempfile.TemporaryDirectory() as tmpdir1:
-        #Creates a temp directory and metadata path
+        # Creates a temp directory and metadata path
         f1 = tempfile.NamedTemporaryFile('w+t',dir = tmpdir1)
+        # We have to create the data/meta directory where the sip.json will be saved
+        # These directories will be deleted afterwards because they are inside a temp directory
         os.mkdir(f'{tmpdir1}/data')
         os.mkdir(f'{tmpdir1}/data/meta')
+
+        #This is the files objects that will be used to generate the sip json
         test_files = [
                 {
                     'filename': "temp_file1", 
@@ -174,7 +178,7 @@ def test_sip_json():
                     'downloaded': True
                 }
             ] 
-
+        # This is the resulting files from the create_sip_meta function
         resulting_files = [
                 {
                     'filename': 'temp_file1', 
@@ -194,6 +198,7 @@ def test_sip_json():
                 }
             ]
 
+        #This is the desired sip.json output
         sip_json_tuple_data = {'created_by': 'bagit-create 0.0.7.4', 
         'audit': [{'tool': 'BagIt Create tool 0.07', 
         'param': {'recid': 1000, 'source': 'local'}}], 
@@ -219,6 +224,8 @@ def test_sip_json():
         base_path = f'/tmp/{ntpath.basename(tmpdir1)}'
         metadata_url = "metadata.json"
 
+
+        #The create sip meta function transforms the files object and creates the sip.json
         files = pipeline.create_sip_meta(
                 test_files, audit, timestamp, base_path, metadata_url
             )

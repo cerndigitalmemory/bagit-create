@@ -26,7 +26,9 @@ class LocalV1Pipeline(base.BasePipeline):
 
         logging.info("Scanning source folder..")
         files = []
+        # Base name for the local source folder e.g. for /home/user/Pictures the base_name is Pictures
         base_name = os.path.basename(os.path.normpath(src))
+        # The meaninglessSourcePath is the path before Pictures e.g. for /home/user/Pictures is /home/user
         meaninglessSourcePath = src[:len(src)-len(base_name) - 1]
         # Walk through the whole directory and prepare an object for each found file
         for (dirpath, dirnames, filenames) in walk(src):
