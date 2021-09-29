@@ -26,55 +26,93 @@ class LocalV1Pipeline(base.BasePipeline):
 
         logging.info("Scanning source folder..")
         files = []
-        # Base name for the local source folder e.g. for /home/user/Pictures the base_name is Pictures
-        base_name = os.path.basename(os.path.normpath(src))
-        # The meaninglessSourcePath is the path before Pictures e.g. for /home/user/Pictures is /home/user
-        meaninglessSourcePath = src[:len(src)-len(base_name) - 1]
-        # Walk through the whole directory and prepare an object for each found file
-        for (dirpath, dirnames, filenames) in walk(src):
-            relpath = os.path.basename(os.path.normpath(dirpath))
-    
-            for file in filenames:
-                obj = {}
-                obj["filename"] = file
-                ## If you are in the root directory just use filename
-                if dirpath == src:
-                    obj["path"] = f"{file}"
-                # Otherwise prepare the relative path
-                else:
-                    obj["path"] = f"{relpath}/{file}"
+        
+        if os.path.isfile(src):
+            file = ntpath.basename(src)
+            dirpath = ntpath.dirname(src)
 
-                srcPath =  obj["path"]
-                obj["meaningfulSourcePath"] = f"{base_name}/{srcPath}"
-                if not abs_flag:
-                    obj["meaninglessSourcePath"] = meaninglessSourcePath
-                    obj["sourceFullpath"] = f"{dirpath}/{file}"
-                    obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
-                else:
-                    obj["meaninglessSourcePath"] = ""
-                    obj["sourceFullpath"] = ""
-                    obj["creator"] = ""
-                obj["localpath_2"] = f"data/content/{base_name}/{obj['path']}"
-                obj["localpath"] = f"data/content/{obj['path']}"
+            obj = {}
+            obj["filename"] = file
+            obj["path"] = file
+            obj["meaningfulSourcePath"] = file
+            if not abs_flag:
+                obj["meaninglessSourcePath"] = dirpath
+                obj["sourceFullpath"] = f"{dirpath}/{file}"
+                obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
+            else:
+                obj["meaninglessSourcePath"] = ""
+                obj["sourceFullpath"] = ""
+                obj["creator"] = ""
+            #obj["localpath_2"] = f"data/content/{base_name}/{obj['path']}"
+            obj["localpath"] = f"data/content/{obj['path']}"
 
-                obj["size"] = os.path.getsize(f"{dirpath}/{file}")
-                obj["date"] = (os.path.getmtime(f"{dirpath}/{file}"))
+            obj["size"] = os.path.getsize(f"{dirpath}/{file}")
+            obj["date"] = (os.path.getmtime(f"{dirpath}/{file}"))
 
-                obj["metadata"] = False
-                obj["downloaded"] = False
+            obj["metadata"] = False
+            obj["downloaded"] = False
 
-                files.append(obj)
+            files.append(obj)
+
+        else:
+            # Base name for the local source folder e.g. for /home/user/Pictures the base_name is Pictures
+            base_name = os.path.basename(os.path.normpath(src))
+            # The meaninglessSourcePath is the path before Pictures e.g. for /home/user/Pictures is /home/user
+            meaninglessSourcePath = src[:len(src)-len(base_name) - 1]
+            # Walk through the whole directory and prepare an object for each found file
+            for (dirpath, dirnames, filenames) in walk(src):
+                relpath = os.path.basename(os.path.normpath(dirpath))
+        
+                for file in filenames:
+                    obj = {}
+                    obj["filename"] = file
+                    ## If you are in the root directory just use filename
+                    if dirpath == src:
+                        obj["path"] = f"{file}"
+                    # Otherwise prepare the relative path
+                    else:
+                        obj["path"] = f"{relpath}/{file}"
+
+                    srcPath =  obj["path"]
+                    obj["meaningfulSourcePath"] = f"{base_name}/{srcPath}"
+                    if not abs_flag:
+                        obj["meaninglessSourcePath"] = meaninglessSourcePath
+                        obj["sourceFullpath"] = f"{dirpath}/{file}"
+                        obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
+                    else:
+                        obj["meaninglessSourcePath"] = ""
+                        obj["sourceFullpath"] = ""
+                        obj["creator"] = ""
+                    obj["localpath_2"] = f"data/content/{base_name}/{obj['path']}"
+                    obj["localpath"] = f"data/content/{obj['path']}"
+
+                    obj["size"] = os.path.getsize(f"{dirpath}/{file}")
+                    obj["date"] = (os.path.getmtime(f"{dirpath}/{file}"))
+
+                    obj["metadata"] = False
+                    obj["downloaded"] = False
+
+                    files.append(obj)
+        
         # I don't have metadata json here. If we add, fields will be added here
         return files
 
     def copy_files(self, files, source_dir, dest_dir):
         my_fs = open_fs("/")
-        fs.copy.copy_dir(
-            src_fs=my_fs,
-            dst_fs=my_fs,
-            src_path=f"{source_dir}",
-            dst_path=f"{dest_dir}",
-        )
+        if os.path.isfile(source_dir):
+            fs.copy.copy_file(
+                src_fs=my_fs,
+                dst_fs=my_fs,
+                src_path=f"{source_dir}",
+                dst_path=f"{dest_dir}",
+            )
+        else:
+            fs.copy.copy_dir(
+                src_fs=my_fs,
+                dst_fs=my_fs,
+                src_path=f"{source_dir}",
+                dst_path=f"{dest_dir}",
+            )
         for file in files:
             file["downloaded"] = True
         return files
@@ -92,8 +130,11 @@ class LocalV1Pipeline(base.BasePipeline):
 
     # gwts the checksum
     def get_folder_checksum(self, src):
-        folder_checksum = checksumdir.dirhash(src)
-        return folder_checksum
+        if os.path.isfile(src):
+            checksum = self.compute_hash(f"{src}", "md5")
+        else:
+            checksum = checksumdir.dirhash(src)
+        return checksum
 
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
