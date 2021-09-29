@@ -6,6 +6,7 @@ from fs import open_fs
 from fs import copy
 import json
 import os
+import ntpath
 from os import walk
 import checksumdir
 from os import stat
@@ -25,9 +26,12 @@ class LocalV1Pipeline(base.BasePipeline):
 
         logging.info("Scanning source folder..")
         files = []
+        base_name = os.path.basename(os.path.normpath(src))
+        meaninglessSourcePath = src[:len(src)-len(base_name) - 1]
         # Walk through the whole directory and prepare an object for each found file
         for (dirpath, dirnames, filenames) in walk(src):
-            relpath = dirpath[len(src) - len(dirpath) + 1 :]
+            relpath = os.path.basename(os.path.normpath(dirpath))
+    
             for file in filenames:
                 obj = {}
                 obj["filename"] = file
@@ -38,7 +42,11 @@ class LocalV1Pipeline(base.BasePipeline):
                 else:
                     obj["path"] = f"{relpath}/{file}"
 
-                obj["abs_path"] = f"{dirpath}/{file}"
+                srcPath =  obj["path"]
+                obj["meaningfulSourcePath"] = f"{base_name}/{srcPath}"
+                obj["meaninglessSourcePath"] = meaninglessSourcePath
+                obj["sourceFullpath"] = f"{dirpath}/{file}"
+                obj["localpath_2"] = f"data/content/{base_name}/{obj['path']}"
                 obj["localpath"] = f"data/content/{obj['path']}"
 
                 obj["size"] = os.path.getsize(f"{dirpath}/{file}")
@@ -49,7 +57,6 @@ class LocalV1Pipeline(base.BasePipeline):
                 obj["downloaded"] = False
 
                 files.append(obj)
-
         # I don't have metadata json here. If we add, fields will be added here
         return files
 
