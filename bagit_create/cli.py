@@ -86,11 +86,19 @@ import click
     default=None,
     is_flag=False,
 )
+@click.option(
+    "--secure-path",
+    "-sp",
+    help="Enable logging (verbose, 'info' level)",
+    default=False,
+    is_flag=True,
+)
 def cli(
     recid,
     source,
     target,
     localsource,
+    secure_path,
     dry_run,
     alternate_uri,
     verbose,
@@ -116,6 +124,7 @@ def cli(
         loglevel,
         target,
         localsource,
+        secure_path,
         dry_run,
         alternate_uri,
         bibdoc,

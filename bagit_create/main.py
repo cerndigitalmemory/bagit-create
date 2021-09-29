@@ -18,6 +18,7 @@ def process(
     loglevel,
     target,
     localsource,
+    secure_path=False,
     dry_run=False,
     alternate_uri=False,
     bibdoc=False,
@@ -76,7 +77,7 @@ def process(
 
         if source == "local":
             # Look for files in the source folder and prepare the files object
-            files = pipeline.scan_files(localsource)
+            files = pipeline.scan_files(localsource, secure_path)
             metadata_url = None
         else:
             # Get metadata from upstream

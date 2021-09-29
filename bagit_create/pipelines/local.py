@@ -19,7 +19,7 @@ class LocalV1Pipeline(base.BasePipeline):
         logging.info(f"Local v1 pipeline initialised.\nLocal source: {src}")
         self.src = src
 
-    def scan_files(self, src):
+    def scan_files(self, src, abs_flag):
         """
         Walks through the source folder and prepare the "files" object
         """
@@ -46,14 +46,19 @@ class LocalV1Pipeline(base.BasePipeline):
 
                 srcPath =  obj["path"]
                 obj["meaningfulSourcePath"] = f"{base_name}/{srcPath}"
-                obj["meaninglessSourcePath"] = meaninglessSourcePath
-                obj["sourceFullpath"] = f"{dirpath}/{file}"
+                if not abs_flag:
+                    obj["meaninglessSourcePath"] = meaninglessSourcePath
+                    obj["sourceFullpath"] = f"{dirpath}/{file}"
+                    obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
+                else:
+                    obj["meaninglessSourcePath"] = ""
+                    obj["sourceFullpath"] = ""
+                    obj["creator"] = ""
                 obj["localpath_2"] = f"data/content/{base_name}/{obj['path']}"
                 obj["localpath"] = f"data/content/{obj['path']}"
 
                 obj["size"] = os.path.getsize(f"{dirpath}/{file}")
                 obj["date"] = (os.path.getmtime(f"{dirpath}/{file}"))
-                obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
 
                 obj["metadata"] = False
                 obj["downloaded"] = False
