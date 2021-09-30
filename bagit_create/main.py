@@ -3,6 +3,7 @@ from .pipelines import invenio_v3
 from .pipelines import opendata
 from .pipelines import indico
 from .pipelines import local
+from .pipelines.base import WrongInputException
 
 import logging
 import fs
@@ -96,7 +97,14 @@ def process(
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/")
         elif source == "local":
             pipeline = local.LocalV1Pipeline(localsource)
-
+        
+        pipeline.check_cli_input(
+            recid,
+            source,
+            localsource,
+            bibdoc,
+            bd_ssh_host)
+        
         if source == "local":
             recid = pipeline.get_folder_checksum(localsource)
 
@@ -204,6 +212,10 @@ def process(
         log.error(f"Job failed with error: {e}")
 
         return {"status": 1, "errormsg": e}
+    
+    except WrongInputException as e:
+        return {"status": 1, "errormsg": e}
+
     # For any other error, print details about what happened and clean up
     #  any created file and folder
     except Exception as e:

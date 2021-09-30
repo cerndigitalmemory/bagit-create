@@ -343,3 +343,46 @@ class BasePipeline:
 
         # move folder to the target location
         fs.move.move_fs(base_path, new_path)
+
+    #Checks the input from the cli and raises error if there is a mistake
+    def check_cli_input(
+        self,
+        recid,
+        source,
+        localsource,
+        bibdoc=False,
+        bd_ssh_host=None):
+
+        if source=="local":
+            if not localsource:
+                raise WrongInputException(f"Source {source} needs a target parameter --localsource or -ls to specify the input target directory or file on local system")
+            if not (os.path.isfile(localsource) or os.path.isdir(localsource)):
+                raise WrongInputException(f"Path {localsource} is not a file or directory for {source} source. Enter a valid local path.")
+            if bibdoc:
+                print(f"Value bibdoc not valid for {source} source. Continue job without taking bibdoc into account")
+            if bd_ssh_host:
+                print(f"Value bd-ssh-host not valid for {source} source. Continue job without taking bd-ssh-host into account")
+            if recid:
+                print(f"Value recid not valid for {source} source. Continue job without taking recid: {recid} into account")
+        elif source=="cds":
+            if not recid:
+                raise WrongInputException(f"Source {source} needs a target parameter --recid to specify the target id on {source}")
+            if localsource:
+                print(f"Value localsource not valid for {source} source. Continue job without taking localsource into account")
+            # if secure_path:
+            #     print(f"Value secure-path not valid for {source} source. Continue job without taking secure-path into account")
+        else:
+            if not recid:
+                raise WrongInputException(f"Source {source} needs a target parameter --recid to specify the target id on {source}")
+            if localsource:
+                print(f"Value localsource not valid for {source} source. Continue job without taking localsource into account")
+            # if secure_path:
+            #     print(f"Value secure-path not valid for {source} source. Continue job without taking secure-path into account")
+            if bibdoc:
+                print(f"Value bibdoc not valid for {source} source. Continue job without taking bibdoc into account")
+            if bd_ssh_host:
+                print(f"Value bd-ssh-host not valid for {source} source. Continue job without taking bd-ssh-host into account")
+
+class WrongInputException(Exception):
+    # This exception handles wrong cli commands 
+    pass
