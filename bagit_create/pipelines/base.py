@@ -357,7 +357,9 @@ class BasePipeline:
             if not localsource:
                 raise WrongInputException(f"Source {source} needs a target parameter --localsource or -ls to specify the input target directory or file on local system")
             if not (os.path.isfile(localsource) or os.path.isdir(localsource)):
-                raise WrongInputException(f"Path {localsource} is not a file or directory for {source} source. Enter a valid local path.")
+                local_rel_source = os.getcwd() + '/' + localsource
+                if not (os.path.isfile(local_rel_source) or os.path.isdir(local_rel_source)):
+                    raise WrongInputException(f"Path {localsource} is not a file or directory for {source} source. Enter a valid local path.")
             if bibdoc:
                 print(f"Value bibdoc not valid for {source} source. Continue job without taking bibdoc into account")
             if bd_ssh_host:

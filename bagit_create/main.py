@@ -106,7 +106,7 @@ def process(
             bd_ssh_host)
         
         if source == "local":
-            recid = pipeline.get_folder_checksum(localsource)
+            recid, localsource = pipeline.get_folder_checksum(localsource)
 
         # Save job details (Audit step 0)
         audit = [
