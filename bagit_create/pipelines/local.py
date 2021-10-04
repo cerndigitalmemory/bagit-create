@@ -50,9 +50,18 @@ class LocalV1Pipeline(base.BasePipeline):
                 obj["userSourcePath"] = userSourcePath
                 obj["sourceFullpath"] = f"{dirpath}/{file}"
                 obj["localpath"] = f"data/content/{obj['path']}"
-                obj["size"] = os.path.getsize(f"{dirpath}/{file}")
-                obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
-                obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
+                try:
+                    obj["size"] = os.path.getsize(f"{dirpath}/{file}")
+                except:
+                    pass
+                try:
+                    obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
+                except:
+                    pass
+                try:
+                    obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
+                except:
+                    pass
                 obj["metadata"] = False
                 obj["downloaded"] = False
 
