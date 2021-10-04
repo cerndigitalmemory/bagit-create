@@ -1,4 +1,3 @@
-from posixpath import relpath
 from . import base
 import logging
 import fs
@@ -52,16 +51,16 @@ class LocalV1Pipeline(base.BasePipeline):
                 obj["localpath"] = f"data/content/{obj['path']}"
                 try:
                     obj["size"] = os.path.getsize(f"{dirpath}/{file}")
-                except:
-                    pass
+                except OSError:
+                    log.debug(f" Size cannot be found. Skipping field. ")
                 try:
                     obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
-                except:
-                    pass
+                except OSError:
+                    log.debug(f" Date cannot be found. Skipping field. ")
                 try:
                     obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
-                except:
-                    pass
+                except OSError:
+                    log.debug(f" Creator cannot be found. Skipping field. ")
                 obj["metadata"] = False
                 obj["downloaded"] = False
 
