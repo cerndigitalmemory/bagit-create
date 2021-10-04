@@ -1,4 +1,3 @@
-from posixpath import relpath
 from . import base
 import logging
 import fs
@@ -6,9 +5,11 @@ from fs import open_fs
 from fs import copy
 import json
 import os
+import ntpath
 from os import walk
+from os import stat
+from pwd import getpwuid
 import checksumdir
-from datetime import datetime
 
 log = logging.getLogger("basic-logger")
 
@@ -18,16 +19,20 @@ class LocalV1Pipeline(base.BasePipeline):
         log.info(f"Local v1 pipeline initialised.\nLocal source: {src}")
         self.src = src
 
-    def scan_files(self, src):
+    def scan_files(self, src, abs_flag):
         """
         Walks through the source folder and prepare the "files" object
         """
 
         log.info("Scanning source folder..")
         files = []
-        # Walk through the whole directory and prepare an object for each found file
+        # Base name for the local source folder e.g. for /home/user/Pictures the base_name is Pictures
+        base_name = os.path.basename(os.path.normpath(src))
+        # The userSourcePath is the path before Pictures e.g. for /home/user/Pictures is /home/user
+        userSourcePath = src[: len(src) - len(base_name) - 1]
+
         for (dirpath, dirnames, filenames) in walk(src):
-            relpath = dirpath[len(src) - len(dirpath) + 1 :]
+            relpath = os.path.basename(os.path.normpath(dirpath))
             for file in filenames:
                 obj = {}
                 obj["filename"] = file
@@ -38,9 +43,31 @@ class LocalV1Pipeline(base.BasePipeline):
                 else:
                     obj["path"] = f"{relpath}/{file}"
 
-                obj["abs_path"] = f"{dirpath}/{file}"
+                sourcePath = obj["path"]
+                obj["sourcePath"] = f"{base_name}/{sourcePath}"
                 obj["localpath"] = f"data/content/{obj['path']}"
-
+                #If the secure path is not enabled. Get these fields:
+                if not abs_flag:
+                    obj["userSourcePath"] = userSourcePath
+                    obj["sourceFullpath"] = f"{dirpath}/{file}"
+                    try:
+                        obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
+                    except OSError:
+                        log.debug(f" Creator cannot be found. Skipping field. ")
+                else:
+                    try:
+                        obj["creator"] = "Unknown"
+                    except OSError:
+                        log.debug(f" Creator cannot be found. Skipping field. ")
+                try:
+                    obj["size"] = os.path.getsize(f"{dirpath}/{file}")
+                except OSError:
+                    log.debug(f" Size cannot be found. Skipping field. ")
+                try:
+                    obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
+                except OSError:
+                    log.debug(f" Date cannot be found. Skipping field. ")
+                
                 obj["metadata"] = False
                 obj["downloaded"] = False
 
