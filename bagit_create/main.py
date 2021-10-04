@@ -98,7 +98,7 @@ def process(
             pipeline = local.LocalV1Pipeline(localsource)
 
         if source == "local":
-            recid = pipeline.get_folder_checksum(localsource)
+            recid = pipeline.get_local_checksum(localsource)
 
         # Save job details (Audit step 0)
         audit = [
