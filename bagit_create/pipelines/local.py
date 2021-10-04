@@ -6,7 +6,10 @@ from fs import open_fs
 from fs import copy
 import json
 import os
+import ntpath
 from os import walk
+from os import stat
+from pwd import getpwuid
 import checksumdir
 from datetime import datetime
 
@@ -25,9 +28,13 @@ class LocalV1Pipeline(base.BasePipeline):
 
         log.info("Scanning source folder..")
         files = []
-        # Walk through the whole directory and prepare an object for each found file
+        # Base name for the local source folder e.g. for /home/user/Pictures the base_name is Pictures
+        base_name = os.path.basename(os.path.normpath(src))
+        # The userSourcePath is the path before Pictures e.g. for /home/user/Pictures is /home/user
+        userSourcePath = src[: len(src) - len(base_name) - 1]
+
         for (dirpath, dirnames, filenames) in walk(src):
-            relpath = dirpath[len(src) - len(dirpath) + 1 :]
+            relpath = os.path.basename(os.path.normpath(dirpath))
             for file in filenames:
                 obj = {}
                 obj["filename"] = file
@@ -38,9 +45,14 @@ class LocalV1Pipeline(base.BasePipeline):
                 else:
                     obj["path"] = f"{relpath}/{file}"
 
-                obj["abs_path"] = f"{dirpath}/{file}"
+                sourcePath = obj["path"]
+                obj["sourcePath"] = f"{base_name}/{sourcePath}"
+                obj["userSourcePath"] = userSourcePath
+                obj["sourceFullpath"] = f"{dirpath}/{file}"
                 obj["localpath"] = f"data/content/{obj['path']}"
-
+                obj["size"] = os.path.getsize(f"{dirpath}/{file}")
+                obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
+                obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
                 obj["metadata"] = False
                 obj["downloaded"] = False
 
