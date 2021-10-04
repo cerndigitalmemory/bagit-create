@@ -46,15 +46,18 @@ class LocalV1Pipeline(base.BasePipeline):
                 sourcePath = obj["path"]
                 obj["sourcePath"] = f"{base_name}/{sourcePath}"
                 obj["localpath"] = f"data/content/{obj['path']}"
-                #If the secure path is not enabled. Get these fields:
+                # If the secure path is not enabled. Get these fields:
                 if not abs_flag:
                     obj["userSourcePath"] = userSourcePath
                     obj["sourceFullpath"] = f"{dirpath}/{file}"
                     try:
-                        obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
+                        obj["creator"] = getpwuid(
+                            stat(f"{dirpath}/{file}").st_uid
+                        ).pw_name
                     except OSError:
                         log.debug(f" Creator cannot be found. Skipping field. ")
                 else:
+                    # If secure path is enabled set creator as unknown (maybe Secure?)
                     try:
                         obj["creator"] = "Unknown"
                     except OSError:
@@ -67,7 +70,7 @@ class LocalV1Pipeline(base.BasePipeline):
                     obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
                 except OSError:
                     log.debug(f" Date cannot be found. Skipping field. ")
-                
+
                 obj["metadata"] = False
                 obj["downloaded"] = False
 
