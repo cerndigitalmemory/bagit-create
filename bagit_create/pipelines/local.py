@@ -74,14 +74,8 @@ class LocalV1Pipeline(base.BasePipeline):
 
     # gwts the checksum
     def get_folder_checksum(self, src):
-        if os.path.isabs(src): 
-            folder_checksum = checksumdir.dirhash(src)
-        else: 
-            lc_src = os.getcwd() + "/" + src
-            if (os.path.isfile(lc_src) or os.path.isdir(lc_src)):
-                src = lc_src
-                folder_checksum = checksumdir.dirhash(src)   
-        return folder_checksum, src
+        folder_checksum = checksumdir.dirhash(src)
+        return folder_checksum
 
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]

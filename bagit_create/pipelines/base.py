@@ -345,62 +345,32 @@ class BasePipeline:
         fs.move.move_fs(base_path, new_path)
 
     # Checks the input from the cli and raises error if there is a mistake
-    def check_cli_input(recid, source, localsource, bibdoc=False, bd_ssh_host=None):
-        if source == "local":
-            if not localsource:
-                raise WrongInputException(
-                    f"Source {source} needs a target parameter --localsource or -ls to specify the input target directory or file on local system"
-                )
-            if not (os.path.isfile(localsource) or os.path.isdir(localsource)):
-                local_rel_source = os.getcwd() + "/" + localsource
-                if not (
-                    os.path.isfile(local_rel_source) or os.path.isdir(local_rel_source)
-                ):
-                    raise WrongInputException(
-                        f"Path {localsource} is not a file or directory for {source} source. Enter a valid local path."
-                    )
-            if bibdoc:
-                print(
-                    f"Value bibdoc not valid for {source} source. Continue job without taking bibdoc into account"
-                )
-            if bd_ssh_host:
-                print(
-                    f"Value bd-ssh-host not valid for {source} source. Continue job without taking bd-ssh-host into account"
-                )
-            if recid:
-                print(
-                    f"Value recid not valid for {source} source. Continue job without taking recid: {recid} into account"
-                )
-        elif source == "cds":
-            if not recid:
-                raise WrongInputException(
-                    f"Source {source} needs a target parameter --recid to specify the target id on {source}"
-                )
-            if localsource:
-                print(
-                    f"Value localsource not valid for {source} source. Continue job without taking localsource into account"
-                )
-            # if secure_path:
-            #     print(f"Value secure-path not valid for {source} source. Continue job without taking secure-path into account")
-        else:
-            if not recid:
-                raise WrongInputException(
-                    f"Source {source} needs a target parameter --recid to specify the target id on {source}"
-                )
-            if localsource:
-                print(
-                    f"Value localsource not valid for {source} source. Continue job without taking localsource into account"
-                )
-            # if secure_path:
-            #     print(f"Value secure-path not valid for {source} source. Continue job without taking secure-path into account")
-            if bibdoc:
-                print(
-                    f"Value bibdoc not valid for {source} source. Continue job without taking bibdoc into account"
-                )
-            if bd_ssh_host:
-                print(
-                    f"Value bd-ssh-host not valid for {source} source. Continue job without taking bd-ssh-host into account"
-                )
+    def check_parameters_input(
+        recid, source, localsource, bibdoc, bd_ssh_host, loglevels, alternate_uri
+    ):
+        """
+        Checks if the combination of the parameters for the job make up for
+        a valid operation
+        """
+
+        if (bibdoc or bd_ssh_host) and source != "cds":
+            raise WrongInputException(
+                "bibdoc and bd_ssh_host parameters are only accepted when selecting CDS\
+                as a source."
+            )
+
+        if bd_ssh_host and not bibdoc:
+            raise WrongInputException(
+                "bd_ssh_host is a setting supported only when using bibdoc."
+            )
+
+        if recid and source == "local":
+            raise WrongInputException("The local pipeline is not expecting a recid.")
+
+        if source != "local" and not recid:
+            raise WrongInputException("Recid is missing.")
+        if localsource and source != "local":
+            raise WrongInputException("This pipeline is not expecting a localsource.")
 
 
 class WrongInputException(Exception):

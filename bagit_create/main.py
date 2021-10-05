@@ -45,10 +45,9 @@ def process(
         "timestamp": timestamp,
     }
 
-    ## Check if CLI Input is correct
     try:
-        base.BasePipeline.check_cli_input(
-            recid, source, localsource, bibdoc, bd_ssh_host
+        base.BasePipeline.check_parameters_input(
+            recid, source, localsource, bibdoc, bd_ssh_host, loglevel, alternate_uri
         )
     except WrongInputException as e:
         return {"status": 1, "errormsg": e}
@@ -107,10 +106,9 @@ def process(
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/")
         elif source == "local":
             pipeline = local.LocalV1Pipeline(localsource)
-        if source == "local":
-            recid, localsource = pipeline.get_folder_checksum(localsource)
+            recid = pipeline.get_folder_checksum(localsource)
 
-        # Save job details (Audit step 0)
+        # Save job details (as audit step 0)
         audit = [
             {
                 "tool": {
