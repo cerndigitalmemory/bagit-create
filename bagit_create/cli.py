@@ -13,7 +13,6 @@ import click
 @click.option(
     "--recid",
     help="Unique ID of the record in the upstream source",
-    required=True,
 )
 @click.option(
     "-s",
