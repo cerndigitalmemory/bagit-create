@@ -7,6 +7,8 @@ from fs import copy
 import json
 import os
 import ntpath
+from os import stat
+from pwd import getpwuid
 from os import walk
 import checksumdir
 
@@ -25,20 +27,33 @@ class LocalV1Pipeline(base.BasePipeline):
 
         log.info("Scanning source folder..")
         files = []
+        # Base name for the local source folder e.g. for /home/user/Pictures the base_name is Pictures
+        base_name = os.path.basename(os.path.normpath(src))
+        # The userSourcePath is the path before Pictures e.g. for /home/user/Pictures is /home/user
+        userSourcePath = src[: len(src) - len(base_name) - 1]
+
         # If localsource is a file just get data from that file otherwise use the walk function
         if os.path.isfile(src):
             file = ntpath.basename(src)
             dirpath = ntpath.dirname(src)
-            relpath = dirpath[len(src) - len(dirpath) + 1 :]
-            obj = self.get_local_metadata(file, src, dirpath, relpath, isFile=True)
+            relpath = os.path.basename(os.path.normpath(dirpath))
+            obj = self.get_local_metadata(
+                file, src, dirpath, relpath, base_name, userSourcePath, isFile=True
+            )
             files.append(obj)
         else:
             # Walk through the whole directory and prepare an object for each found file
             for (dirpath, dirnames, filenames) in walk(src):
-                relpath = dirpath[len(src) - len(dirpath) + 1 :]
+                relpath = os.path.basename(os.path.normpath(dirpath))
                 for file in filenames:
                     obj = self.get_local_metadata(
-                        file, src, dirpath, relpath, isFile=False
+                        file,
+                        src,
+                        dirpath,
+                        relpath,
+                        base_name,
+                        userSourcePath,
+                        isFile=False,
                     )
                     files.append(obj)
 
@@ -47,13 +62,11 @@ class LocalV1Pipeline(base.BasePipeline):
 
     def copy_files(self, files, source_dir, dest_dir):
         my_fs = open_fs("/")
-        # If it is a file copy the file, if it is a directory copy the whole directory
         if os.path.isfile(source_dir):
             fs.copy.copy_file(
                 src_fs=my_fs,
                 dst_fs=my_fs,
                 src_path=f"{source_dir}",
-                # ntpath.basename is used because of Python version conflict. At pyhton 3.8+ it is not needed
                 dst_path=f"{dest_dir}/{ntpath.basename(source_dir)}",
             )
         else:
@@ -102,7 +115,9 @@ class LocalV1Pipeline(base.BasePipeline):
             content = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
 
-    def get_local_metadata(self, file, src, dirpath, relpath, isFile):
+    def get_local_metadata(
+        self, file, src, dirpath, relpath, base_name, userSourcePath, isFile
+    ):
         obj = {}
         obj["filename"] = file
         ## If you are in the root directory just use filename
@@ -112,8 +127,23 @@ class LocalV1Pipeline(base.BasePipeline):
         else:
             obj["path"] = f"{relpath}/{file}"
 
-        obj["abs_path"] = f"{dirpath}/{file}"
+        sourcePath = obj["path"]
+        obj["sourcePath"] = f"{base_name}/{sourcePath}"
+        obj["userSourcePath"] = userSourcePath
+        obj["sourceFullpath"] = f"{dirpath}/{file}"
         obj["localpath"] = f"data/content/{obj['path']}"
+        try:
+            obj["size"] = os.path.getsize(f"{dirpath}/{file}")
+        except OSError:
+            log.debug(f" Size cannot be found. Skipping field. ")
+        try:
+            obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
+        except OSError:
+            log.debug(f" Date cannot be found. Skipping field. ")
+        try:
+            obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
+        except OSError:
+            log.debug(f" Creator cannot be found. Skipping field. ")
         obj["metadata"] = False
         obj["downloaded"] = False
 
