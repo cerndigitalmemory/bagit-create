@@ -52,7 +52,7 @@ class LocalV1Pipeline(base.BasePipeline):
                 src_fs=my_fs,
                 dst_fs=my_fs,
                 src_path=f"{source_dir}",
-                dst_path=f"{dest_dir}",
+                dst_path=f"{dest_dir}/{ntpath.basename(source_dir)}",
             )
         else:
             fs.copy.copy_dir(
