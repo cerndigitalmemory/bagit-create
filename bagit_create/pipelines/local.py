@@ -80,7 +80,7 @@ class LocalV1Pipeline(base.BasePipeline):
         return folder_name
 
     # gets the checksum
-    def get_folder_checksum(self, src):
+    def get_local_checksum(self, src):
         if os.path.isfile(src):
             checksum = self.compute_hash(src)
         else:
