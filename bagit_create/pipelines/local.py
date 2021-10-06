@@ -1,3 +1,4 @@
+from posixpath import relpath
 from . import base
 import logging
 import fs
@@ -6,11 +7,10 @@ from fs import copy
 import json
 import os
 import ntpath
-from os import walk
 from os import stat
 from pwd import getpwuid
+from os import walk
 import checksumdir
-from datetime import datetime
 
 log = logging.getLogger("basic-logger")
 
@@ -32,51 +32,51 @@ class LocalV1Pipeline(base.BasePipeline):
         # The userSourcePath is the path before Pictures e.g. for /home/user/Pictures is /home/user
         userSourcePath = src[: len(src) - len(base_name) - 1]
 
-        for (dirpath, dirnames, filenames) in walk(src):
+        # If localsource is a file just get data from that file otherwise use the walk function
+        if os.path.isfile(src):
+            file = ntpath.basename(src)
+            dirpath = ntpath.dirname(src)
             relpath = os.path.basename(os.path.normpath(dirpath))
-            for file in filenames:
-                obj = {}
-                obj["filename"] = file
-                ## If you are in the root directory just use filename
-                if dirpath == src:
-                    obj["path"] = f"{file}"
-                # Otherwise prepare the relative path
-                else:
-                    obj["path"] = f"{relpath}/{file}"
-
-                sourcePath = obj["path"]
-                obj["sourcePath"] = f"{base_name}/{sourcePath}"
-                obj["userSourcePath"] = userSourcePath
-                obj["sourceFullpath"] = f"{dirpath}/{file}"
-                obj["localpath"] = f"data/content/{obj['path']}"
-                try:
-                    obj["size"] = os.path.getsize(f"{dirpath}/{file}")
-                except OSError:
-                    log.debug(f" Size cannot be found. Skipping field. ")
-                try:
-                    obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
-                except OSError:
-                    log.debug(f" Date cannot be found. Skipping field. ")
-                try:
-                    obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
-                except OSError:
-                    log.debug(f" Creator cannot be found. Skipping field. ")
-                obj["metadata"] = False
-                obj["downloaded"] = False
-
-                files.append(obj)
+            obj = self.get_local_metadata(
+                file, src, dirpath, relpath, base_name, userSourcePath, isFile=True
+            )
+            files.append(obj)
+        else:
+            # Walk through the whole directory and prepare an object for each found file
+            for (dirpath, dirnames, filenames) in walk(src):
+                relpath = os.path.basename(os.path.normpath(dirpath))
+                for file in filenames:
+                    obj = self.get_local_metadata(
+                        file,
+                        src,
+                        dirpath,
+                        relpath,
+                        base_name,
+                        userSourcePath,
+                        isFile=False,
+                    )
+                    files.append(obj)
 
         # I don't have metadata json here. If we add, fields will be added here
         return files
 
     def copy_files(self, files, source_dir, dest_dir):
         my_fs = open_fs("/")
-        fs.copy.copy_dir(
-            src_fs=my_fs,
-            dst_fs=my_fs,
-            src_path=f"{source_dir}",
-            dst_path=f"{dest_dir}",
-        )
+        if os.path.isfile(source_dir):
+            fs.copy.copy_file(
+                src_fs=my_fs,
+                dst_fs=my_fs,
+                src_path=f"{source_dir}",
+                dst_path=f"{dest_dir}/{ntpath.basename(source_dir)}",
+            )
+        else:
+            fs.copy.copy_dir(
+                src_fs=my_fs,
+                dst_fs=my_fs,
+                src_path=f"{source_dir}",
+                dst_path=f"{dest_dir}",
+            )
+
         for file in files:
             file["downloaded"] = True
         return files
@@ -92,10 +92,13 @@ class LocalV1Pipeline(base.BasePipeline):
         folder_name += splitted[-1]
         return folder_name
 
-    # gwts the checksum
-    def get_folder_checksum(self, src):
-        folder_checksum = checksumdir.dirhash(src)
-        return folder_checksum
+    # gets the checksum
+    def get_local_checksum(self, src):
+        if os.path.isfile(src):
+            checksum = self.compute_hash(src)
+        else:
+            checksum = checksumdir.dirhash(src)
+        return checksum
 
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
@@ -103,3 +106,37 @@ class LocalV1Pipeline(base.BasePipeline):
             log.info(f"Generating manifest {alg}..")
             content = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
+
+    def get_local_metadata(
+        self, file, src, dirpath, relpath, base_name, userSourcePath, isFile
+    ):
+        obj = {}
+        obj["filename"] = file
+        ## If you are in the root directory just use filename
+        if dirpath == src or isFile:
+            obj["path"] = f"{file}"
+        # Otherwise prepare the relative path
+        else:
+            obj["path"] = f"{relpath}/{file}"
+
+        sourcePath = obj["path"]
+        obj["sourcePath"] = f"{base_name}/{sourcePath}"
+        obj["userSourcePath"] = userSourcePath
+        obj["sourceFullpath"] = f"{dirpath}/{file}"
+        obj["localpath"] = f"data/content/{obj['path']}"
+        try:
+            obj["size"] = os.path.getsize(f"{dirpath}/{file}")
+        except OSError:
+            log.debug(f" Size cannot be found. Skipping field. ")
+        try:
+            obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
+        except OSError:
+            log.debug(f" Date cannot be found. Skipping field. ")
+        try:
+            obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
+        except OSError:
+            log.debug(f" Creator cannot be found. Skipping field. ")
+        obj["metadata"] = False
+        obj["downloaded"] = False
+
+        return obj
