@@ -47,11 +47,13 @@ class LocalV1Pipeline(base.BasePipeline):
 
     def copy_files(self, files, source_dir, dest_dir):
         my_fs = open_fs("/")
+        # If it is a file copy the file, if it is a directory copy the whole directory
         if os.path.isfile(source_dir):
             fs.copy.copy_file(
                 src_fs=my_fs,
                 dst_fs=my_fs,
                 src_path=f"{source_dir}",
+                # ntpath.basename is used because of Python version conflict. At pyhton 3.8+ it is not needed
                 dst_path=f"{dest_dir}/{ntpath.basename(source_dir)}",
             )
         else:
@@ -84,6 +86,14 @@ class LocalV1Pipeline(base.BasePipeline):
         else:
             checksum = checksumdir.dirhash(src)
         return checksum
+
+    # If the path is relative, return the absolute path
+    def get_abs_path(self, src):
+        if os.path.isabs(src):
+            return src
+        else:
+            lc_src = os.getcwd() + "/" + src
+            return lc_src
 
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
