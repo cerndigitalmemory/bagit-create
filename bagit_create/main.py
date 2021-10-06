@@ -106,6 +106,7 @@ def process(
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/")
         elif source == "local":
             pipeline = local.LocalV1Pipeline(localsource)
+            localsource = pipeline.get_abs_path(localsource)
             recid = pipeline.get_folder_checksum(localsource)
 
         # Save job details (as audit step 0)
