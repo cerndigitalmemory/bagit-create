@@ -20,7 +20,7 @@ class LocalV1Pipeline(base.BasePipeline):
         log.info(f"Local v1 pipeline initialised.\nLocal source: {src}")
         self.src = src
 
-    def scan_files(self, src):
+    def scan_files(self, src, secure_flag):
         """
         Walks through the source folder and prepare the "files" object
         """
@@ -38,7 +38,14 @@ class LocalV1Pipeline(base.BasePipeline):
             dirpath = ntpath.dirname(src)
             relpath = os.path.basename(os.path.normpath(dirpath))
             obj = self.get_local_metadata(
-                file, src, dirpath, relpath, base_name, userSourcePath, isFile=True
+                file,
+                src,
+                dirpath,
+                relpath,
+                base_name,
+                userSourcePath,
+                secure_flag,
+                isFile=True,
             )
             files.append(obj)
         else:
@@ -53,6 +60,7 @@ class LocalV1Pipeline(base.BasePipeline):
                         relpath,
                         base_name,
                         userSourcePath,
+                        secure_flag,
                         isFile=False,
                     )
                     files.append(obj)
@@ -116,7 +124,7 @@ class LocalV1Pipeline(base.BasePipeline):
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
 
     def get_local_metadata(
-        self, file, src, dirpath, relpath, base_name, userSourcePath, isFile
+        self, file, src, dirpath, relpath, base_name, userSourcePath, secure_flag, isFile
     ):
         obj = {}
         obj["filename"] = file
@@ -129,9 +137,15 @@ class LocalV1Pipeline(base.BasePipeline):
 
         sourcePath = obj["path"]
         obj["sourcePath"] = f"{base_name}/{sourcePath}"
-        obj["userSourcePath"] = userSourcePath
-        obj["sourceFullpath"] = f"{dirpath}/{file}"
         obj["localpath"] = f"data/content/{obj['path']}"
+        # If the secure path is not enabled. Get these fields:
+        if not secure_flag:
+            obj["userSourcePath"] = userSourcePath
+            obj["sourceFullpath"] = f"{dirpath}/{file}"
+            try:
+                obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
+            except OSError:
+                log.debug(f" Creator cannot be found. Skipping field. ")
         try:
             obj["size"] = os.path.getsize(f"{dirpath}/{file}")
         except OSError:
@@ -140,10 +154,6 @@ class LocalV1Pipeline(base.BasePipeline):
             obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
         except OSError:
             log.debug(f" Date cannot be found. Skipping field. ")
-        try:
-            obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
-        except OSError:
-            log.debug(f" Creator cannot be found. Skipping field. ")
         obj["metadata"] = False
         obj["downloaded"] = False
 

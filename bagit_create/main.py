@@ -22,6 +22,7 @@ def process(
     loglevel,
     target,
     localsource,
+    secure_path,
     dry_run=False,
     alternate_uri=False,
     bibdoc=False,
@@ -38,6 +39,7 @@ def process(
         "loglevel": loglevel,
         "target": target,
         "localsource": localsource,
+        "secure_path": secure_path,
         "dry_run": dry_run,
         "alternate_uri": alternate_uri,
         "bibdoc": bibdoc,
@@ -108,6 +110,7 @@ def process(
             pipeline = local.LocalV1Pipeline(localsource)
             localsource = pipeline.get_abs_path(localsource)
             recid = pipeline.get_local_checksum(localsource)
+            params["recid"] = recid
 
         # Save job details (as audit step 0)
         audit = [
@@ -130,7 +133,7 @@ def process(
 
         if source == "local":
             # Look for files in the source folder and prepare the files object
-            files = pipeline.scan_files(localsource)
+            files = pipeline.scan_files(localsource, secure_path)
             metadata_url = None
         else:
             # Get metadata from upstream

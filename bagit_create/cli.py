@@ -20,7 +20,8 @@ import click
     help="Select source pipeline",
     required=True,
     type=click.Choice(
-        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm", "indico", "local"], case_sensitive=False
+        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm", "indico", "local"],
+        case_sensitive=False,
     ),
 )
 @click.option(
@@ -86,18 +87,25 @@ import click
     default=None,
     is_flag=False,
 )
+@click.option(
+    "--secure-path",
+    "-sp",
+    help="When this option is enabled then the absolute path of a file in local mode is not visible",
+    default=False,
+    is_flag=True,
+)
 def cli(
     recid,
     source,
     target,
     localsource,
+    secure_path,
     dry_run,
     alternate_uri,
     verbose,
     very_verbose,
     bibdoc,
     bd_ssh_host,
-
 ):
 
     # Select the desired log level (default is 2, warning)
@@ -116,6 +124,7 @@ def cli(
         loglevel,
         target,
         localsource,
+        secure_path,
         dry_run,
         alternate_uri,
         bibdoc,
