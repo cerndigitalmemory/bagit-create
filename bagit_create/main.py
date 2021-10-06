@@ -1,8 +1,11 @@
+from fs import base
 from .pipelines import invenio_v1
 from .pipelines import invenio_v3
 from .pipelines import opendata
 from .pipelines import indico
 from .pipelines import local
+from .pipelines import base
+from .pipelines.base import WrongInputException
 
 import logging
 import fs
@@ -41,6 +44,13 @@ def process(
         "bd_ssh_host": bd_ssh_host,
         "timestamp": timestamp,
     }
+
+    try:
+        base.BasePipeline.check_parameters_input(
+            recid, source, localsource, bibdoc, bd_ssh_host, loglevel, alternate_uri
+        )
+    except WrongInputException as e:
+        return {"status": 1, "errormsg": e}
 
     ## Setup log
 
@@ -100,7 +110,7 @@ def process(
         if source == "local":
             recid = pipeline.get_local_checksum(localsource)
 
-        # Save job details (Audit step 0)
+        # Save job details (as audit step 0)
         audit = [
             {
                 "tool": {
@@ -204,6 +214,7 @@ def process(
         log.error(f"Job failed with error: {e}")
 
         return {"status": 1, "errormsg": e}
+
     # For any other error, print details about what happened and clean up
     #  any created file and folder
     except Exception as e:

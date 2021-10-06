@@ -343,3 +343,36 @@ class BasePipeline:
 
         # move folder to the target location
         fs.move.move_fs(base_path, new_path)
+
+    # Checks the input from the cli and raises error if there is a mistake
+    def check_parameters_input(
+        recid, source, localsource, bibdoc, bd_ssh_host, loglevels, alternate_uri
+    ):
+        """
+        Checks if the combination of the parameters for the job make up for
+        a valid operation
+        """
+
+        if (bibdoc or bd_ssh_host) and source != "cds":
+            raise WrongInputException(
+                "bibdoc and bd_ssh_host parameters are only accepted when selecting CDS\
+                as a source."
+            )
+
+        if bd_ssh_host and not bibdoc:
+            raise WrongInputException(
+                "bd_ssh_host is a setting supported only when using bibdoc."
+            )
+
+        if recid and source == "local":
+            raise WrongInputException("The local pipeline is not expecting a recid.")
+
+        if source != "local" and not recid:
+            raise WrongInputException("Recid is missing.")
+        if localsource and source != "local":
+            raise WrongInputException("This pipeline is not expecting a localsource.")
+
+
+class WrongInputException(Exception):
+    # This exception handles wrong cli commands
+    pass
