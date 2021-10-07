@@ -102,10 +102,12 @@ class BasePipeline:
         log.debug(f"({dest})")
 
     def download_file(self, sourcefile, dest):
-        r = requests.get(sourcefile["url"])
-
-        with open(dest, "wb+") as file:
-            file.write(r.content)
+        with requests.get(sourcefile, stream=True) as r:
+            r.raise_for_status()
+            with open(dest, "wb") as f:
+                for chunk in r.iter_content(chunk_size=512 * 1024):
+                    if chunk:  # filter out keep-alive new chunks
+                        f.write(chunk)
         return True
 
     def add_bagit_txt(self, dest, version="0.97", encoding="UTF-8"):
