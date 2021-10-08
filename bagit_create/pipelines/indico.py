@@ -63,10 +63,7 @@ class IndicoV1Pipeline(base.BasePipeline):
             if sourcefile["metadata"] == False:
                 destination = f'{files_base_path}/{sourcefile["filename"]}'
                 src = sourcefile["url"]
-                r = requests.get(src)
-                with open(destination, "wb") as f:
-                    f.write(r.content)
-                sourcefile["downloaded"] = True
+                sourcefile["downloaded"] = self.download_file(src, destination)
 
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
