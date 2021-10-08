@@ -115,11 +115,12 @@ def process(
                 "tool": {
                     "name": "CERN BagIt Create",
                     "version": __version__,
-                    "url": "https://gitlab.cern.ch/digitalmemory/bagit-create",
+                    "website": "https://gitlab.cern.ch/digitalmemory/bagit-create",
                     "params": params,
                 },
                 "action": "sip_create",
                 "timestamp": timestamp,
+                "message": "",
             }
         ]
 
@@ -182,7 +183,7 @@ def process(
             "bagitcreate.log",
         )
 
-        pipeline.create_manifests(files, base_path)
+        files = pipeline.create_manifests(files, base_path)
         # file entries for "sip.json" and "bagitcreate.log" get added there
 
         # Create manifest files
@@ -216,8 +217,4 @@ def process(
 
     # For any other error, print details about what happened and clean up
     #  any created file and folder
-    except Exception as e:
-        log.error(f"Job failed with error: {e}")
-        pipeline.delete_folder(base_path)
 
-        return {"status": 1, "errormsg": e}

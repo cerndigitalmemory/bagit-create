@@ -66,17 +66,18 @@ class InvenioV1Pipeline(base.BasePipeline):
         #  MARC21: 856 - Electronic Location and Access (R)
         files = []
         for f in record.get_fields("856"):
-            obj = {}
+            # Prepare the File object
+            obj = {
+                "source" : {}
+            }
 
-            # Unknown size fallback
+            # Default size
             obj["size"] = 0
 
             if f["u"]:
-                obj["url"] = f["u"]
-                obj["remote"] = "HTTP"
+                obj["source"]["url"] = f["u"]
             elif f["d"]:
-                obj["url"] = f["d"]
-                obj["remote"] = "EOS"
+                obj["source"]["url"] = f["d"]
             else:
                 log.debug(f'Skipped 856 entry "{f}". No `u` or `d` field.')
                 continue
@@ -94,28 +95,30 @@ class InvenioV1Pipeline(base.BasePipeline):
                 obj["size"] = int(f["s"])
 
             # Get basename
-            if obj["url"]:
-                obj["filename"] = ntpath.basename(obj["url"])
+            if obj["source"]["url"]:
+                obj["source"]["filename"] = ntpath.basename(obj["source"]["url"])
                 # We suppose no folder structure
-                obj["path"] = obj["filename"]
-                obj["localpath"] = f"data/content/{obj['path']}"
+                obj["source"]["path"] = ""
+                obj["bagpath"] = f"data/content/{obj['source']['path']}{obj['source']['filename']}"
 
             obj["metadata"] = False
             obj["downloaded"] = False
 
-            if obj["filename"]:
+            if obj["source"]["filename"]:
                 files.append(obj)
             else:
                 log.warning(f'Skipped entry "{f}". No basename found (probably an URL?)')
         log.debug(f"Got {len(files)} files")
 
         meta_file_entry = {
-            "filename": "metadata.xml",
-            "path": "metadata.xml",
+            "source": {
+                "filename": "metadata.xml",
+                "path": "",
+                "url": self.metadata_url,       
+            },
             "metadata": True,
             "downloaded": True,
-            "localpath": "data/meta/metadata.xml",
-            "url": self.metadata_url,
+            "bagpath": "data/meta/metadata.xml",
             "size": self.metadata_size,
         }
         files.append(meta_file_entry)
@@ -126,27 +129,26 @@ class InvenioV1Pipeline(base.BasePipeline):
         algs = ["md5", "sha1"]
         for alg in algs:
             log.info(f"Generating manifest {alg}..")
-            content = self.generate_manifest(files, alg, base_path)
+            content, files = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
+        return files
 
     def download_files(self, files, files_base_path):
         log.info(f"Downloading {len(files)} files to {files_base_path}..")
         for sourcefile in files:
             if sourcefile["metadata"] == False:
-                destination = f'{files_base_path}/{sourcefile["filename"]}'
+                destination = f'{files_base_path}/{sourcefile["source"]["filename"]}'
 
                 log.debug(
-                    f'Downloading {sourcefile["filename"]} from {sourcefile["url"]}..'
+                    f'Downloading {sourcefile["source"]["filename"]} from {sourcefile["source"]["url"]}..'
                 )
 
-                if sourcefile["remote"] == "HTTP":
-                    sourcefile["downloaded"] = cds.downloadRemoteFile(
-                        sourcefile["url"], destination
-                    )
-                elif sourcefile["remote"] == "EOS":
-                    cds.downloadEOSfile(sourcefile["url"], destination)
+                sourcefile["downloaded"] = cds.downloadRemoteFile(
+                    sourcefile["source"]["url"], destination
+                )
+
             else:
                 log.debug(
-                    f'Skipped downloading of {sourcefile["filename"]} from              '
-                    f'       {sourcefile["url"]}..'
+                    f'Skipped downloading of {sourcefile["source"]["filename"]} from              '
+                    f'       {sourcefile["source"]["url"]}..'
                 )

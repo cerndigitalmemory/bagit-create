@@ -148,9 +148,9 @@ class BasePipeline:
         appending the filaname to the given base path)
         """
         contents = ""
-        for file in files:
-
-            path = f"{basepath}/{file['localpath']}"
+        
+        for idx, file in enumerate(files):
+            path = f"{basepath}/{file['bagpath']}"
             if "checksum" in file:
                 p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
                 m = p.match(file["checksum"])
@@ -160,22 +160,26 @@ class BasePipeline:
                     checksum = matched_checksum
                 elif file["downloaded"]:
                     log.info(
-                        f"Checksum {alg} found for {file['filename']}                   "
+                        f"Checksum {alg} found for {file['source']['filename']}                   "
                         f"      but {algorithm} was requested."
                     )
-                    log.debug(f"Computing {algorithm} of {file['filename']}")
-                    checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
+                    log.debug(f"Computing {algorithm} of {file['source']['filename']}")
+                    checksum = self.compute_hash(f"{path}/{file['source']['filename']}", algorithm)
 
             elif file["downloaded"]:
-                log.debug(f"No checksum available for {file['filename']}")
-                log.debug(f"Computing {algorithm} of {file['filename']}")
+                log.debug(f"No checksum available for {file['source']['filename']}")
+                log.debug(f"Computing {algorithm} of {file['source']['filename']}")
                 checksum = self.compute_hash(f"{path}", algorithm)
             else:
                 # Here may needs additional checks
                 pass
-            line = f"{checksum} {file['localpath']}\n"
+            line = f"{checksum} {file['bagpath']}\n"
             contents += line
-        return contents
+            if "checksum" in files[idx]:
+                files[idx]["checksum"].append(checksum)
+            else:
+                files[idx]["checksum"] = [ checksum ]
+        return contents, files
 
     def generate_fetch_txt(self, files, alternate_uri=False):
         """
@@ -285,6 +289,7 @@ class BasePipeline:
 
     def create_sip_meta(self, files, audit, timestamp, base_path, metadata_url=None):
         bic_meta = {
+            "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
             "created_by": f"bagit-create {__version__}",
             "audit": audit,
             "source": audit[0]["tool"]["params"]["source"],
@@ -295,11 +300,13 @@ class BasePipeline:
         }
 
         bic_log_file_entry = {
-            "filename": "bagitcreate.log",
-            "path": "bagitcreate.log",
+            "source": {
+                "filename": "bagitcreate.log",
+                "path": "",
+            },
             "metadata": False,
             "downloaded": True,
-            "localpath": f"data/meta/bagitcreate.log",
+            "bagpath": f"data/meta/bagitcreate.log",
         }
 
         files.append(bic_log_file_entry)
@@ -309,11 +316,13 @@ class BasePipeline:
         )
 
         bic_meta_file_entry = {
-            "filename": "sip.json",
-            "path": "sip.json",
+            "source": {
+                "filename": "sip.json",
+                "path": "",
+            },
             "metadata": False,
             "downloaded": True,
-            "localpath": f"data/meta/sip.json",
+            "bagpath": f"data/meta/sip.json",
         }
 
         files.append(bic_meta_file_entry)

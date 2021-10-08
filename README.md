@@ -74,6 +74,7 @@ bic --recid 1000571 --source cds --dry-run
 
 # ilcdoc
 bic --source ilcdoc --recid 62959 --verbose
+bic --source ilcdoc --recid 34794 --verbose
 
 # Zenodo
 bic --recid 3911261 --source zenodo --verbose
