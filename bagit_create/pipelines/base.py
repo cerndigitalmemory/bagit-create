@@ -93,11 +93,11 @@ class BasePipeline:
 
     def write_file(self, content, dest):
         if type(content) is bytes:
-            open(f"{dest}", "wb").write(content)
+            open(f"{dest}", "ab").write(content)
         elif type(content) is dict:
-            open(f"{dest}", "w").write(json.dumps(content, indent=4))
+            open(f"{dest}", "a").write(json.dumps(content, indent=4))
         else:
-            open(f"{dest}", "w").write(content)
+            open(f"{dest}", "a").write(content)
         log.info(f"Wrote {os.path.basename(dest)}")
         log.debug(f"({dest})")
 
