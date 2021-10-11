@@ -145,40 +145,46 @@ class BasePipeline:
 
         If the requested algorithm is not available (or the `checksum` key is not
         there at all), compute the checksums on the downloaded files (found
-        appending the filaname to the given base path)
+        appending the filaname to the given base path) and add them to the SIP metadata.
         """
         contents = ""
         
         for idx, file in enumerate(files):
             path = f"{basepath}/{file['bagpath']}"
-            if "checksum" in file:
-                p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
-                m = p.match(file["checksum"])
-                alg = m.groups()[0].lower()
-                matched_checksum = m.groups()[1]
-                if alg == algorithm:
-                    checksum = matched_checksum
-                elif file["downloaded"]:
-                    log.info(
-                        f"Checksum {alg} found for {file['source']['filename']}                   "
-                        f"      but {algorithm} was requested."
-                    )
-                    log.debug(f"Computing {algorithm} of {file['source']['filename']}")
-                    checksum = self.compute_hash(f"{path}/{file['source']['filename']}", algorithm)
 
-            elif file["downloaded"]:
-                log.debug(f"No checksum available for {file['source']['filename']}")
-                log.debug(f"Computing {algorithm} of {file['source']['filename']}")
-                checksum = self.compute_hash(f"{path}", algorithm)
-            else:
-                # Here may needs additional checks
-                pass
+            checksum = None
+            # Check if there's the "checksum" value in the File
+            if "checksum" in file:
+                # If it's a string create a single element list out of it
+                if type(file["checksum"]) == str:
+                        file["checksum"] = [ file["checksum"]]
+                # For each available checksum        
+                for avail_checksum in file["checksum"]:
+                    p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
+                    m = p.match(avail_checksum)
+                    alg = m.groups()[0].lower()
+                    matched_checksum = m.groups()[1]
+                    # Check if it's the required one
+                    if alg == algorithm:
+                        checksum = matched_checksum                        
+
+            # If we didn't find the required checksum but the file has been downloaded,
+            #  compute it
+            if not checksum and file["downloaded"]:
+                checksum = self.compute_hash(path, algorithm)
+                # Add the newly computed checksum to the SIP metadata
+                if "checksum" in files[idx]:
+                    files[idx]["checksum"].append(f"{algorithm}:{checksum}")
+                else:
+                    files[idx]["checksum"] = [ f"{algorithm}:{checksum}" ]
+
+            # If there's no checksum and it's not possibile to compute it from disk, throw an error
+            if not checksum and not file["downloaded"]:
+                raise Exception
+
             line = f"{checksum} {file['bagpath']}\n"
             contents += line
-            if "checksum" in files[idx]:
-                files[idx]["checksum"].append(checksum)
-            else:
-                files[idx]["checksum"] = [ checksum ]
+
         return contents, files
 
     def generate_fetch_txt(self, files, alternate_uri=False):
