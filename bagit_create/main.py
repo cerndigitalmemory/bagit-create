@@ -143,10 +143,10 @@ def process(
             ) = pipeline.get_metadata(recid)
 
             # Save metadata file in the meta folder
-            pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
+            pipeline.write_file(metadata, f"{base_path}/data/content/{metadata_filename}")
 
             # Parse metadata for files
-            files = pipeline.parse_metadata(f"{base_path}/data/meta/{metadata_filename}")
+            files = pipeline.parse_metadata(f"{base_path}/data/content/{metadata_filename}")
 
         if dry_run is True:
             # Create fetch.txt

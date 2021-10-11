@@ -42,7 +42,7 @@ class InvenioV1Pipeline(base.BasePipeline):
             self.metadata_size = r.headers["Content-length"]
         except Exception:
             self.metadata_size = 0
-        return r.content, r.url, r.status_code, "metadata.xml"
+        return r.content, r.url, r.status_code, f"{record_id}.xml"
 
     def parse_metadata(self, metadata_filename):
         """
@@ -112,13 +112,13 @@ class InvenioV1Pipeline(base.BasePipeline):
 
         meta_file_entry = {
             "source": {
-                "filename": "metadata.xml",
+                "filename": f"{ntpath.basename(metadata_filename)}",
                 "path": "",
                 "url": self.metadata_url,       
             },
             "metadata": True,
             "downloaded": True,
-            "bagpath": "data/meta/metadata.xml",
+            "bagpath": f"data/content/{ntpath.basename(metadata_filename)}",
             "size": self.metadata_size,
         }
         files.append(meta_file_entry)
