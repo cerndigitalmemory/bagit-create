@@ -151,7 +151,7 @@ class BasePipeline:
         
         for idx, file in enumerate(files):
             path = f"{basepath}/{file['bagpath']}"
-
+            print(file)
             checksum = None
             # Check if there's the "checksum" value in the File
             if "checksum" in file:
@@ -317,10 +317,6 @@ class BasePipeline:
 
         files.append(bic_log_file_entry)
 
-        self.write_file(
-            json.dumps(bic_meta, indent=4), f"{base_path}/data/meta/sip.json"
-        )
-
         bic_meta_file_entry = {
             "source": {
                 "filename": "sip.json",
@@ -332,6 +328,12 @@ class BasePipeline:
         }
 
         files.append(bic_meta_file_entry)
+
+        self.write_file(
+            json.dumps(bic_meta, indent=4), f"{base_path}/data/meta/sip.json"
+        )
+
+        
         return files
 
     def verify_bag(self, path):
