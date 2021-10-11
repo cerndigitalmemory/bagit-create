@@ -162,13 +162,8 @@ def process(
                 # Download files
                 pipeline.download_files(files, f"{base_path}/data/content")
 
-        # Create sip.json
-        files = pipeline.create_sip_meta(
-            files, audit, timestamp, base_path, metadata_url
-        )
-
         # To allow consistency and hashing of the attached log,
-        # No events after this point will be logged to the file
+        # no events after this point will be logged to the file
 
         # Close the stream and release the lock on the file
         log.handlers[1].stream.close()
@@ -183,10 +178,23 @@ def process(
             "bagitcreate.log",
         )
 
+        # Create manifest files, according to the specified algorithms in the pipeline
+        #  Uses the checksums from the parsed metadata if available
+        #  Newly computed checksum get added to the SIP metadata, too.
         files = pipeline.create_manifests(files, base_path)
-        # file entries for "sip.json" and "bagitcreate.log" get added there
 
-        # Create manifest files
+        # Create sip.json
+        #  File entries for sip.json and the log files will be added here
+        files = pipeline.create_sip_meta(
+            files, audit, timestamp, base_path, metadata_url
+        )
+
+        # Compute checksums just for the last 2 added files (the sip.json and the log file)
+        #  and *append* them to the already created manifests
+        files = pipeline.create_manifests(files[-2:], base_path)
+
+        # Add bag-info.txt file
+        #  containing the final payload size and number of files
         pipeline.add_bag_info(base_path, f"{base_path}/bag-info.txt")
 
         # Verify created Bag
