@@ -222,7 +222,7 @@ class BasePipeline:
 
         # Prepare the base folder for the BagIt export
         #  e.g. "bagitexport::cds::42"
-        base_name = f"bagitexport{delimiter_str}{source}{delimiter_str}{recid}{delimiter_str}{timestamp}"
+        base_name = f"sip{delimiter_str}{source}{delimiter_str}{recid}{delimiter_str}{timestamp}"
         base_path = f"{path}/{base_name}"
 
         os.mkdir(base_path)
