@@ -68,16 +68,16 @@ class InvenioV1Pipeline(base.BasePipeline):
         for f in record.get_fields("856"):
             # Prepare the File object
             obj = {
-                "source" : {}
+                "origin" : {}
             }
 
             # Default size
             obj["size"] = 0
 
             if f["u"]:
-                obj["source"]["url"] = f["u"]
+                obj["origin"]["url"] = f["u"]
             elif f["d"]:
-                obj["source"]["url"] = f["d"]
+                obj["origin"]["url"] = f["d"]
             else:
                 log.debug(f'Skipped 856 entry "{f}". No `u` or `d` field.')
                 continue
@@ -95,23 +95,23 @@ class InvenioV1Pipeline(base.BasePipeline):
                 obj["size"] = int(f["s"])
 
             # Get basename
-            if obj["source"]["url"]:
-                obj["source"]["filename"] = ntpath.basename(obj["source"]["url"])
+            if obj["origin"]["url"]:
+                obj["origin"]["filename"] = ntpath.basename(obj["origin"]["url"])
                 # We suppose no folder structure
-                obj["source"]["path"] = ""
-                obj["bagpath"] = f"data/content/{obj['source']['path']}{obj['source']['filename']}"
+                obj["origin"]["path"] = ""
+                obj["bagpath"] = f"data/content/{obj['origin']['path']}{obj['origin']['filename']}"
 
             obj["metadata"] = False
             obj["downloaded"] = False
 
-            if obj["source"]["filename"]:
+            if obj["origin"]["filename"]:
                 files.append(obj)
             else:
                 log.warning(f'Skipped entry "{f}". No basename found (probably an URL?)')
         log.debug(f"Got {len(files)} files")
 
         meta_file_entry = {
-            "source": {
+            "origin": {
                 "filename": f"{ntpath.basename(metadata_filename)}",
                 "path": "",
                 "url": self.metadata_url,       
@@ -137,18 +137,18 @@ class InvenioV1Pipeline(base.BasePipeline):
         log.info(f"Downloading {len(files)} files to {files_base_path}..")
         for sourcefile in files:
             if sourcefile["metadata"] == False:
-                destination = f'{files_base_path}/{sourcefile["source"]["filename"]}'
+                destination = f'{files_base_path}/{sourcefile["origin"]["filename"]}'
 
                 log.debug(
-                    f'Downloading {sourcefile["source"]["filename"]} from {sourcefile["source"]["url"]}..'
+                    f'Downloading {sourcefile["origin"]["filename"]} from {sourcefile["origin"]["url"]}..'
                 )
 
                 sourcefile["downloaded"] = cds.downloadRemoteFile(
-                    sourcefile["source"]["url"], destination
+                    sourcefile["origin"]["url"], destination
                 )
 
             else:
                 log.debug(
-                    f'Skipped downloading of {sourcefile["source"]["filename"]} from              '
-                    f'       {sourcefile["source"]["url"]}..'
+                    f'Skipped downloading of {sourcefile["origin"]["filename"]} from              '
+                    f'       {sourcefile["origin"]["url"]}..'
                 )
