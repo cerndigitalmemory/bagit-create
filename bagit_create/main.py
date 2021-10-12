@@ -124,7 +124,7 @@ def process(
             }
         ]
 
-        base_path, name = pipeline.prepare_folders(source, recid)
+        base_path, name = pipeline.prepare_folders(source, recid, timestamp)
 
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")

@@ -216,13 +216,13 @@ class BasePipeline:
         content = self.generate_fetch_txt(files, alternate_uri)
         self.write_file(content, dest)
 
-    def prepare_folders(self, source, recid, delimiter_str="::"):
+    def prepare_folders(self, source, recid, timestamp, delimiter_str="::"):
         # Get current path
         path = os.getcwd()
 
         # Prepare the base folder for the BagIt export
         #  e.g. "bagitexport::cds::42"
-        base_name = f"bagitexport{delimiter_str}{source}{delimiter_str}{recid}"
+        base_name = f"bagitexport{delimiter_str}{source}{delimiter_str}{recid}{delimiter_str}{timestamp}"
         base_path = f"{path}/{base_name}"
 
         os.mkdir(base_path)
