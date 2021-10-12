@@ -372,7 +372,7 @@ class BasePipeline:
         a valid operation
         """
 
-        if (bibdoc or bd_ssh_host) and source != "cds":
+        if (bibdoc or bd_ssh_host) and (source != "cds" and source != "ilcdoc"):
             raise WrongInputException(
                 "bibdoc and bd_ssh_host parameters are only accepted when selecting CDS\
                 as a source."
