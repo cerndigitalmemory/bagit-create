@@ -15,7 +15,7 @@ def run(resid, ssh_host=None):
         if ssh_host:
             command = ["ssh", ssh_host] + command
 
-        logging.warning(f"Running {command}")
+        logging.warning(f"KRunning {command}")
 
         proc = subprocess.run(
             command,
@@ -29,49 +29,55 @@ def run(resid, ssh_host=None):
         )
         output = proc.stdout.decode()
         return output
+    else:
+        raise Exception('Bad or malformed input to bibdocfile')
 
 
 def parse(output, resid):
     metadata = {}
 
-    keys = ["fullpath", "checksum", "name"]
+    keys = ["fullpath", "checksum", "name", "fullname", "url", "fullurl"]
 
-    for line in iter(output.splitlines()):
+    files = []
+
+    file = None
+
+    for line in output.splitlines():
         # Only consider lines starting with the Record ID
         # to ignore warning/unrelated output
         if line.startswith(resid):
             # Split them
-            parsed_metadata = line.split(":")
-            if parsed_metadata[0] == resid:
-                file_id = parsed_metadata[1]
-                if file_id not in metadata:
-                    metadata[file_id] = {}
+            parsed_fields = line.split(":")
+            # Here's a new file
+            for field in parsed_fields:
+                if "fullpath" in field:
+                    if file:
+                        # Append the last one to files
+                        files.append(file)
+                        file = {}
+                    else:
+                        file = {}
 
-                for key in keys:
-                    if key == "fullpath":
-                        ext = parsed_metadata[3]
-                    if parsed_metadata[4].startswith(key):
-                        metadata[file_id][key] = parsed_metadata[4].replace(
-                            f"{key}=", ""
+            for key in keys:
+                if key == "fullpath":
+                    ext = parsed_fields[3]
+                if parsed_fields[4].startswith(key):
+                    file[key] = parsed_fields[4].replace(
+                        f"{key}=", ""
+                    )
+                    if key == "checksum":
+                        file["checksum"] = (
+                            "md5:" + file["checksum"]
                         )
-                        if key == "checksum":
-                            metadata[file_id]["checksum"] = (
-                                "md5:" + metadata[file_id]["checksum"]
-                            )
-                        # name -> filename
-                        if key == "name":
-                            metadata[file_id][
-                                "filename"
-                            ] = f'{metadata[file_id].pop("name")}{ext}'
+                    # name -> filename
+                    if key == "name":
+                        file[
+                            "filename"
+                        ] = f'{file.pop("name")}{ext}'
+                    if key == "url" or key=="fullurl":
+                        file[key] = f"{parsed_fields[4]}:{parsed_fields[5]}"
 
-    # Convert from key-form to array of files
-    metadata_list = []
-    for file in metadata:
-        # Skip empty file objects
-        if file != "":
-            metadata_list.append(metadata[file])
-
-    return metadata_list
+    return files
 
 
 def get_files_metadata(resid, ssh_host=None):
