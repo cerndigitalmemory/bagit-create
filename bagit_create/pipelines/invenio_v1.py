@@ -15,7 +15,7 @@ class InvenioV1Pipeline(base.BasePipeline):
         log.info(f"Invenio v1 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
 
-    def get_metadata(self, record_id, type="xml"):
+    def get_metadata(self, record_id, source, type="xml"):
         """
         Get MARC21 metadata from a CDS record ID
         Returns: [metadata_serialized, metadata_upstream_url, operation_status_code]
@@ -42,7 +42,7 @@ class InvenioV1Pipeline(base.BasePipeline):
             self.metadata_size = r.headers["Content-length"]
         except Exception:
             self.metadata_size = 0
-        return r.content, r.url, r.status_code, f"{record_id}.xml"
+        return r.content, r.url, r.status_code, f"metadata-{source}-{record_id}.xml"
 
     def parse_metadata(self, metadata_filename):
         """

@@ -140,7 +140,7 @@ def process(
                 metadata_url,
                 status_code,
                 metadata_filename,
-            ) = pipeline.get_metadata(recid)
+            ) = pipeline.get_metadata(recid, source)
 
             # Save metadata file in the meta folder
             pipeline.write_file(metadata, f"{base_path}/data/content/{metadata_filename}")
