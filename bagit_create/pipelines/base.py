@@ -200,15 +200,15 @@ class BasePipeline:
         """
         contents = ""
         for file in files:
-            if alternate_uri and "uri" in file:
-                url = file["uri"]
+            if type(file["origin"]["url"]) is list:
+                url = file["origin"]["url"][0]
             else:
-                url = file["url"]
+                url = file["origin"]["url"]
 
             # Workaround to get a valid fetch.txt (/eos/ is a malformed URL)
             if url[:5] == "/eos/":
                 url = f"eos:/{url}"
-            line = f'{url} {file["size"]} {file["path"]}\n'
+            line = f'{url} {file["size"]} {file["origin"]["path"]}\n'
             contents += line
         return contents
 
@@ -306,7 +306,7 @@ class BasePipeline:
         }
 
         bic_log_file_entry = {
-            "source": {
+            "origin": {
                 "filename": "bagitcreate.log",
                 "path": "",
             },
@@ -318,7 +318,7 @@ class BasePipeline:
         files.append(bic_log_file_entry)
 
         bic_meta_file_entry = {
-            "source": {
+            "origin": {
                 "filename": "sip.json",
                 "path": "",
             },
