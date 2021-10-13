@@ -2,7 +2,9 @@
 
 import subprocess
 import logging
+import ntpath
 
+log = logging.getLogger("basic-logger")
 
 def run(resid, ssh_host=None):
     if len(resid) < 16 and resid.isdecimal():
@@ -15,7 +17,7 @@ def run(resid, ssh_host=None):
         if ssh_host:
             command = ["ssh", ssh_host] + command
 
-        logging.warning(f"KRunning {command}")
+        log.warning(f"Running {command}")
 
         proc = subprocess.run(
             command,
@@ -34,9 +36,9 @@ def run(resid, ssh_host=None):
 
 
 def parse(output, resid):
-    metadata = {}
 
-    keys = ["fullpath", "checksum", "name", "fullname", "url", "fullurl"]
+    # Keys we want to save
+    keys = ["fullpath", "checksum", "name", "fullname", "url", "fullurl", "size"]
 
     files = []
 
@@ -48,15 +50,33 @@ def parse(output, resid):
         if line.startswith(resid):
             # Split them
             parsed_fields = line.split(":")
-            # Here's a new file
+            # Here's a new file, so save the last parsed one
             for field in parsed_fields:
                 if "fullpath" in field:
                     if file:
-                        # Append the last one to files
-                        files.append(file)
-                        file = {}
-                    else:
-                        file = {}
+                        # Remap values according to the File schema
+                        file_obj["origin"] = {}
+                        file_obj["origin"]["fullpath"] = file["fullpath"]
+                        file_obj["origin"]["path"] = ""
+                        file_obj["origin"]["filename"] = ntpath.basename(file["fullpath"])
+                        if "name" in file:
+                            file_obj["origin"]["fullname"] = file["name"]
+                        file_obj["origin"]["url"] = [file["url"], file["fullurl"]]
+
+                        file_obj["checksum"] = file["checksum"]
+                        file_obj["bagpath"] = f'data/content/{file_obj["origin"]["filename"]}'
+
+                        file_obj["size"] = file["size"]
+
+                        file_obj["downloaded"] = False
+
+                        files.append(file_obj)
+
+                    # Create a new File
+                    file = {}
+                    file_obj = {
+                        'metadata': False
+                    }
 
             for key in keys:
                 if key == "fullpath":
@@ -75,11 +95,8 @@ def parse(output, resid):
                             "filename"
                         ] = f'{file.pop("name")}{ext}'
                     if key == "url" or key=="fullurl":
-                        file[key] = f"{parsed_fields[4]}:{parsed_fields[5]}"
+                        file[key] = f"{parsed_fields[4]}:{parsed_fields[5]}".replace(
+                        f"{key}=", ""
+                    )
 
     return files
-
-
-def get_files_metadata(resid, ssh_host=None):
-    output = run(resid, ssh_host)
-    return parse(output, resid)
