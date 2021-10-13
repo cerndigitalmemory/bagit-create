@@ -151,7 +151,6 @@ class BasePipeline:
         
         for idx, file in enumerate(files):
             path = f"{basepath}/{file['bagpath']}"
-            print(file)
             checksum = None
             # Check if there's the "checksum" value in the File
             if "checksum" in file:
@@ -208,7 +207,7 @@ class BasePipeline:
             # Workaround to get a valid fetch.txt (/eos/ is a malformed URL)
             if url[:5] == "/eos/":
                 url = f"eos:/{url}"
-            line = f'{url} {file["size"]} {file["origin"]["path"]}\n'
+            line = f'{url} {file["size"]} {file["origin"]["path"]}{file["origin"]["filename"]}\n'
             contents += line
         return contents
 
