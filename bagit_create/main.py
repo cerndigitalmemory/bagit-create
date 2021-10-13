@@ -151,7 +151,7 @@ def process(
                 # Get files metadata from bibdocfile
                 output, files = pipeline.run_bibdoc(files, recid, bd_ssh_host)
                 # Save bibdoc output
-                pipeline.write_file(output, f"{base_path}/data/content/bibdoc.txt")
+                pipeline.write_file(output, f"{base_path}/data/meta/bibdoc.txt")
                 files.append(meta_file_entry)
 
         if dry_run is True:

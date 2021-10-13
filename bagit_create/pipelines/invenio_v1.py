@@ -28,7 +28,7 @@ class InvenioV1Pipeline(base.BasePipeline):
             },
             "metadata": True,
             "downloaded": True,
-            "bagpath": f"data/content/bibdoc.txt",
+            "bagpath": f"data/meta/bibdoc.txt",
             "size": 0
         }
         files.append(bibdocfile_entry)
