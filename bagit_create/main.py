@@ -135,8 +135,7 @@ def process(
             metadata_url = None
         else:
             # Get metadata from upstream
-            (
-                metadata,
+            (   metadata,
                 metadata_url,
                 status_code,
                 metadata_filename,
@@ -147,6 +146,12 @@ def process(
 
             # Parse metadata for files
             files = pipeline.parse_metadata(f"{base_path}/data/content/{metadata_filename}")
+
+            if bibdoc:
+                # Get files metadata from bibdocfile
+                output, files = pipeline.run_bibdoc(files, recid, bd_ssh_host)
+                # Save bibdoc output
+                pipeline.write_file(output, f"{base_path}/data/content/bibdoc.txt")
 
         if dry_run is True:
             # Create fetch.txt
