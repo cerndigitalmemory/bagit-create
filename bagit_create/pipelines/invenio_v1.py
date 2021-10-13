@@ -145,7 +145,7 @@ class InvenioV1Pipeline(base.BasePipeline):
         }
         files.append(meta_file_entry)
 
-        return files
+        return files, meta_file_entry
 
     def create_manifests(self, files, base_path):
         algs = ["md5"]
@@ -159,6 +159,8 @@ class InvenioV1Pipeline(base.BasePipeline):
         log.info(f"Downloading {len(files)} files to {files_base_path}..")
         for sourcefile in files:
             if sourcefile["metadata"] == False:
+                if type(sourcefile["origin"]["url"]) == list:
+                    sourcefile["origin"]["url"] = sourcefile["origin"]["url"][0]
                 destination = f'{files_base_path}/{sourcefile["origin"]["filename"]}'
 
                 log.debug(
