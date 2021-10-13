@@ -4,6 +4,7 @@ import requests
 from pymarc import marcxml
 import ntpath
 from .. import cds
+from .. import bibdocfile
 import re
 
 log = logging.getLogger("basic-logger")
@@ -14,6 +15,26 @@ class InvenioV1Pipeline(base.BasePipeline):
 
         log.info(f"Invenio v1 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
+
+    def run_bibdoc(self, files, record_id, bd_ssh_host):
+        output = bibdocfile.run(record_id,  bd_ssh_host)
+        files = bibdocfile.parse(output, record_id)
+
+        bibdocfile_entry = {
+            "origin": {
+                "filename": "bibdoc.txt",
+                "path": "",
+                "url": self.metadata_url,       
+            },
+            "metadata": True,
+            "downloaded": True,
+            "bagpath": f"data/content/bibdoc.txt",
+            "size": 0
+        }
+        files.append(bibdocfile_entry)
+
+        return output, files
+
 
     def get_metadata(self, record_id, source, type="xml"):
         """
@@ -42,6 +63,7 @@ class InvenioV1Pipeline(base.BasePipeline):
             self.metadata_size = r.headers["Content-length"]
         except Exception:
             self.metadata_size = 0
+
         return r.content, r.url, r.status_code, f"metadata-{source}-{record_id}.xml"
 
     def parse_metadata(self, metadata_filename):
@@ -126,7 +148,7 @@ class InvenioV1Pipeline(base.BasePipeline):
         return files
 
     def create_manifests(self, files, base_path):
-        algs = ["md5", "sha1"]
+        algs = ["md5"]
         for alg in algs:
             log.info(f"Generating manifest {alg}..")
             content, files = self.generate_manifest(files, alg, base_path)
