@@ -145,13 +145,14 @@ def process(
             pipeline.write_file(metadata, f"{base_path}/data/content/{metadata_filename}")
 
             # Parse metadata for files
-            files = pipeline.parse_metadata(f"{base_path}/data/content/{metadata_filename}")
+            files, meta_file_entry = pipeline.parse_metadata(f"{base_path}/data/content/{metadata_filename}")
 
             if bibdoc:
                 # Get files metadata from bibdocfile
                 output, files = pipeline.run_bibdoc(files, recid, bd_ssh_host)
                 # Save bibdoc output
                 pipeline.write_file(output, f"{base_path}/data/content/bibdoc.txt")
+                files.append(meta_file_entry)
 
         if dry_run is True:
             # Create fetch.txt
