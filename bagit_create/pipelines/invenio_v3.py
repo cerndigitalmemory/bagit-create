@@ -2,7 +2,6 @@ from . import base
 import logging
 import os, requests, json
 import configparser
-import urllib.request
 
 log = logging.getLogger("basic-logger")
 
