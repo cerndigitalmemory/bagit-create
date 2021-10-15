@@ -127,12 +127,12 @@ class InvenioV3Pipeline(base.BasePipeline):
         for sourcefile in files:
             if sourcefile["metadata"] == False:
                 destination = f'{files_base_path}/{sourcefile["filename"]}'
-
+                source = sourcefile["url"]
                 log.debug(
                     f'Downloading {sourcefile["filename"]} from {sourcefile["url"]}..'
                 )
 
-                sourcefile["downloaded"] = self.download_file(sourcefile, destination)
+                sourcefile["downloaded"] = self.download_file(source, destination)
             else:
                 log.debug(
                     f'Skipped downloading of {sourcefile["filename"]} from \
