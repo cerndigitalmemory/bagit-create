@@ -63,7 +63,9 @@ def parse(output, resid):
                             file_obj["origin"]["fullname"] = file["name"]
                         file_obj["origin"]["url"] = [file["url"], file["fullurl"]]
 
+                        file_obj["origin"]["checksum"] = file["checksum"]
                         file_obj["checksum"] = file["checksum"]
+                        
                         file_obj["bagpath"] = f'data/content/{file_obj["origin"]["filename"]}'
 
                         file_obj["size"] = file["size"]
