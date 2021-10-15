@@ -26,7 +26,7 @@ class InvenioV1Pipeline(base.BasePipeline):
                 "path": "",
                 "url": self.metadata_url,       
             },
-            "metadata": True,
+            "metadata": False,
             "downloaded": True,
             "bagpath": f"data/meta/bibdoc.txt",
             "size": 0
@@ -157,8 +157,8 @@ class InvenioV1Pipeline(base.BasePipeline):
 
     def download_files(self, files, files_base_path):
         log.info(f"Downloading {len(files)} files to {files_base_path}..")
-        for sourcefile in files:
-            if sourcefile["metadata"] == False:
+        for idx, sourcefile in enumerate(files):
+            if sourcefile["metadata"] == False and sourcefile["downloaded"] == False:
                 if type(sourcefile["origin"]["url"]) == list:
                     sourcefile["origin"]["url"] = sourcefile["origin"]["url"][0]
                 destination = f'{files_base_path}/{sourcefile["origin"]["filename"]}'
@@ -167,7 +167,7 @@ class InvenioV1Pipeline(base.BasePipeline):
                     f'Downloading {sourcefile["origin"]["filename"]} from {sourcefile["origin"]["url"]}..'
                 )
 
-                sourcefile["downloaded"] = cds.downloadRemoteFile(
+                files[idx]["downloaded"] = cds.downloadRemoteFile(
                     sourcefile["origin"]["url"], destination
                 )
 
@@ -176,3 +176,4 @@ class InvenioV1Pipeline(base.BasePipeline):
                     f'Skipped downloading of {sourcefile["origin"]["filename"]} from              '
                     f'       {sourcefile["origin"]["url"]}..'
                 )
+        return files
