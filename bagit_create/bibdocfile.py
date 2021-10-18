@@ -52,7 +52,7 @@ def parse(output, resid):
             parsed_fields = line.split(":")
             # Here's a new file, so save the last parsed one
             for field in parsed_fields:
-                if "fullpath" in field:
+                if "fullpath" in field or line==output.splitlines()[-1]:
                     if file:
                         # Remap values according to the File schema
                         file_obj["origin"] = {}
@@ -61,7 +61,7 @@ def parse(output, resid):
                         file_obj["origin"]["filename"] = ntpath.basename(file["fullpath"])
                         if "name" in file:
                             file_obj["origin"]["fullname"] = file["name"]
-                        file_obj["origin"]["url"] = [file["url"], file["fullurl"]]
+                        file_obj["origin"]["url"] = [file["fullurl"], file["url"]]
 
                         file_obj["origin"]["checksum"] = file["checksum"]
                         file_obj["checksum"] = file["checksum"]
@@ -72,6 +72,7 @@ def parse(output, resid):
 
                         file_obj["downloaded"] = False
 
+                        print("Appending", file_obj)
                         files.append(file_obj)
 
                     # Create a new File
@@ -100,5 +101,6 @@ def parse(output, resid):
                         file[key] = f"{parsed_fields[4]}:{parsed_fields[5]}".replace(
                         f"{key}=", ""
                     )
+
 
     return files
