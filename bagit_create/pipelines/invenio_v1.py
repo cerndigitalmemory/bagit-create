@@ -17,24 +17,23 @@ class InvenioV1Pipeline(base.BasePipeline):
         self.base_url = base_url
 
     def run_bibdoc(self, files, record_id, bd_ssh_host):
-        output = bibdocfile.run(record_id,  bd_ssh_host)
+        output = bibdocfile.run(record_id, bd_ssh_host)
         files = bibdocfile.parse(output, record_id)
 
         bibdocfile_entry = {
             "origin": {
                 "filename": "bibdoc.txt",
                 "path": "",
-                "url": self.metadata_url,       
+                "url": self.metadata_url,
             },
             "metadata": False,
             "downloaded": True,
             "bagpath": f"data/meta/bibdoc.txt",
-            "size": 0
+            "size": 0,
         }
         files.append(bibdocfile_entry)
 
         return output, files
-
 
     def get_metadata(self, record_id, source, type="xml"):
         """
@@ -89,9 +88,7 @@ class InvenioV1Pipeline(base.BasePipeline):
         files = []
         for f in record.get_fields("856"):
             # Prepare the File object
-            obj = {
-                "origin" : {}
-            }
+            obj = {"origin": {}}
 
             # Default size
             obj["size"] = 0
@@ -121,7 +118,9 @@ class InvenioV1Pipeline(base.BasePipeline):
                 obj["origin"]["filename"] = ntpath.basename(obj["origin"]["url"])
                 # We suppose no folder structure
                 obj["origin"]["path"] = ""
-                obj["bagpath"] = f"data/content/{obj['origin']['path']}{obj['origin']['filename']}"
+                obj[
+                    "bagpath"
+                ] = f"data/content/{obj['origin']['path']}{obj['origin']['filename']}"
 
             obj["metadata"] = False
             obj["downloaded"] = False
@@ -136,7 +135,7 @@ class InvenioV1Pipeline(base.BasePipeline):
             "origin": {
                 "filename": f"{ntpath.basename(metadata_filename)}",
                 "path": "",
-                "url": self.metadata_url,       
+                "url": self.metadata_url,
             },
             "metadata": True,
             "downloaded": True,

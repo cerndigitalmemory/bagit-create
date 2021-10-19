@@ -137,17 +137,22 @@ def process(
             metadata_url = None
         else:
             # Get metadata from upstream
-            (   metadata,
+            (
+                metadata,
                 metadata_url,
                 status_code,
                 metadata_filename,
             ) = pipeline.get_metadata(recid, source)
 
             # Save metadata file in the meta folder
-            pipeline.write_file(metadata, f"{base_path}/data/content/{metadata_filename}")
+            pipeline.write_file(
+                metadata, f"{base_path}/data/content/{metadata_filename}"
+            )
 
             # Parse metadata for files
-            files, meta_file_entry = pipeline.parse_metadata(f"{base_path}/data/content/{metadata_filename}")
+            files, meta_file_entry = pipeline.parse_metadata(
+                f"{base_path}/data/content/{metadata_filename}"
+            )
 
             if bibdoc:
                 # Get files metadata from bibdocfile
@@ -233,4 +238,3 @@ def process(
 
     # For any other error, print details about what happened and clean up
     #  any created file and folder
-

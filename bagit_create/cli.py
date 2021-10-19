@@ -20,7 +20,8 @@ import click
     help="Select source pipeline",
     required=True,
     type=click.Choice(
-        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm", "indico", "local", "ilcagenda"], case_sensitive=False
+        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm", "indico", "local", "ilcagenda"],
+        case_sensitive=False,
     ),
 )
 @click.option(
@@ -97,7 +98,6 @@ def cli(
     very_verbose,
     bibdoc,
     bd_ssh_host,
-
 ):
 
     # Select the desired log level (default is 2, warning)

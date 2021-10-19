@@ -99,13 +99,13 @@ def getRawFilesLocs(metadata_filename):
 def downloadRemoteFile(src, dest):
     try:
         r = requests.get(src, stream=True)
-        with open(dest, 'wb') as f:
+        with open(dest, "wb") as f:
             for chunk in r.raw.stream(1024, decode_content=False):
                 if chunk:
                     f.write(chunk)
 
-        #r = requests.get(src)
-        #with open(dest, "wb") as f:
+        # r = requests.get(src)
+        # with open(dest, "wb") as f:
         #    f.write(r.content)
 
     except Exception as e:
