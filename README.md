@@ -52,9 +52,19 @@ Four pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data, Indico) are currently 
 | Zenodo                | zenodo       | https://zenodo.org/                | Invenio v3.x                |
 | (Generic) InvenioRDM  | invenio-rdm  |                                    | Invenio v3.x\*              |
 | CERN Indico           | indico       | https://indico.cern.ch/            | Invenio v3.0.x\*            |
+| ILC Agenda            | ilcagenda    | https://agenda.linearcollider.org/ | Invenio v3.0.x\*            |
 
 
-\* requires additional configuration (See .ini files in pipelines/)
+\* requires additional configuration
+
+### Indico
+
+To use any Indico pipeline you need an API Token. From your browser, login to the Indico instance, go to "Preferences" and then "API Token". Create new token, name can be anything. Select (at least) `Everything (all methods)` and `Classic API (read only)` as scopes. Note down the token and set the `INDICO_KEY` environement variable to it.
+
+```bash
+export INDICO_KEY=<INDICO_API_TOKEN>
+
+```
 
 ### CLI
 
