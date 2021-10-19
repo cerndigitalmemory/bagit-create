@@ -58,9 +58,9 @@ class InvenioV3Pipeline(base.BasePipeline):
     def create_manifests(self, files, base_path):
         alg = "md5"
         log.info(f"Generating manifest {alg}..")
-        content = self.generate_manifest(files, alg, base_path)
-        print(content)
+        content, files = self.generate_manifest(files, alg, base_path)
         self.write_file(content, f"{base_path}/manifest-{alg}.txt")
+        return files
 
     def parse_metadata(self, metadata_filename):
         log.debug("Parsing metadata..")
@@ -99,6 +99,8 @@ class InvenioV3Pipeline(base.BasePipeline):
             "size": self.metadata_size,
         }
 
+        files_obj.append(meta_file_entry)
+
         return files_obj, meta_file_entry
 
     def get_fileslist(self):
@@ -134,7 +136,7 @@ class InvenioV3Pipeline(base.BasePipeline):
                 )
             else:
                 log.debug(
-                    f'Skipped downloading of {sourcefile["filename"]} from \
+                    f'Skipped downloading of {sourcefile["origin"]["filename"]} from \
                     {sourcefile["origin"]["url"]}..'
                 )
 
