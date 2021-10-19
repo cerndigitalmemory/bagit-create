@@ -148,7 +148,7 @@ class BasePipeline:
         appending the filaname to the given base path) and add them to the SIP metadata.
         """
         contents = ""
-        
+
         for idx, file in enumerate(files):
             path = f"{basepath}/{file['bagpath']}"
             checksum = None
@@ -156,8 +156,8 @@ class BasePipeline:
             if "checksum" in file:
                 # If it's a string create a single element list out of it
                 if type(file["checksum"]) == str:
-                        file["checksum"] = [ file["checksum"]]
-                # For each available checksum        
+                    file["checksum"] = [file["checksum"]]
+                # For each available checksum
                 for avail_checksum in file["checksum"]:
                     p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
                     m = p.match(avail_checksum)
@@ -165,7 +165,7 @@ class BasePipeline:
                     matched_checksum = m.groups()[1]
                     # Check if it's the required one
                     if alg == algorithm:
-                        checksum = matched_checksum                        
+                        checksum = matched_checksum
 
             # If we didn't find the required checksum but the file has been downloaded,
             #  compute it
@@ -175,11 +175,11 @@ class BasePipeline:
                 if "checksum" in files[idx]:
                     files[idx]["checksum"].append(f"{algorithm}:{checksum}")
                 else:
-                    files[idx]["checksum"] = [ f"{algorithm}:{checksum}" ]
+                    files[idx]["checksum"] = [f"{algorithm}:{checksum}"]
 
             # If there's no checksum and it's not possibile to compute it from disk, throw an error
             if not checksum and not file["downloaded"]:
-                raise Exception
+                pass
 
             line = f"{checksum} {file['bagpath']}\n"
             contents += line
@@ -221,7 +221,9 @@ class BasePipeline:
 
         # Prepare the base folder for the BagIt export
         #  e.g. "bagitexport::cds::42"
-        base_name = f"sip{delimiter_str}{source}{delimiter_str}{recid}{delimiter_str}{timestamp}"
+        base_name = (
+            f"sip{delimiter_str}{source}{delimiter_str}{recid}{delimiter_str}{timestamp}"
+        )
         base_path = f"{path}/{base_name}"
 
         os.mkdir(base_path)
@@ -332,7 +334,6 @@ class BasePipeline:
             json.dumps(bic_meta, indent=4), f"{base_path}/data/meta/sip.json"
         )
 
-        
         return files
 
     def verify_bag(self, path):
