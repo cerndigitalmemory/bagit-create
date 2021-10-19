@@ -43,7 +43,7 @@ class InvenioV3Pipeline(base.BasePipeline):
         if not self.config:
             log.error("No such Invenio instance: " + source)
 
-    def get_metadata(self, recid):
+    def get_metadata(self, recid, source):
         res = requests.get(self.base_endpoint + str(recid), headers=self.headers)
 
         if res.status_code != 200:
@@ -59,50 +59,47 @@ class InvenioV3Pipeline(base.BasePipeline):
         alg = "md5"
         log.info(f"Generating manifest {alg}..")
         content = self.generate_manifest(files, alg, base_path)
+        print(content)
         self.write_file(content, f"{base_path}/manifest-{alg}.txt")
 
     def parse_metadata(self, metadata_filename):
         log.debug("Parsing metadata..")
 
         files = self.get_fileslist()
+        files_obj = []
 
-        if self.has_file_baseuri():
-            file_uri = self.get_file_baseuri()
-            for sourcefile in files:
-                filename = self.get_filename(sourcefile)
-                sourcefile["url"] = file_uri + "/" + filename
-                sourcefile["filename"] = filename
-                sourcefile["path"] = filename
-                sourcefile["remote"] = "HTTP"
-                sourcefile["downloaded"] = False
-                sourcefile["metadata"] = False
-                sourcefile["localpath"] = f"data/content/{filename}"
-        else:
-            for sourcefile in files:
-                filename = self.get_filename(sourcefile)
-                sourcefile = self.get_file_uri(sourcefile)
-                sourcefile["filename"] = filename
-                sourcefile["path"] = filename
-                sourcefile["remote"] = "HTTP"
-                sourcefile["downloaded"] = False
-                sourcefile["metadata"] = False
-                sourcefile["localpath"] = f"data/content/{filename}"
+        for sourcefile in files:
+            filename = self.get_filename(sourcefile)
+            if self.has_file_baseuri():
+                file_uri = self.get_file_baseuri()
+                url = file_uri + "/" + filename
+            else:
+                url = self.get_file_uri(sourcefile)
+            file_obj = {
+                "origin": {"url": url, "filename": filename, "path": ""},
+                "downloaded": False,
+                "metadata": False,
+                "bagpath": f"data/content/{filename}",
+                "checksum": sourcefile["checksum"],
+                "size": sourcefile["size"],
+            }
+            files_obj.append(file_obj)
 
         log.debug(f"Got {len(files)} files")
 
         meta_file_entry = {
-            "filename": "metadata.json",
-            "path": "metadata.json",
+            "origin": {
+                "filename": "metadata.json",
+                "path": "",
+                "url": self.metadata_url,
+            },
             "metadata": True,
             "downloaded": True,
-            "localpath": "data/meta/metadata.json",
-            "localsavepath": f"{self.base_path}/data/meta",
-            "url": self.metadata_url,
+            "bagpath": f"data/content/metadata.json",
             "size": self.metadata_size,
         }
-        files.append(meta_file_entry)
 
-        return files
+        return files_obj, meta_file_entry
 
     def get_fileslist(self):
         key_list = self.config["files"].split(",")
@@ -126,20 +123,23 @@ class InvenioV3Pipeline(base.BasePipeline):
         log.info(f"Downloading {len(files)} files to {files_base_path}..")
         for sourcefile in files:
             if sourcefile["metadata"] == False:
-                destination = f'{files_base_path}/{sourcefile["filename"]}'
+                destination = f'{files_base_path}/{sourcefile["origin"]["filename"]}'
 
                 log.debug(
-                    f'Downloading {sourcefile["filename"]} from {sourcefile["url"]}..'
+                    f'Downloading {sourcefile["origin"]["filename"]} from {sourcefile["origin"]["url"]}..'
                 )
 
-                sourcefile["downloaded"] = self.download_file(sourcefile, destination)
+                sourcefile["downloaded"] = self.download_file(
+                    sourcefile["origin"]["url"], destination
+                )
             else:
                 log.debug(
                     f'Skipped downloading of {sourcefile["filename"]} from \
-                    {sourcefile["url"]}..'
+                    {sourcefile["origin"]["url"]}..'
                 )
 
         log.warning("Finished downloading")
+        return files
 
     def has_file_baseuri(self):
         return self.has_file_base_uri
@@ -157,7 +157,7 @@ class InvenioV3Pipeline(base.BasePipeline):
         if key_list[0] != "url":
             file.pop(key_list[0])
 
-        return file
+        return file["url"]
 
     def get_filename(self, file):
         key_list = self.config["file_name"].split(",")
