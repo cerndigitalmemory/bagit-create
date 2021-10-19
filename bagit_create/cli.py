@@ -20,7 +20,7 @@ import click
     help="Select source pipeline",
     required=True,
     type=click.Choice(
-        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm", "indico", "local"], case_sensitive=False
+        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm", "indico", "local", "ilcagenda"], case_sensitive=False
     ),
 )
 @click.option(

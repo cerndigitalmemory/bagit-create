@@ -36,7 +36,7 @@ class IndicoV1Pipeline(base.BasePipeline):
         headers = {"Authorization": "Bearer " + api_key}
 
         # Indico API export base endpoint
-        endpoint = f"https://indico.cern.ch/export/event/{record_id}.json"
+        endpoint = f"{self.base_url}/export/event/{record_id}.json"
 
         # Query params
         payload = {"detail": "contributions", "occ": "yes", "pretty": "yes"}

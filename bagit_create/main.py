@@ -104,6 +104,8 @@ def process(
             pipeline = invenio_v3.InvenioV3Pipeline(source)
         elif source == "indico":
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/")
+        elif source == "ilcagenda":
+            pipeline = indico.IndicoV1Pipeline("https://agenda.linearcollider.org/")
         elif source == "local":
             pipeline = local.LocalV1Pipeline(localsource)
             localsource = pipeline.get_abs_path(localsource)
