@@ -11,6 +11,7 @@ from os import stat
 from pwd import getpwuid
 from os import walk
 import checksumdir
+import hashlib
 
 log = logging.getLogger("basic-logger")
 
@@ -32,7 +33,7 @@ class LocalV1Pipeline(base.BasePipeline):
         # The userSourcePath is the path before Pictures e.g. for /home/user/Pictures is /home/user
         userSourcePath = src[: len(src) - len(base_name) - 1]
 
-        # If localsource is a file just get data from that file otherwise use the walk function
+        # If targetpath is a file just get data from that file otherwise use the walk function
         if os.path.isfile(src):
             file = ntpath.basename(src)
             dirpath = ntpath.dirname(src)
@@ -93,11 +94,8 @@ class LocalV1Pipeline(base.BasePipeline):
         return folder_name
 
     # gets the checksum
-    def get_local_checksum(self, src):
-        if os.path.isfile(src):
-            checksum = self.compute_hash(src)
-        else:
-            checksum = checksumdir.dirhash(src)
+    def get_local_checksum(self, src, user="kchelakis"):
+        checksum = hashlib.md5((src + user).encode("utf-8")).hexdigest()
         return checksum
 
     # If the path is relative, return the absolute path
@@ -112,26 +110,31 @@ class LocalV1Pipeline(base.BasePipeline):
         algs = ["md5", "sha1"]
         for alg in algs:
             log.info(f"Generating manifest {alg}..")
-            content = self.generate_manifest(files, alg, base_path)
+            content, files = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
+        return files
 
     def get_local_metadata(
         self, file, src, dirpath, relpath, base_name, userSourcePath, isFile
     ):
-        obj = {}
-        obj["filename"] = file
+        # Prepare the File object
+        obj = {"origin": {}}
+
+        obj["origin"]["filename"] = file
         ## If you are in the root directory just use filename
         if dirpath == src or isFile:
-            obj["path"] = f"{file}"
+            obj["origin"]["path"] = ""
+            sourcePath = f"{file}"
         # Otherwise prepare the relative path
         else:
-            obj["path"] = f"{relpath}/{file}"
+            relpath = dirpath[len(src) + 1 :]
+            obj["origin"]["path"] = relpath
+            sourcePath = f"{relpath}/{file}"
 
-        sourcePath = obj["path"]
-        obj["sourcePath"] = f"{base_name}/{sourcePath}"
-        obj["userSourcePath"] = userSourcePath
-        obj["sourceFullpath"] = f"{dirpath}/{file}"
-        obj["localpath"] = f"data/content/{obj['path']}"
+        obj["origin"]["sourcePath"] = f"{base_name}/{sourcePath}"
+        # obj["origin"]["userSourcePath"] = userSourcePath
+        # obj["origin"]["sourceFullpath"] = f"{dirpath}/{file}"
+        obj["bagpath"] = f"data/content/{sourcePath}"
         try:
             obj["size"] = os.path.getsize(f"{dirpath}/{file}")
         except OSError:
@@ -140,10 +143,10 @@ class LocalV1Pipeline(base.BasePipeline):
             obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
         except OSError:
             log.debug(f" Date cannot be found. Skipping field. ")
-        try:
-            obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
-        except OSError:
-            log.debug(f" Creator cannot be found. Skipping field. ")
+        # try:
+        #     obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
+        # except OSError:
+        #     log.debug(f" Creator cannot be found. Skipping field. ")
         obj["metadata"] = False
         obj["downloaded"] = False
 

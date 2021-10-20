@@ -295,16 +295,35 @@ class BasePipeline:
         return files
 
     def create_sip_meta(self, files, audit, timestamp, base_path, metadata_url=None):
-        bic_meta = {
-            "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
-            "created_by": f"bagit-create {__version__}",
-            "audit": audit,
-            "source": audit[0]["tool"]["params"]["source"],
-            "recid": audit[0]["tool"]["params"]["recid"],
-            "metadataFile_upstream": metadata_url,
-            "contentFiles": files,
-            "sip_creation_timestamp": timestamp,
-        }
+        source = audit[0]["tool"]["params"]["source"]
+        targetpath = audit[0]["tool"]["params"]["targetpath"]
+        targetbasepath = audit[0]["tool"]["params"]["targetbasepath"]
+        if targetbasepath:
+            targetpath = targetpath[len(targetbasepath) + 1 :]
+        if source != "local":
+            bic_meta = {
+                "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
+                "created_by": f"bagit-create {__version__}",
+                "audit": audit,
+                "source": audit[0]["tool"]["params"]["source"],
+                "recid": audit[0]["tool"]["params"]["recid"],
+                "metadataFile_upstream": metadata_url,
+                "contentFiles": files,
+                "sip_creation_timestamp": timestamp,
+            }
+        else:
+            bic_meta = {
+                "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
+                "created_by": f"bagit-create {__version__}",
+                "audit": audit,
+                "source": audit[0]["tool"]["params"]["source"],
+                "recid": audit[0]["tool"]["params"]["recid"],
+                "sourcePath": targetpath,
+                "user": audit[0]["tool"]["params"]["user"],
+                "metadataFile_upstream": metadata_url,
+                "contentFiles": files,
+                "sip_creation_timestamp": timestamp,
+            }
 
         bic_log_file_entry = {
             "origin": {
@@ -365,7 +384,15 @@ class BasePipeline:
 
     # Checks the input from the cli and raises error if there is a mistake
     def check_parameters_input(
-        recid, source, localsource, bibdoc, bd_ssh_host, loglevels, alternate_uri
+        recid,
+        source,
+        targetpath,
+        user,
+        targetbasepath,
+        bibdoc,
+        bd_ssh_host,
+        loglevel,
+        alternate_uri,
     ):
         """
         Checks if the combination of the parameters for the job make up for
@@ -388,8 +415,36 @@ class BasePipeline:
 
         if source != "local" and not recid:
             raise WrongInputException("Recid is missing.")
-        if localsource and source != "local":
-            raise WrongInputException("This pipeline is not expecting a localsource.")
+        if targetpath and source != "local":
+            raise WrongInputException("This pipeline is not expecting a targetpath.")
+        if source == "local" and not user:
+            raise WrongInputException("User is missing")
+        if (targetbasepath or targetpath or user) and (source != "local"):
+            raise WrongInputException(
+                "targetbasepath, targetpath and user are parameters used only when source is local."
+            )
+        if targetbasepath:
+            flag = False
+            # Check if the targetbasepath is a substring of targetpath and also check if it is at the beginning of the target path
+            for i in range(len(targetbasepath)):
+                if targetbasepath[i] != targetpath[i]:
+                    flag = True
+            # Check if the targetbasepath ends at a / of the targetpath
+            # e.g. if targetpath = user/photos/folders and targetbasepath = user/pho, catch that exception
+            try:
+                if not (
+                    (targetpath[len(targetbasepath)] == "/")
+                    or (targetpath[len(targetbasepath) - 1] == "/")
+                ):
+                    flag = False
+            # Catch any indexing error if targetbasepath = targetpath
+            except IndexError as e:
+                pass
+
+            if flag:
+                raise WrongInputException(
+                    "Target base path is not part of the target path"
+                )
 
 
 class WrongInputException(Exception):
