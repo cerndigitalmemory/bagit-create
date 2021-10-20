@@ -132,8 +132,6 @@ class LocalV1Pipeline(base.BasePipeline):
             sourcePath = f"{relpath}/{file}"
 
         obj["origin"]["sourcePath"] = f"{base_name}/{sourcePath}"
-        # obj["origin"]["userSourcePath"] = userSourcePath
-        # obj["origin"]["sourceFullpath"] = f"{dirpath}/{file}"
         obj["bagpath"] = f"data/content/{sourcePath}"
         try:
             obj["size"] = os.path.getsize(f"{dirpath}/{file}")
@@ -143,10 +141,7 @@ class LocalV1Pipeline(base.BasePipeline):
             obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
         except OSError:
             log.debug(f" Date cannot be found. Skipping field. ")
-        # try:
-        #     obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
-        # except OSError:
-        #     log.debug(f" Creator cannot be found. Skipping field. ")
+
         obj["metadata"] = False
         obj["downloaded"] = False
 
