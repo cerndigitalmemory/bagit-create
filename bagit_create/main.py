@@ -21,7 +21,9 @@ def process(
     source,
     loglevel,
     target,
-    localsource,
+    targetpath,
+    author=None,
+    targetbasepath=None,
     dry_run=False,
     alternate_uri=False,
     bibdoc=False,
@@ -37,7 +39,9 @@ def process(
         "source": source,
         "loglevel": loglevel,
         "target": target,
-        "localsource": localsource,
+        "targetpath": targetpath,
+        "author": author,
+        "targetbasepath": targetbasepath,
         "dry_run": dry_run,
         "alternate_uri": alternate_uri,
         "bibdoc": bibdoc,
@@ -47,7 +51,15 @@ def process(
 
     try:
         base.BasePipeline.check_parameters_input(
-            recid, source, localsource, bibdoc, bd_ssh_host, loglevel, alternate_uri
+            recid,
+            source,
+            targetpath,
+            author,
+            targetbasepath,
+            bibdoc,
+            bd_ssh_host,
+            loglevel,
+            alternate_uri,
         )
     except WrongInputException as e:
         return {"status": 1, "errormsg": e}
@@ -63,7 +75,7 @@ def process(
 
     ## Console Handler
     # create console handler logging to the shell
-    # what has been requested by the user (-v or -vv)
+    # what has been requested by the author (-v or -vv)
     ch_formatter = logging.Formatter("%(message)s")
     ch = logging.StreamHandler()
     ch.setLevel(loglevels[loglevel])
@@ -107,9 +119,10 @@ def process(
         elif source == "ilcagenda":
             pipeline = indico.IndicoV1Pipeline("https://agenda.linearcollider.org/")
         elif source == "local":
-            pipeline = local.LocalV1Pipeline(localsource)
-            localsource = pipeline.get_abs_path(localsource)
-            recid = pipeline.get_local_checksum(localsource)
+            pipeline = local.LocalV1Pipeline(targetpath)
+            targetpath = pipeline.get_abs_path(targetpath)
+            recid = pipeline.get_local_recid(targetpath, author)
+            params["recid"] = recid
 
         # Save job details (as audit step 0)
         audit = [
@@ -133,7 +146,7 @@ def process(
 
         if source == "local":
             # Look for files in the source folder and prepare the files object
-            files = pipeline.scan_files(localsource)
+            files = pipeline.scan_files(targetpath)
             metadata_url = None
         else:
             # Get metadata from upstream
@@ -168,7 +181,7 @@ def process(
 
             if source == "local":
                 files = pipeline.copy_files(
-                    files, localsource, f"{base_path}/data/content"
+                    files, targetpath, f"{base_path}/data/content"
                 )
 
             else:

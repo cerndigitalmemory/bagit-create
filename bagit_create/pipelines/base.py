@@ -295,6 +295,7 @@ class BasePipeline:
         return files
 
     def create_sip_meta(self, files, audit, timestamp, base_path, metadata_url=None):
+        source = audit[0]["tool"]["params"]["source"]
         bic_meta = {
             "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
             "created_by": f"bagit-create {__version__}",
@@ -305,6 +306,14 @@ class BasePipeline:
             "contentFiles": files,
             "sip_creation_timestamp": timestamp,
         }
+        if source == "local":
+            bic_meta.update(
+                {
+                    "sourcepath": audit[0]["tool"]["params"]["targetpath"],
+                    "targetbasepath": audit[0]["tool"]["params"]["targetbasepath"],
+                    "author": audit[0]["tool"]["params"]["author"],
+                }
+            )
 
         bic_log_file_entry = {
             "origin": {
@@ -365,7 +374,15 @@ class BasePipeline:
 
     # Checks the input from the cli and raises error if there is a mistake
     def check_parameters_input(
-        recid, source, localsource, bibdoc, bd_ssh_host, loglevels, alternate_uri
+        recid,
+        source,
+        targetpath,
+        author,
+        targetbasepath,
+        bibdoc,
+        bd_ssh_host,
+        loglevel,
+        alternate_uri,
     ):
         """
         Checks if the combination of the parameters for the job make up for
@@ -388,8 +405,19 @@ class BasePipeline:
 
         if source != "local" and not recid:
             raise WrongInputException("Recid is missing.")
-        if localsource and source != "local":
-            raise WrongInputException("This pipeline is not expecting a localsource.")
+        if targetpath and source != "local":
+            raise WrongInputException("This pipeline is not expecting a targetpath.")
+        if source == "local" and not author:
+            raise WrongInputException("Author is missing")
+        if source == "local" and not targetpath:
+            raise WrongInputException("Targetpath is missing")
+        if (targetbasepath or targetpath or author) and (source != "local"):
+            raise WrongInputException(
+                "targetbasepath, targetpath and author are parameters used only when source is local."
+            )
+        if targetbasepath:
+            if not targetbasepath in targetpath:
+                raise WrongInputException("Targetbasepath should include targetpath")
 
 
 class WrongInputException(Exception):
