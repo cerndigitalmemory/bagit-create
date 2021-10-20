@@ -22,7 +22,7 @@ def process(
     loglevel,
     target,
     targetpath,
-    user=None,
+    author=None,
     targetbasepath=None,
     dry_run=False,
     alternate_uri=False,
@@ -40,7 +40,7 @@ def process(
         "loglevel": loglevel,
         "target": target,
         "targetpath": targetpath,
-        "user": user,
+        "author": author,
         "targetbasepath": targetbasepath,
         "dry_run": dry_run,
         "alternate_uri": alternate_uri,
@@ -54,7 +54,7 @@ def process(
             recid,
             source,
             targetpath,
-            user,
+            author,
             targetbasepath,
             bibdoc,
             bd_ssh_host,
@@ -75,7 +75,7 @@ def process(
 
     ## Console Handler
     # create console handler logging to the shell
-    # what has been requested by the user (-v or -vv)
+    # what has been requested by the author (-v or -vv)
     ch_formatter = logging.Formatter("%(message)s")
     ch = logging.StreamHandler()
     ch.setLevel(loglevels[loglevel])
@@ -121,7 +121,8 @@ def process(
         elif source == "local":
             pipeline = local.LocalV1Pipeline(targetpath)
             targetpath = pipeline.get_abs_path(targetpath)
-            recid = pipeline.get_local_checksum(targetpath)
+            recid = pipeline.get_local_recid(targetpath, author)
+            params["recid"] = recid
 
         # Save job details (as audit step 0)
         audit = [

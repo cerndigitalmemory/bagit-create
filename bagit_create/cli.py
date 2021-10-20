@@ -88,9 +88,9 @@ import click
     is_flag=False,
 )
 @click.option(
-    "--user",
+    "--author",
     "-u",
-    help="Name of the user who creates that package.",
+    help="Owner of data",
     type=Text,
     default=None,
     is_flag=False,
@@ -98,7 +98,7 @@ import click
 @click.option(
     "--targetbasepath",
     "-tb",
-    help="Select the base path that you want to hide.",
+    help="Select the base path that you want to be meaningful for the hierarchy.",
     type=Text,
     default=None,
     is_flag=False,
@@ -108,7 +108,7 @@ def cli(
     source,
     target,
     targetpath,
-    user,
+    author,
     targetbasepath,
     dry_run,
     alternate_uri,
@@ -134,7 +134,7 @@ def cli(
         loglevel,
         target,
         targetpath,
-        user,
+        author,
         targetbasepath,
         dry_run,
         alternate_uri,

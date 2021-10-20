@@ -296,34 +296,24 @@ class BasePipeline:
 
     def create_sip_meta(self, files, audit, timestamp, base_path, metadata_url=None):
         source = audit[0]["tool"]["params"]["source"]
-        targetpath = audit[0]["tool"]["params"]["targetpath"]
-        targetbasepath = audit[0]["tool"]["params"]["targetbasepath"]
-        if targetbasepath:
-            targetpath = targetpath[len(targetbasepath) + 1 :]
-        if source != "local":
-            bic_meta = {
-                "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
-                "created_by": f"bagit-create {__version__}",
-                "audit": audit,
-                "source": audit[0]["tool"]["params"]["source"],
-                "recid": audit[0]["tool"]["params"]["recid"],
-                "metadataFile_upstream": metadata_url,
-                "contentFiles": files,
-                "sip_creation_timestamp": timestamp,
-            }
-        else:
-            bic_meta = {
-                "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
-                "created_by": f"bagit-create {__version__}",
-                "audit": audit,
-                "source": audit[0]["tool"]["params"]["source"],
-                "recid": audit[0]["tool"]["params"]["recid"],
-                "sourcePath": targetpath,
-                "user": audit[0]["tool"]["params"]["user"],
-                "metadataFile_upstream": metadata_url,
-                "contentFiles": files,
-                "sip_creation_timestamp": timestamp,
-            }
+        bic_meta = {
+            "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
+            "created_by": f"bagit-create {__version__}",
+            "audit": audit,
+            "source": audit[0]["tool"]["params"]["source"],
+            "recid": audit[0]["tool"]["params"]["recid"],
+            "metadataFile_upstream": metadata_url,
+            "contentFiles": files,
+            "sip_creation_timestamp": timestamp,
+        }
+        if source == "local":
+            bic_meta.update(
+                {
+                    "sourcepath": audit[0]["tool"]["params"]["targetpath"],
+                    "targetbasepath": audit[0]["tool"]["params"]["targetbasepath"],
+                    "author": audit[0]["tool"]["params"]["author"],
+                }
+            )
 
         bic_log_file_entry = {
             "origin": {
@@ -387,7 +377,7 @@ class BasePipeline:
         recid,
         source,
         targetpath,
-        user,
+        author,
         targetbasepath,
         bibdoc,
         bd_ssh_host,
@@ -417,34 +407,17 @@ class BasePipeline:
             raise WrongInputException("Recid is missing.")
         if targetpath and source != "local":
             raise WrongInputException("This pipeline is not expecting a targetpath.")
-        if source == "local" and not user:
-            raise WrongInputException("User is missing")
-        if (targetbasepath or targetpath or user) and (source != "local"):
+        if source == "local" and not author:
+            raise WrongInputException("Author is missing")
+        if source == "local" and not targetpath:
+            raise WrongInputException("Targetpath is missing")
+        if (targetbasepath or targetpath or author) and (source != "local"):
             raise WrongInputException(
-                "targetbasepath, targetpath and user are parameters used only when source is local."
+                "targetbasepath, targetpath and author are parameters used only when source is local."
             )
         if targetbasepath:
-            flag = False
-            # Check if the targetbasepath is a substring of targetpath and also check if it is at the beginning of the target path
-            for i in range(len(targetbasepath)):
-                if targetbasepath[i] != targetpath[i]:
-                    flag = True
-            # Check if the targetbasepath ends at a / of the targetpath
-            # e.g. if targetpath = user/photos/folders and targetbasepath = user/pho, catch that exception
-            try:
-                if not (
-                    (targetpath[len(targetbasepath)] == "/")
-                    or (targetpath[len(targetbasepath) - 1] == "/")
-                ):
-                    flag = False
-            # Catch any indexing error if targetbasepath = targetpath
-            except IndexError as e:
-                pass
-
-            if flag:
-                raise WrongInputException(
-                    "Target base path is not part of the target path"
-                )
+            if not targetbasepath in targetpath:
+                raise WrongInputException("Targetbasepath should include targetpath")
 
 
 class WrongInputException(Exception):
