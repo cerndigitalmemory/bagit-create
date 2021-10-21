@@ -309,7 +309,9 @@ class BasePipeline:
         if source == "local":
             bic_meta.update(
                 {
-                    "sourcepath": audit[0]["tool"]["params"]["targetpath"],
+                    "sourcepath": os.path.abspath(
+                        audit[0]["tool"]["params"]["targetpath"]
+                    ),
                     "targetbasepath": audit[0]["tool"]["params"]["targetbasepath"],
                     "author": audit[0]["tool"]["params"]["author"],
                 }

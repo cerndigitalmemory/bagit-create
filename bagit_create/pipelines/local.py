@@ -68,11 +68,7 @@ class LocalV1Pipeline(base.BasePipeline):
                 else:
                     dest_relpath = dirpath[len(source_dir) + 1 :]
                     target = f"{dest_dir}/{dest_relpath}"
-
-                try:
                     os.mkdir(target)
-                except:
-                    pass
 
                 for file in filenames:
                     shutil.copy(f"{os.path.abspath(dirpath)}/{file}", target)
@@ -128,7 +124,7 @@ class LocalV1Pipeline(base.BasePipeline):
             relpath = dirpath[len(src) + 1 :]
             obj["origin"]["path"] = relpath
             sourcePath = f"{relpath}/{file}"
-        obj["origin"]["sourcePath"] = f"{dirpath}/{file}"
+        obj["origin"]["sourcePath"] = f"{os.path.abspath(dirpath)}/{file}"
 
         obj["bagpath"] = f"data/content/{sourcePath}"
 

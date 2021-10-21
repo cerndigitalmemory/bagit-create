@@ -123,7 +123,6 @@ def process(
             targetpath = pipeline.get_abs_path(targetpath)
             recid = pipeline.get_local_recid(targetpath, author)
             params["recid"] = recid
-            params["targetpath"] = targetpath
 
         # Save job details (as audit step 0)
         audit = [
