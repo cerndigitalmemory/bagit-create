@@ -103,7 +103,7 @@ class LocalV1Pipeline(base.BasePipeline):
         if os.path.isabs(src):
             return src
         else:
-            lc_src = os.getcwd() + "/" + src
+            lc_src = os.path.abspath(src)
             return lc_src
 
     def create_manifests(self, files, base_path):
@@ -127,7 +127,7 @@ class LocalV1Pipeline(base.BasePipeline):
             sourcePath = f"{file}"
         # Otherwise prepare the relative path
         else:
-            relpath = dirpath[len(src) + 1 :]
+            relpath = dirpath[len(src) :]
             obj["origin"]["path"] = relpath
             sourcePath = f"{relpath}/{file}"
 
