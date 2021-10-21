@@ -127,7 +127,7 @@ class LocalV1Pipeline(base.BasePipeline):
             sourcePath = f"{file}"
         # Otherwise prepare the relative path
         else:
-            relpath = dirpath[len(src) + 1 :]
+            relpath = dirpath[len(src) :]
             obj["origin"]["path"] = relpath
             sourcePath = f"{relpath}/{file}"
 
