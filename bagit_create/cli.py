@@ -80,7 +80,7 @@ import click
     is_flag=False,
 )
 @click.option(
-    "--targetpath",
+    "--source_path",
     "-t",
     help="Select the local source folder.",
     type=Text,
@@ -96,7 +96,7 @@ import click
     is_flag=False,
 )
 @click.option(
-    "--targetbasepath",
+    "--source_base_path",
     "-tb",
     help="Select the base path that you want to be meaningful for the hierarchy.",
     type=Text,
@@ -107,9 +107,9 @@ def cli(
     recid,
     source,
     target,
-    targetpath,
+    source_path,
     author,
-    targetbasepath,
+    source_base_path,
     dry_run,
     alternate_uri,
     verbose,
@@ -133,9 +133,9 @@ def cli(
         source,
         loglevel,
         target,
-        targetpath,
+        source_path,
         author,
-        targetbasepath,
+        source_base_path,
         dry_run,
         alternate_uri,
         bibdoc,

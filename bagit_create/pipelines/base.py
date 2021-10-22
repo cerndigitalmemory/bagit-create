@@ -309,10 +309,14 @@ class BasePipeline:
         if source == "local":
             bic_meta.update(
                 {
-                    "sourcepath": os.path.abspath(
-                        audit[0]["tool"]["params"]["targetpath"]
-                    ),
-                    "targetbasepath": audit[0]["tool"]["params"]["targetbasepath"],
+                    "source_details": {
+                        "source_path": os.path.abspath(
+                            audit[0]["tool"]["params"]["source_path"]
+                        ),
+                        "source_base_path": audit[0]["tool"]["params"][
+                            "source_base_path"
+                        ],
+                    },
                     "author": audit[0]["tool"]["params"]["author"],
                 }
             )
@@ -378,9 +382,9 @@ class BasePipeline:
     def check_parameters_input(
         recid,
         source,
-        targetpath,
+        source_path,
         author,
-        targetbasepath,
+        source_base_path,
         bibdoc,
         bd_ssh_host,
         loglevel,
@@ -407,19 +411,19 @@ class BasePipeline:
 
         if source != "local" and not recid:
             raise WrongInputException("Recid is missing.")
-        if targetpath and source != "local":
-            raise WrongInputException("This pipeline is not expecting a targetpath.")
+        if source_path and source != "local":
+            raise WrongInputException("This pipeline is not expecting a source_path.")
         if source == "local" and not author:
             raise WrongInputException("Author is missing")
-        if source == "local" and not targetpath:
-            raise WrongInputException("Targetpath is missing")
-        if (targetbasepath or targetpath or author) and (source != "local"):
+        if source == "local" and not source_path:
+            raise WrongInputException("source_path is missing")
+        if (source_base_path or source_path or author) and (source != "local"):
             raise WrongInputException(
-                "targetbasepath, targetpath and author are parameters used only when source is local."
+                "source_base_path, source_path and author are parameters used only when source is local."
             )
-        if targetbasepath:
-            if not targetbasepath in targetpath:
-                raise WrongInputException("Targetbasepath should include targetpath")
+        if source_base_path:
+            if not source_base_path in os.path.abspath(source_path):
+                raise WrongInputException("source_base_path should include source_path")
 
 
 class WrongInputException(Exception):

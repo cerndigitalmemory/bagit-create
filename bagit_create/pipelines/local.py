@@ -34,7 +34,7 @@ class LocalV1Pipeline(base.BasePipeline):
         # The authorSourcePath is the path before Pictures e.g. for /home/author/Pictures is /home/author
         authorSourcePath = src[: len(src) - len(base_name) - 1]
 
-        # If targetpath is a file just get data from that file otherwise use the walk function
+        # If source_path is a file just get data from that file otherwise use the walk function
         if os.path.isfile(src):
             file = ntpath.basename(src)
             dirpath = ntpath.dirname(src)
