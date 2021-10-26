@@ -81,7 +81,7 @@ import click
 )
 @click.option(
     "--source_path",
-    "-t",
+    "-sp",
     help="Select the local source folder.",
     type=Text,
     default=None,
