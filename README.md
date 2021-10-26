@@ -61,7 +61,6 @@ To use any Indico pipeline you need an API Token. From your browser, login to th
 
 ```bash
 export INDICO_KEY=<INDICO_API_TOKEN>
-
 ```
 
 ### CLI
@@ -69,7 +68,7 @@ export INDICO_KEY=<INDICO_API_TOKEN>
 Some examples:
 
 ```bash
-# CDS
+# CDS #
 
 # (Expect error) Removed resource
 bic --recid 1 --source cds
@@ -77,21 +76,24 @@ bic --recid 1 --source cds
 # (Expect error) Public resource but metadata requires authorisation
 bic --recid 1000 --source cds
 
-# Resource with a lot of large videos
+# Resource with a lot of large videos, light bag
 bic --recid 1000571 --source cds --dry-run
 
-# ilcdoc
+# Resource with just a PDF
+bic --recid 2728246 --source cds
+
+# ilcdoc #
 bic --source ilcdoc --recid 62959 --verbose
 bic --source ilcdoc --recid 34794 --verbose
 
-# Zenodo
+# Zenodo #
 bic --recid 3911261 --source zenodo --verbose
 bic --recid 3974864 --source zenodo --verbose
 
-# Indico
+# Indico #
 bic --recid 1024767 --source indico 
 
-# CERN Open Data
+# CERN Open Data #
 bic --recid 1 --source cod --dry-run --verbose
 bic --recid 8884 --source cod --dry-run --verbose --alternate-uri
 bic --recid 8884 --source cod --dry-run --verbose
@@ -114,32 +116,55 @@ bic --recid 10105 --source cod --verbose
 CLI options:
 
 ```
-Usage: bic [OPTIONS]
-
-Options:
   --version                       Show the version and exit.
-  --recid TEXT                    Unique ID of the record in the upstream
-                                  source  [required]
+  --recid TEXT                    Record ID of the resource the upstream
+                                  digital repository. Required by every
+                                  pipeline but local.
 
-  -s, --source [cds|ilcdoc|cod|zenodo|inveniordm|indico]
-                                  Select source pipeline  [required]
-  -d, --dry-run                   Skip downloads
+  -s, --source [cds|ilcdoc|cod|zenodo|inveniordm|indico|local|ilcagenda]
+                                  Select source pipeline from the supported
+                                  ones.  [required]
+
+  -d, --dry-run                   Skip downloads and create a `light` bag,
+                                  without any payload.
+
   -a, --alternate-uri             Use alternative uri instead of https for
                                   fetch.txt (e.g. root endpoints  for CERN
-                                  Open Data instead of http)
+                                  Open Data instead of http).
 
-  -v, --verbose                   Enable logging (verbose, 'info' level)
-  -vv, --very-verbose             Enable logging (very verbose, 'debug' level)
-  -b, --bibdoc                    Get metadata for a CDS record from the
-                                  bibdocfile utility.
+  -v, --verbose                   Enable basic logging (verbose, 'info'
+                                  level).
+
+  -vv, --very-verbose             Enable verbose logging (very verbose,
+                                  'debug' level).
+
+  -b, --bibdoc                    [ONLY for Supported Invenio v1 pipelines]
+                                  Get metadata for a CDS record from the
+                                  bibdocfile utility
                                   (`/opt/cdsweb/bin/bibdocfile` must be
-                                  available in the system and the resource
-                                  must be from CDS)
+                                  available in the system).
 
-  --bd-ssh-host TEXT              SSH host to run bibdocfile
-  -t, --target TEXT               Select destination folder
+  --bd-ssh-host TEXT              [ONLY for Supported Invenio v1 pipelines]
+                                  Specify SSH host to run bibdocfile. Access
+                                  must be promptless. (See documentation for
+                                  usage and configuration). By default uses
+                                  the local machine.
+
+  -t, --target TEXT               Output folder for the generated SIP. By
+                                  default uses the same folder  the tool is
+                                  being executed from.
+
+  -sp, --source_path TEXT         [Local source ONLY, required] Set path of
+                                  the local folder to use as a source.
+
+  -u, --author TEXT               [Local source ONLY] Specify the Author of
+                                  data.
+
+  -tb, --source_base_path TEXT    [Local source ONLY] Specify a part of the
+                                  path as  relevant for extracting an
+                                  hierachy.
+
   --help                          Show this message and exit.
-
 ```
 
 ### Accessing CERN firewalled websites

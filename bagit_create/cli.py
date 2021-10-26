@@ -12,12 +12,12 @@ import click
 @click.version_option(__version__)
 @click.option(
     "--recid",
-    help="Unique ID of the record in the upstream source",
+    help="Record ID of the resource the upstream digital repository. Required by every pipeline but local.",
 )
 @click.option(
     "-s",
     "--source",
-    help="Select source pipeline",
+    help="Select source pipeline from the supported ones.",
     required=True,
     type=click.Choice(
         ["cds", "ilcdoc", "cod", "zenodo", "inveniordm", "indico", "local", "ilcagenda"],
@@ -27,7 +27,7 @@ import click
 @click.option(
     "-d",
     "--dry-run",
-    help="Skip downloads",
+    help="Skip downloads and create a `light` bag, without any payload.",
     default=False,
     is_flag=True,
 )
@@ -36,21 +36,21 @@ import click
     "--alternate-uri",
     help="""
          Use alternative uri instead of https for fetch.txt (e.g. root endpoints 
-         for CERN Open Data instead of http)""",
+         for CERN Open Data instead of http).""",
     default=False,
     is_flag=True,
 )
 @click.option(
     "--verbose",
     "-v",
-    help="Enable logging (verbose, 'info' level)",
+    help="Enable basic logging (verbose, 'info' level).",
     default=False,
     is_flag=True,
 )
 @click.option(
     "--very-verbose",
     "-vv",
-    help="Enable logging (very verbose, 'debug' level)",
+    help="Enable verbose logging (very verbose, 'debug' level).",
     default=False,
     is_flag=True,
 )
@@ -58,23 +58,28 @@ import click
     "--bibdoc",
     "-b",
     help="""
-    Get metadata for a CDS record from the bibdocfile utility.
-    (`/opt/cdsweb/bin/bibdocfile` must be available in the system
-    and the resource must be from CDS)""",
+    [ONLY for Supported Invenio v1 pipelines]
+    Get metadata for a CDS record from the bibdocfile utility
+    (`/opt/cdsweb/bin/bibdocfile` must be available in the system).""",
     default=False,
     is_flag=True,
 )
 @click.option(
     "--bd-ssh-host",
     help="""
-    SSH host to run bibdocfile""",
+    [ONLY for Supported Invenio v1 pipelines]
+    Specify SSH host to run bibdocfile. Access must be promptless.
+    (See documentation for usage and configuration).
+    By default uses the local machine.""",
     default=None,
     is_flag=False,
 )
 @click.option(
     "--target",
     "-t",
-    help="Select destination folder",
+    help="""
+    Output folder for the generated SIP. By default uses the same folder 
+    the tool is being executed from.""",
     type=Text,
     default=None,
     is_flag=False,
@@ -82,7 +87,8 @@ import click
 @click.option(
     "--source_path",
     "-sp",
-    help="Select the local source folder.",
+    help="""[Local source ONLY, required]
+    Set path of the local folder to use as a source.""",
     type=Text,
     default=None,
     is_flag=False,
@@ -90,7 +96,7 @@ import click
 @click.option(
     "--author",
     "-u",
-    help="Owner of data",
+    help="[Local source ONLY] Specify the Author of data.",
     type=Text,
     default=None,
     is_flag=False,
@@ -98,7 +104,9 @@ import click
 @click.option(
     "--source_base_path",
     "-tb",
-    help="Select the base path that you want to be meaningful for the hierarchy.",
+    help="""
+    [Local source ONLY] Specify a part of the path as 
+    relevant for extracting an hierachy.""",
     type=Text,
     default=None,
     is_flag=False,
