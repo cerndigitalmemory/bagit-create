@@ -85,7 +85,7 @@ import click
     is_flag=False,
 )
 @click.option(
-    "--source_path",
+    "--source-path",
     "-sp",
     help="""[Local source ONLY, required]
     Set path of the local folder to use as a source.""",
@@ -102,8 +102,8 @@ import click
     is_flag=False,
 )
 @click.option(
-    "--source_base_path",
-    "-tb",
+    "--source-base-path",
+    "-sbp",
     help="""
     [Local source ONLY] Specify a part of the path as 
     relevant for extracting an hierachy.""",
