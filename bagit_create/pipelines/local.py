@@ -1,4 +1,4 @@
-from posixpath import relpath
+from posixpath import islink, relpath
 from . import base
 import logging
 import fs
@@ -12,6 +12,7 @@ from pwd import getpwuid
 from os import walk
 import checksumdir
 import hashlib
+import shutil
 
 log = logging.getLogger("basic-logger")
 
@@ -33,50 +34,44 @@ class LocalV1Pipeline(base.BasePipeline):
         # The authorSourcePath is the path before Pictures e.g. for /home/author/Pictures is /home/author
         authorSourcePath = src[: len(src) - len(base_name) - 1]
 
-        # If targetpath is a file just get data from that file otherwise use the walk function
+        # If source_path is a file just get data from that file otherwise use the walk function
         if os.path.isfile(src):
             file = ntpath.basename(src)
             dirpath = ntpath.dirname(src)
-            relpath = os.path.basename(os.path.normpath(dirpath))
-            obj = self.get_local_metadata(
-                file, src, dirpath, relpath, base_name, authorSourcePath, isFile=True
-            )
+            obj = self.get_local_metadata(file, src, dirpath, isFile=True)
             files.append(obj)
         else:
             # Walk through the whole directory and prepare an object for each found file
-            for (dirpath, dirnames, filenames) in walk(src):
-                relpath = os.path.basename(os.path.normpath(dirpath))
+            for (dirpath, dirnames, filenames) in walk(src, followlinks=True):
                 for file in filenames:
                     obj = self.get_local_metadata(
                         file,
                         src,
                         dirpath,
-                        relpath,
-                        base_name,
-                        authorSourcePath,
                         isFile=False,
                     )
                     files.append(obj)
-
-        # I don't have metadata json here. If we add, fields will be added here
         return files
 
     def copy_files(self, files, source_dir, dest_dir):
         my_fs = open_fs("/")
         if os.path.isfile(source_dir):
-            fs.copy.copy_file(
-                src_fs=my_fs,
-                dst_fs=my_fs,
-                src_path=f"{source_dir}",
-                dst_path=f"{dest_dir}/{ntpath.basename(source_dir)}",
+            shutil.copy(
+                f"{source_dir}",
+                f"{dest_dir}/{ntpath.basename(source_dir)}",
             )
         else:
-            fs.copy.copy_dir(
-                src_fs=my_fs,
-                dst_fs=my_fs,
-                src_path=f"{source_dir}",
-                dst_path=f"{dest_dir}",
-            )
+            for (dirpath, dirnames, filenames) in walk(source_dir, followlinks=True):
+
+                if source_dir == dirpath:
+                    target = dest_dir
+                else:
+                    dest_relpath = dirpath[len(source_dir) + 1 :]
+                    target = f"{dest_dir}/{dest_relpath}"
+                    os.mkdir(target)
+
+                for file in filenames:
+                    shutil.copy(f"{os.path.abspath(dirpath)}/{file}", target)
 
         for file in files:
             file["downloaded"] = True
@@ -103,7 +98,7 @@ class LocalV1Pipeline(base.BasePipeline):
         if os.path.isabs(src):
             return src
         else:
-            lc_src = os.getcwd() + "/" + src
+            lc_src = os.path.abspath(src)
             return lc_src
 
     def create_manifests(self, files, base_path):
@@ -114,25 +109,25 @@ class LocalV1Pipeline(base.BasePipeline):
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
         return files
 
-    def get_local_metadata(
-        self, file, src, dirpath, relpath, base_name, authorSourcePath, isFile
-    ):
+    def get_local_metadata(self, file, src, dirpath, isFile):
         # Prepare the File object
         obj = {"origin": {}}
 
         obj["origin"]["filename"] = file
         ## If you are in the root directory just use filename
+
         if dirpath == src or isFile:
             obj["origin"]["path"] = ""
             sourcePath = f"{file}"
         # Otherwise prepare the relative path
         else:
-            relpath = dirpath[len(src) :]
+            relpath = dirpath[len(src) + 1 :]
             obj["origin"]["path"] = relpath
             sourcePath = f"{relpath}/{file}"
+        obj["origin"]["sourcePath"] = f"{os.path.abspath(dirpath)}/{file}"
 
-        obj["origin"]["sourcePath"] = f"{dirpath}/{file}"
         obj["bagpath"] = f"data/content/{sourcePath}"
+
         try:
             obj["size"] = os.path.getsize(f"{dirpath}/{file}")
         except OSError:
