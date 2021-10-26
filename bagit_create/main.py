@@ -21,9 +21,9 @@ def process(
     source,
     loglevel,
     target,
-    targetpath,
+    source_path,
     author=None,
-    targetbasepath=None,
+    source_base_path=None,
     dry_run=False,
     alternate_uri=False,
     bibdoc=False,
@@ -39,9 +39,9 @@ def process(
         "source": source,
         "loglevel": loglevel,
         "target": target,
-        "targetpath": targetpath,
+        "source_path": source_path,
         "author": author,
-        "targetbasepath": targetbasepath,
+        "source_base_path": source_base_path,
         "dry_run": dry_run,
         "alternate_uri": alternate_uri,
         "bibdoc": bibdoc,
@@ -53,9 +53,9 @@ def process(
         base.BasePipeline.check_parameters_input(
             recid,
             source,
-            targetpath,
+            source_path,
             author,
-            targetbasepath,
+            source_base_path,
             bibdoc,
             bd_ssh_host,
             loglevel,
@@ -119,9 +119,9 @@ def process(
         elif source == "ilcagenda":
             pipeline = indico.IndicoV1Pipeline("https://agenda.linearcollider.org/")
         elif source == "local":
-            pipeline = local.LocalV1Pipeline(targetpath)
-            targetpath = pipeline.get_abs_path(targetpath)
-            recid = pipeline.get_local_recid(targetpath, author)
+            pipeline = local.LocalV1Pipeline(source_path)
+            source_path = pipeline.get_abs_path(source_path)
+            recid = pipeline.get_local_recid(source_path, author)
             params["recid"] = recid
 
         # Save job details (as audit step 0)
@@ -146,7 +146,7 @@ def process(
 
         if source == "local":
             # Look for files in the source folder and prepare the files object
-            files = pipeline.scan_files(targetpath)
+            files = pipeline.scan_files(source_path)
             metadata_url = None
         else:
             # Get metadata from upstream
@@ -181,7 +181,7 @@ def process(
 
             if source == "local":
                 files = pipeline.copy_files(
-                    files, targetpath, f"{base_path}/data/content"
+                    files, source_path, f"{base_path}/data/content"
                 )
 
             else:
