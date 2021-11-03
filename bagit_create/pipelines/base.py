@@ -186,7 +186,7 @@ class BasePipeline:
 
         return contents, files
 
-    def generate_fetch_txt(self, files, alternate_uri=False):
+    def generate_fetch_txt(self, files):
         """
         Given an array of "files" dictionaries (containing the `url`, `size` and `path` keys)
         generate the contents for the fetch.txt file (BagIt specification)
@@ -211,8 +211,8 @@ class BasePipeline:
             contents += line
         return contents
 
-    def create_fetch_txt(self, files, dest, alternate_uri):
-        content = self.generate_fetch_txt(files, alternate_uri)
+    def create_fetch_txt(self, files, dest):
+        content = self.generate_fetch_txt(files)
         self.write_file(content, dest)
 
     def prepare_folders(self, source, recid, timestamp, delimiter_str="::"):
@@ -388,7 +388,6 @@ class BasePipeline:
         bibdoc,
         bd_ssh_host,
         loglevel,
-        alternate_uri,
     ):
         """
         Checks if the combination of the parameters for the job make up for

@@ -25,7 +25,6 @@ def process(
     author=None,
     source_base_path=None,
     dry_run=False,
-    alternate_uri=False,
     bibdoc=False,
     bd_ssh_host=None,
     timestamp=0,
@@ -43,7 +42,6 @@ def process(
         "author": author,
         "source_base_path": source_base_path,
         "dry_run": dry_run,
-        "alternate_uri": alternate_uri,
         "bibdoc": bibdoc,
         "bd_ssh_host": bd_ssh_host,
         "timestamp": timestamp,
@@ -59,7 +57,6 @@ def process(
             bibdoc,
             bd_ssh_host,
             loglevel,
-            alternate_uri,
         )
     except WrongInputException as e:
         return {"status": 1, "errormsg": e}
@@ -98,9 +95,9 @@ def process(
 
     if dry_run:
         log.warning(
-            "This will be a DRY RUN. A 'light' bag will be created, not downloading"
-            "or moving any payload file, but checksums *must* be available from"
-            "the metadata, or no valid CERN SIP will be created."
+            """This will be a DRY RUN. A 'light' bag will be created, not downloading
+            or moving any payload file, but checksums *must* be available from
+            the metadata, or no valid CERN SIP will be created."""
         )
     try:
         # Initialize the pipeline
@@ -176,7 +173,7 @@ def process(
 
         if dry_run is True:
             # Create fetch.txt
-            pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
+            pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt")
         else:
 
             if source == "local":
