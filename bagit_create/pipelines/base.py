@@ -13,6 +13,7 @@ from itertools import chain
 from zlib import adler32
 from datetime import date
 from pathlib import Path
+from jsonschema import validate
 
 my_fs = open_fs("/")
 
@@ -43,6 +44,21 @@ class BasePipeline:
             f" {d}\nPayload-Oxum: {size}.{file_count}\n"
         )
         self.write_file(baginfo, dest)
+
+    def validate_sip_json(self, schema_path, file_path):
+        log.info("Validating sip.json..")
+        try:
+            with open(file_path) as json_file:
+                data = json.load(json_file)
+
+            with open(schema_path) as json_schema:
+                schema = json.load(json_schema)
+
+            validate(instance=data, schema=schema)
+            log.info(f"Valid against {schema_path}")
+
+        except Exception as err:
+            log.error("sip.json validation failed with error", err)
 
     def downloadRemoteFile(self, src, dest):
         r = requests.get(src)
@@ -358,7 +374,7 @@ class BasePipeline:
         try:
             valid = bag.validate()
         except bagit.BagValidationError as err:
-            print(f"Bag validation failed: {err}")
+            log.error(f"Bag validation failed: {err}")
         if valid:
             log.info(f"Bag successfully validated")
         log.info("--\n")
