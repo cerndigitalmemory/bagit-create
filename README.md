@@ -181,6 +181,25 @@ CLI options:
   --help                          Show this message and exit.
 ```
 
+### Module
+
+BIC can easily be run inside other Python scripts. Just import it and use the `process` method with the same parameters you can pass to the CLI.
+
+E.g., this snippet creates SIP packages for CDS resources from ID 2728246 to 27282700.
+
+```python
+import bagit_create
+
+for i in range(2728246, 27282700):
+    result = bagit_create.main.process(
+        source="cds", recid=i, loglevel=3
+    )
+    if result["status"] == 0:
+        print("Success")
+    else:
+        print("Error")
+```
+
 ### Accessing CERN firewalled websites
 
 If the upstream source you're trying to access is firewalled, you can set up a SOCKS5 proxy via a SSH tunnel through LXPLUS and then run `bic` through it with tools like `proxychains` or `tsocks`. E.g.:
