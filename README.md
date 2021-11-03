@@ -43,46 +43,71 @@ python -m pytest
 
 Four pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data, Indico) are currently implemented, supporting the following digital repositories:
 
-| Name                  | ID           | URL                                | Pipeline                    |
+| Name                  | Source ID    | URL                                | Pipeline                    |
 |---------------------- |--------------|------------------------------------|-----------------------------|
 | CERN Document Server  | cds          | https://cds.cern.ch/               | Invenio v1.x                |
 | ILC Document Server   | ilcdoc       | http://ilcdoc.linearcollider.org   | Invenio v1.x                |
 | CERN Open Data        | cod          | https://opendata.cern.ch/          | CERN Open Data              |
-| (Generic) Invenio v3  | inv3         |                                    | Invenio v3.x\*              |    
 | Zenodo                | zenodo       | https://zenodo.org/                | Invenio v3.x                |
-| (Generic) InvenioRDM  | invenio-rdm  |                                    | Invenio v3.x\*              |
-| CERN Indico           | indico       | https://indico.cern.ch/            | Invenio v3.0.x\*            |
+| CERN Indico           | indico       | https://indico.cern.ch/            | Indico v3.0.x\*             |
+| ILC Agenda            | ilcagenda    | https://agenda.linearcollider.org/ | Indico v3.0.x\*             |
 
 
-\* requires additional configuration (See .ini files in pipelines/)
+\* requires additional configuration
+
+### Indico
+
+To use any Indico pipeline you need an API Token. From your browser, login to the Indico instance, go to "Preferences" and then "API Token". Create new token, name can be anything. Select (at least) `Everything (all methods)` and `Classic API (read only)` as scopes. Note down the token and set the `INDICO_KEY` environement variable to it.
+
+```bash
+export INDICO_KEY=<INDICO_API_TOKEN>
+```
 
 ### CLI
 
 Some examples:
 
-```bash
-# CDS
+CDS:
 
+```bash
 # (Expect error) Removed resource
 bic --recid 1 --source cds
 
 # (Expect error) Public resource but metadata requires authorisation
 bic --recid 1000 --source cds
 
-# Resource with a lot of large videos
+# Resource with a lot of large videos, light bag
 bic --recid 1000571 --source cds --dry-run
 
-# ilcdoc
-bic --source ilcdoc --recid 62959 --verbose
+# Resource with just a PDF
+bic --recid 2728246 --source cds
+```
 
-# Zenodo
+ilcdoc:
+
+```bash
+# ilcdoc #
+bic --source ilcdoc --recid 62959 --verbose
+bic --source ilcdoc --recid 34794 --verbose
+```
+
+Zenodo
+
+```bash
 bic --recid 3911261 --source zenodo --verbose
 bic --recid 3974864 --source zenodo --verbose
+```
 
-# Indico
+Indico
+
+```bash
 bic --recid 1024767 --source indico 
+```
 
-# CERN Open Data
+
+CERN Open Data
+
+```bash
 bic --recid 1 --source cod --dry-run --verbose
 bic --recid 8884 --source cod --dry-run --verbose --alternate-uri
 bic --recid 8884 --source cod --dry-run --verbose
@@ -105,32 +130,74 @@ bic --recid 10105 --source cod --verbose
 CLI options:
 
 ```
-Usage: bic [OPTIONS]
-
-Options:
   --version                       Show the version and exit.
-  --recid TEXT                    Unique ID of the record in the upstream
-                                  source  [required]
+  --recid TEXT                    Record ID of the resource the upstream
+                                  digital repository. Required by every
+                                  pipeline but local.
 
-  -s, --source [cds|ilcdoc|cod|zenodo|inveniordm|indico]
-                                  Select source pipeline  [required]
-  -d, --dry-run                   Skip downloads
+  -s, --source [cds|ilcdoc|cod|zenodo|inveniordm|indico|local|ilcagenda]
+                                  Select source pipeline from the supported
+                                  ones.  [required]
+
+  -d, --dry-run                   Skip downloads and create a `light` bag,
+                                  without any payload.
+
   -a, --alternate-uri             Use alternative uri instead of https for
                                   fetch.txt (e.g. root endpoints  for CERN
-                                  Open Data instead of http)
+                                  Open Data instead of http).
 
-  -v, --verbose                   Enable logging (verbose, 'info' level)
-  -vv, --very-verbose             Enable logging (very verbose, 'debug' level)
-  -b, --bibdoc                    Get metadata for a CDS record from the
-                                  bibdocfile utility.
+  -v, --verbose                   Enable basic logging (verbose, 'info'
+                                  level).
+
+  -vv, --very-verbose             Enable verbose logging (very verbose,
+                                  'debug' level).
+
+  -b, --bibdoc                    [ONLY for Supported Invenio v1 pipelines]
+                                  Get metadata for a CDS record from the
+                                  bibdocfile utility
                                   (`/opt/cdsweb/bin/bibdocfile` must be
-                                  available in the system and the resource
-                                  must be from CDS)
+                                  available in the system).
 
-  --bd-ssh-host TEXT              SSH host to run bibdocfile
-  -t, --target TEXT               Select destination folder
+  --bd-ssh-host TEXT              [ONLY for Supported Invenio v1 pipelines]
+                                  Specify SSH host to run bibdocfile. Access
+                                  must be promptless. (See documentation for
+                                  usage and configuration). By default uses
+                                  the local machine.
+
+  -t, --target TEXT               Output folder for the generated SIP. By
+                                  default uses the same folder  the tool is
+                                  being executed from.
+
+  -sp, --source_path TEXT         [Local source ONLY, required] Set path of
+                                  the local folder to use as a source.
+
+  -u, --author TEXT               [Local source ONLY] Specify the Author of
+                                  data.
+
+  -tb, --source_base_path TEXT    [Local source ONLY] Specify a part of the
+                                  path as  relevant for extracting an
+                                  hierachy.
+
   --help                          Show this message and exit.
+```
 
+### Module
+
+BIC can easily be run inside other Python scripts. Just import it and use the `process` method with the same parameters you can pass to the CLI.
+
+E.g., this snippet creates SIP packages for CDS resources from ID 2728246 to 27282700.
+
+```python
+import bagit_create
+
+for i in range(2728246, 27282700):
+    result = bagit_create.main.process(
+        source="cds", recid=i, loglevel=3
+    )
+    if result["status"] == 0:
+        print("Success")
+    else:
+        print("Error")
 ```
 
 ### Accessing CERN firewalled websites

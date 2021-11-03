@@ -2,7 +2,9 @@
 
 import subprocess
 import logging
+import ntpath
 
+log = logging.getLogger("basic-logger")
 
 def run(resid, ssh_host=None):
     if len(resid) < 16 and resid.isdecimal():
@@ -15,7 +17,7 @@ def run(resid, ssh_host=None):
         if ssh_host:
             command = ["ssh", ssh_host] + command
 
-        logging.warning(f"Running {command}")
+        log.warning(f"Running {command}")
 
         proc = subprocess.run(
             command,
@@ -29,51 +31,76 @@ def run(resid, ssh_host=None):
         )
         output = proc.stdout.decode()
         return output
+    else:
+        raise Exception('Bad or malformed input to bibdocfile')
 
 
 def parse(output, resid):
-    metadata = {}
 
-    keys = ["fullpath", "checksum", "name"]
+    # Keys we want to save
+    keys = ["fullpath", "checksum", "name", "fullname", "url", "fullurl", "size"]
 
-    for line in iter(output.splitlines()):
+    files = []
+
+    file = None
+
+    for line in output.splitlines():
         # Only consider lines starting with the Record ID
         # to ignore warning/unrelated output
         if line.startswith(resid):
             # Split them
-            parsed_metadata = line.split(":")
-            if parsed_metadata[0] == resid:
-                file_id = parsed_metadata[1]
-                if file_id not in metadata:
-                    metadata[file_id] = {}
+            parsed_fields = line.split(":")
+            # Here's a new file, so save the last parsed one
+            for field in parsed_fields:
+                if "fullpath" in field or line==output.splitlines()[-1]:
+                    if file:
+                        # Remap values according to the File schema
+                        file_obj["origin"] = {}
+                        file_obj["origin"]["fullpath"] = file["fullpath"]
+                        file_obj["origin"]["path"] = ""
+                        file_obj["origin"]["filename"] = ntpath.basename(file["fullpath"])
+                        if "name" in file:
+                            file_obj["origin"]["fullname"] = file["name"]
+                        file_obj["origin"]["url"] = [file["fullurl"], file["url"]]
 
-                for key in keys:
-                    if key == "fullpath":
-                        ext = parsed_metadata[3]
-                    if parsed_metadata[4].startswith(key):
-                        metadata[file_id][key] = parsed_metadata[4].replace(
-                            f"{key}=", ""
+                        file_obj["origin"]["checksum"] = file["checksum"]
+                        file_obj["checksum"] = file["checksum"]
+                        
+                        file_obj["bagpath"] = f'data/content/{file_obj["origin"]["filename"]}'
+
+                        file_obj["size"] = file["size"]
+
+                        file_obj["downloaded"] = False
+
+                        print("Appending", file_obj)
+                        files.append(file_obj)
+
+                    # Create a new File
+                    file = {}
+                    file_obj = {
+                        'metadata': False
+                    }
+
+            for key in keys:
+                if key == "fullpath":
+                    ext = parsed_fields[3]
+                if parsed_fields[4].startswith(key):
+                    file[key] = parsed_fields[4].replace(
+                        f"{key}=", ""
+                    )
+                    if key == "checksum":
+                        file["checksum"] = (
+                            "md5:" + file["checksum"]
                         )
-                        if key == "checksum":
-                            metadata[file_id]["checksum"] = (
-                                "md5:" + metadata[file_id]["checksum"]
-                            )
-                        # name -> filename
-                        if key == "name":
-                            metadata[file_id][
-                                "filename"
-                            ] = f'{metadata[file_id].pop("name")}{ext}'
-
-    # Convert from key-form to array of files
-    metadata_list = []
-    for file in metadata:
-        # Skip empty file objects
-        if file != "":
-            metadata_list.append(metadata[file])
-
-    return metadata_list
+                    # name -> filename
+                    if key == "name":
+                        file[
+                            "filename"
+                        ] = f'{file.pop("name")}{ext}'
+                    if key == "url" or key=="fullurl":
+                        file[key] = f"{parsed_fields[4]}:{parsed_fields[5]}".replace(
+                        f"{key}=", ""
+                    )
 
 
-def get_files_metadata(resid, ssh_host=None):
-    output = run(resid, ssh_host)
-    return parse(output, resid)
+    return files

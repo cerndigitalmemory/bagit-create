@@ -1,4 +1,4 @@
-from posixpath import relpath
+from posixpath import islink, relpath
 from . import base
 import logging
 import fs
@@ -11,6 +11,8 @@ from os import stat
 from pwd import getpwuid
 from os import walk
 import checksumdir
+import hashlib
+import shutil
 
 log = logging.getLogger("basic-logger")
 
@@ -27,55 +29,49 @@ class LocalV1Pipeline(base.BasePipeline):
 
         log.info("Scanning source folder..")
         files = []
-        # Base name for the local source folder e.g. for /home/user/Pictures the base_name is Pictures
+        # Base name for the local source folder e.g. for /home/author/Pictures the base_name is Pictures
         base_name = os.path.basename(os.path.normpath(src))
-        # The userSourcePath is the path before Pictures e.g. for /home/user/Pictures is /home/user
-        userSourcePath = src[: len(src) - len(base_name) - 1]
+        # The authorSourcePath is the path before Pictures e.g. for /home/author/Pictures is /home/author
+        authorSourcePath = src[: len(src) - len(base_name) - 1]
 
-        # If localsource is a file just get data from that file otherwise use the walk function
+        # If source_path is a file just get data from that file otherwise use the walk function
         if os.path.isfile(src):
             file = ntpath.basename(src)
             dirpath = ntpath.dirname(src)
-            relpath = os.path.basename(os.path.normpath(dirpath))
-            obj = self.get_local_metadata(
-                file, src, dirpath, relpath, base_name, userSourcePath, isFile=True
-            )
+            obj = self.get_local_metadata(file, src, dirpath, isFile=True)
             files.append(obj)
         else:
             # Walk through the whole directory and prepare an object for each found file
-            for (dirpath, dirnames, filenames) in walk(src):
-                relpath = os.path.basename(os.path.normpath(dirpath))
+            for (dirpath, dirnames, filenames) in walk(src, followlinks=True):
                 for file in filenames:
                     obj = self.get_local_metadata(
                         file,
                         src,
                         dirpath,
-                        relpath,
-                        base_name,
-                        userSourcePath,
                         isFile=False,
                     )
                     files.append(obj)
-
-        # I don't have metadata json here. If we add, fields will be added here
         return files
 
     def copy_files(self, files, source_dir, dest_dir):
         my_fs = open_fs("/")
         if os.path.isfile(source_dir):
-            fs.copy.copy_file(
-                src_fs=my_fs,
-                dst_fs=my_fs,
-                src_path=f"{source_dir}",
-                dst_path=f"{dest_dir}/{ntpath.basename(source_dir)}",
+            shutil.copy(
+                f"{source_dir}",
+                f"{dest_dir}/{ntpath.basename(source_dir)}",
             )
         else:
-            fs.copy.copy_dir(
-                src_fs=my_fs,
-                dst_fs=my_fs,
-                src_path=f"{source_dir}",
-                dst_path=f"{dest_dir}",
-            )
+            for (dirpath, dirnames, filenames) in walk(source_dir, followlinks=True):
+
+                if source_dir == dirpath:
+                    target = dest_dir
+                else:
+                    dest_relpath = dirpath[len(source_dir) + 1 :]
+                    target = f"{dest_dir}/{dest_relpath}"
+                    os.mkdir(target)
+
+                for file in filenames:
+                    shutil.copy(f"{os.path.abspath(dirpath)}/{file}", target)
 
         for file in files:
             file["downloaded"] = True
@@ -93,11 +89,8 @@ class LocalV1Pipeline(base.BasePipeline):
         return folder_name
 
     # gets the checksum
-    def get_local_checksum(self, src):
-        if os.path.isfile(src):
-            checksum = self.compute_hash(src)
-        else:
-            checksum = checksumdir.dirhash(src)
+    def get_local_recid(self, src, author):
+        checksum = hashlib.md5((src + author).encode("utf-8")).hexdigest()
         return checksum
 
     # If the path is relative, return the absolute path
@@ -105,33 +98,36 @@ class LocalV1Pipeline(base.BasePipeline):
         if os.path.isabs(src):
             return src
         else:
-            lc_src = os.getcwd() + "/" + src
+            lc_src = os.path.abspath(src)
             return lc_src
 
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
         for alg in algs:
             log.info(f"Generating manifest {alg}..")
-            content = self.generate_manifest(files, alg, base_path)
+            content, files = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
+        return files
 
-    def get_local_metadata(
-        self, file, src, dirpath, relpath, base_name, userSourcePath, isFile
-    ):
-        obj = {}
-        obj["filename"] = file
+    def get_local_metadata(self, file, src, dirpath, isFile):
+        # Prepare the File object
+        obj = {"origin": {}}
+
+        obj["origin"]["filename"] = file
         ## If you are in the root directory just use filename
+
         if dirpath == src or isFile:
-            obj["path"] = f"{file}"
+            obj["origin"]["path"] = ""
+            sourcePath = f"{file}"
         # Otherwise prepare the relative path
         else:
-            obj["path"] = f"{relpath}/{file}"
+            relpath = dirpath[len(src) + 1 :]
+            obj["origin"]["path"] = relpath
+            sourcePath = f"{relpath}/{file}"
+        obj["origin"]["sourcePath"] = f"{os.path.abspath(dirpath)}/{file}"
 
-        sourcePath = obj["path"]
-        obj["sourcePath"] = f"{base_name}/{sourcePath}"
-        obj["userSourcePath"] = userSourcePath
-        obj["sourceFullpath"] = f"{dirpath}/{file}"
-        obj["localpath"] = f"data/content/{obj['path']}"
+        obj["bagpath"] = f"data/content/{sourcePath}"
+
         try:
             obj["size"] = os.path.getsize(f"{dirpath}/{file}")
         except OSError:
@@ -144,6 +140,7 @@ class LocalV1Pipeline(base.BasePipeline):
             obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
         except OSError:
             log.debug(f" Creator cannot be found. Skipping field. ")
+
         obj["metadata"] = False
         obj["downloaded"] = False
 

@@ -4,6 +4,7 @@ import requests
 from pymarc import marcxml
 import ntpath
 from .. import cds
+from .. import bibdocfile
 import re
 
 log = logging.getLogger("basic-logger")
@@ -15,7 +16,26 @@ class InvenioV1Pipeline(base.BasePipeline):
         log.info(f"Invenio v1 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
 
-    def get_metadata(self, record_id, type="xml"):
+    def run_bibdoc(self, files, record_id, bd_ssh_host):
+        output = bibdocfile.run(record_id, bd_ssh_host)
+        files = bibdocfile.parse(output, record_id)
+
+        bibdocfile_entry = {
+            "origin": {
+                "filename": "bibdoc.txt",
+                "path": "",
+                "url": self.metadata_url,
+            },
+            "metadata": False,
+            "downloaded": True,
+            "bagpath": f"data/meta/bibdoc.txt",
+            "size": 0,
+        }
+        files.append(bibdocfile_entry)
+
+        return output, files
+
+    def get_metadata(self, record_id, source, type="xml"):
         """
         Get MARC21 metadata from a CDS record ID
         Returns: [metadata_serialized, metadata_upstream_url, operation_status_code]
@@ -42,7 +62,8 @@ class InvenioV1Pipeline(base.BasePipeline):
             self.metadata_size = r.headers["Content-length"]
         except Exception:
             self.metadata_size = 0
-        return r.content, r.url, r.status_code, "metadata.xml"
+
+        return r.content, r.url, r.status_code, f"metadata-{source}-{record_id}.xml"
 
     def parse_metadata(self, metadata_filename):
         """
@@ -66,17 +87,16 @@ class InvenioV1Pipeline(base.BasePipeline):
         #  MARC21: 856 - Electronic Location and Access (R)
         files = []
         for f in record.get_fields("856"):
-            obj = {}
+            # Prepare the File object
+            obj = {"origin": {}}
 
-            # Unknown size fallback
+            # Default size
             obj["size"] = 0
 
             if f["u"]:
-                obj["url"] = f["u"]
-                obj["remote"] = "HTTP"
+                obj["origin"]["url"] = f["u"]
             elif f["d"]:
-                obj["url"] = f["d"]
-                obj["remote"] = "EOS"
+                obj["origin"]["url"] = f["d"]
             else:
                 log.debug(f'Skipped 856 entry "{f}". No `u` or `d` field.')
                 continue
@@ -94,59 +114,75 @@ class InvenioV1Pipeline(base.BasePipeline):
                 obj["size"] = int(f["s"])
 
             # Get basename
-            if obj["url"]:
-                obj["filename"] = ntpath.basename(obj["url"])
+            if obj["origin"]["url"]:
+                obj["origin"]["filename"] = ntpath.basename(obj["origin"]["url"])
                 # We suppose no folder structure
-                obj["path"] = obj["filename"]
-                obj["localpath"] = f"data/content/{obj['path']}"
+                obj["origin"]["path"] = ""
+                obj[
+                    "bagpath"
+                ] = f"data/content/{obj['origin']['path']}{obj['origin']['filename']}"
 
             obj["metadata"] = False
             obj["downloaded"] = False
 
-            if obj["filename"]:
+            if obj["origin"]["filename"]:
                 files.append(obj)
             else:
                 log.warning(f'Skipped entry "{f}". No basename found (probably an URL?)')
         log.debug(f"Got {len(files)} files")
 
         meta_file_entry = {
-            "filename": "metadata.xml",
-            "path": "metadata.xml",
+            "origin": {
+                "filename": f"{ntpath.basename(metadata_filename)}",
+                "path": "",
+                "url": self.metadata_url,
+            },
             "metadata": True,
             "downloaded": True,
-            "localpath": "data/meta/metadata.xml",
-            "url": self.metadata_url,
+            "bagpath": f"data/content/{ntpath.basename(metadata_filename)}",
             "size": self.metadata_size,
         }
         files.append(meta_file_entry)
 
-        return files
+        return files, meta_file_entry
 
     def create_manifests(self, files, base_path):
-        algs = ["md5", "sha1"]
+        algs = ["md5"]
         for alg in algs:
             log.info(f"Generating manifest {alg}..")
-            content = self.generate_manifest(files, alg, base_path)
+            content, files = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
+        return files
 
     def download_files(self, files, files_base_path):
+        """
+        Given a Files object, download files in the specified path
+        """
+
         log.info(f"Downloading {len(files)} files to {files_base_path}..")
-        for sourcefile in files:
-            if sourcefile["metadata"] == False:
-                destination = f'{files_base_path}/{sourcefile["filename"]}'
+        for idx, sourcefile in enumerate(files):
+            # We're looking for files not flagged as metadata and not downloaded yet
+            if sourcefile["metadata"] == False and sourcefile["downloaded"] == False:
+                # If the origin url is a list, use the first for downloading
+                if type(sourcefile["origin"]["url"]) == list:
+                    download_url = sourcefile["origin"]["url"][0]
+                else:
+                    download_url = sourcefile["origin"]["url"]
+
+                # prepare the destination path
+                destination = f'{files_base_path}/{sourcefile["origin"]["filename"]}'
 
                 log.debug(
-                    f'Downloading {sourcefile["filename"]} from {sourcefile["url"]}..'
+                    f'Downloading {sourcefile["origin"]["filename"]} from {download_url}..'
                 )
 
-                if sourcefile["remote"] == "HTTP":
-                    sourcefile["downloaded"] = cds.downloadRemoteFile(
-                        sourcefile["url"], destination
-                    )
-                elif sourcefile["remote"] == "EOS":
-                    cds.downloadEOSfile(sourcefile["url"], destination)
+                files[idx]["downloaded"] = cds.downloadRemoteFile(
+                    download_url, destination
+                )
+
             else:
                 log.debug(
-                    f'Skipped downloading of {sourcefile["filename"]} from              '
-                    f'       {sourcefile["url"]}..'
+                    f'Skipped downloading of {sourcefile["origin"]["filename"]} from              '
+                    f'       {sourcefile["origin"]["url"]}..'
                 )
+        return files

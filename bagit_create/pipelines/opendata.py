@@ -18,7 +18,7 @@ class OpenDataPipeline(base.BasePipeline):
 
     # metadata, metadata_url, status_code, metadata_filename
 
-    def get_metadata(self, recid):
+    def get_metadata(self, recid, source):
         if searcher.verify_recid(server=self.SERVER_HTTP_URI, recid=recid):
             metadata = searcher.get_record_as_json(
                 server=self.SERVER_HTTP_URI, recid=recid
@@ -53,11 +53,24 @@ class OpenDataPipeline(base.BasePipeline):
                         # Append the final path
                         el["path"] = el["filename"]
                         localpath = el["path"]
-                        el["localpath"] = f"data/content/{localpath}"
+                        el["bagpath"] = f"data/content/{localpath}"
                         el["metadata"] = False
                         el["downloaded"] = False
                         if type not in el or (type in el and el["type"] != "index.txt"):
-                            files.append(el)
+                            # Map values to build a "File" entry
+                            file = {
+                                "origin": {
+                                    # Save both HTTP and ROOT URLs
+                                    "url": [el["url"], el["uri"]],
+                                    "filename": el["filename"],
+                                    "path": "",
+                                },
+                                "size": el["size"],
+                                "bagpath": f"data/content/{localpath}",
+                                "metadata": False,
+                                "downloaded": False,
+                            }
+                            files.append(file)
             else:
                 sourcefile["url"] = sourcefile["uri"].replace(
                     "root://eospublic.cern.ch/", "http://opendata.cern.ch/"
@@ -65,27 +78,46 @@ class OpenDataPipeline(base.BasePipeline):
                 sourcefile["filename"] = sourcefile["key"]
                 sourcefile["path"] = sourcefile["filename"]
                 localpath = sourcefile["path"]
-                sourcefile["localpath"] = f"data/content/{localpath}"
-                sourcefile["metadata"] = False
                 sourcefile["downloaded"] = False
-                files.append(sourcefile)
-        return files
+                # Map values to build a "File" entry
+                file = {
+                    "origin": {
+                        # Save both HTTP and ROOT URLs
+                        "url": [sourcefile["url"], sourcefile["uri"]],
+                        "filename": sourcefile["key"],
+                        "path": "",
+                    },
+                    "size": sourcefile["size"],
+                    "bagpath": f"data/content/{localpath}",
+                    "metadata": False,
+                    "downloaded": False,
+                }
+                files.append(file)
+        return files, {}
 
     def download_files(self, files, temp_files_path):
         log.info(f"Downloading {len(files)} files to {temp_files_path}..")
         skipped = 0
         for file in files:
+
             if file["metadata"] == False:
-                destination = f'{temp_files_path}/{file["filename"]}'
-                log.debug(f'Downloading {file["filename"]} from {file["url"]}..')
-                if file["url"][:4] == "http":
+                destination = f'{temp_files_path}/{file["origin"]["filename"]}'
+                # If more than one URL is available, use the first one (HTTP)
+                if type(file["origin"]["url"]) == list:
+                    download_url = file["origin"]["url"][0]
+                else:
+                    download_url = file["origin"]["url"]
+                log.debug(
+                    f'Downloading {file["origin"]["filename"]} from {download_url}..'
+                )
+                if download_url[:4] == "http":
                     file["downloaded"] = self.downloadRemoteFile(
-                        file["url"],
+                        download_url,
                         destination,
                     )
-                elif file["url"][:4] == "/eos":
+                elif download_url[:4] == "/eos":
                     file["downloaded"] = self.downloadEOSfile(
-                        file["url"],
+                        download_url,
                         destination,
                     )
 
@@ -96,6 +128,7 @@ class OpenDataPipeline(base.BasePipeline):
                 f"{skipped} files were skipped. Checksums will be searched in metadata \
     but won't be computed locally."
             )
+        return files
 
     def create_manifests(self, files, base_path):
         algs = ["adler32"]
@@ -105,5 +138,6 @@ class OpenDataPipeline(base.BasePipeline):
 
         for alg in algs:
             log.info(f"Generating manifest {alg}..")
-            content = self.generate_manifest(files, alg, base_path)
+            content, files = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
+        return files

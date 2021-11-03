@@ -13,6 +13,7 @@ from itertools import chain
 from zlib import adler32
 from datetime import date
 from pathlib import Path
+from jsonschema import validate
 
 my_fs = open_fs("/")
 
@@ -43,6 +44,21 @@ class BasePipeline:
             f" {d}\nPayload-Oxum: {size}.{file_count}\n"
         )
         self.write_file(baginfo, dest)
+
+    def validate_sip_json(self, schema_path, file_path):
+        log.info("Validating sip.json..")
+        try:
+            with open(file_path) as json_file:
+                data = json.load(json_file)
+
+            with open(schema_path) as json_schema:
+                schema = json.load(json_schema)
+
+            validate(instance=data, schema=schema)
+            log.info(f"Valid against {schema_path}")
+
+        except Exception as err:
+            log.error("sip.json validation failed with error", err)
 
     def downloadRemoteFile(self, src, dest):
         r = requests.get(src)
@@ -93,11 +109,11 @@ class BasePipeline:
 
     def write_file(self, content, dest):
         if type(content) is bytes:
-            open(f"{dest}", "wb").write(content)
+            open(f"{dest}", "ab").write(content)
         elif type(content) is dict:
-            open(f"{dest}", "w").write(json.dumps(content, indent=4))
+            open(f"{dest}", "a").write(json.dumps(content, indent=4))
         else:
-            open(f"{dest}", "w").write(content)
+            open(f"{dest}", "a").write(content)
         log.info(f"Wrote {os.path.basename(dest)}")
         log.debug(f"({dest})")
 
@@ -145,39 +161,48 @@ class BasePipeline:
 
         If the requested algorithm is not available (or the `checksum` key is not
         there at all), compute the checksums on the downloaded files (found
-        appending the filaname to the given base path)
+        appending the filaname to the given base path) and add them to the SIP metadata.
         """
         contents = ""
-        for file in files:
 
-            path = f"{basepath}/{file['localpath']}"
+        for idx, file in enumerate(files):
+            path = f"{basepath}/{file['bagpath']}"
+            checksum = None
+            # Check if there's the "checksum" value in the File
             if "checksum" in file:
-                p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
-                m = p.match(file["checksum"])
-                alg = m.groups()[0].lower()
-                matched_checksum = m.groups()[1]
-                if alg == algorithm:
-                    checksum = matched_checksum
-                elif file["downloaded"]:
-                    log.info(
-                        f"Checksum {alg} found for {file['filename']}                   "
-                        f"      but {algorithm} was requested."
-                    )
-                    log.debug(f"Computing {algorithm} of {file['filename']}")
-                    checksum = self.compute_hash(f"{path}/{file['filename']}", algorithm)
+                # If it's a string create a single element list out of it
+                if type(file["checksum"]) == str:
+                    file["checksum"] = [file["checksum"]]
+                # For each available checksum
+                for avail_checksum in file["checksum"]:
+                    p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
+                    m = p.match(avail_checksum)
+                    alg = m.groups()[0].lower()
+                    matched_checksum = m.groups()[1]
+                    # Check if it's the required one
+                    if alg == algorithm:
+                        checksum = matched_checksum
 
-            elif file["downloaded"]:
-                log.debug(f"No checksum available for {file['filename']}")
-                log.debug(f"Computing {algorithm} of {file['filename']}")
-                checksum = self.compute_hash(f"{path}", algorithm)
-            else:
-                # Here may needs additional checks
+            # If we didn't find the required checksum but the file has been downloaded,
+            #  compute it
+            if not checksum and file["downloaded"]:
+                checksum = self.compute_hash(path, algorithm)
+                # Add the newly computed checksum to the SIP metadata
+                if "checksum" in files[idx]:
+                    files[idx]["checksum"].append(f"{algorithm}:{checksum}")
+                else:
+                    files[idx]["checksum"] = [f"{algorithm}:{checksum}"]
+
+            # If there's no checksum and it's not possibile to compute it from disk, throw an error
+            if not checksum and not file["downloaded"]:
                 pass
-            line = f"{checksum} {file['localpath']}\n"
-            contents += line
-        return contents
 
-    def generate_fetch_txt(self, files, alternate_uri=False):
+            line = f"{checksum} {file['bagpath']}\n"
+            contents += line
+
+        return contents, files
+
+    def generate_fetch_txt(self, files):
         """
         Given an array of "files" dictionaries (containing the `url`, `size` and `path` keys)
         generate the contents for the fetch.txt file (BagIt specification)
@@ -190,29 +215,31 @@ class BasePipeline:
         """
         contents = ""
         for file in files:
-            if alternate_uri and "uri" in file:
-                url = file["uri"]
+            if type(file["origin"]["url"]) is list:
+                url = file["origin"]["url"][0]
             else:
-                url = file["url"]
+                url = file["origin"]["url"]
 
             # Workaround to get a valid fetch.txt (/eos/ is a malformed URL)
             if url[:5] == "/eos/":
                 url = f"eos:/{url}"
-            line = f'{url} {file["size"]} {file["path"]}\n'
+            line = f'{url} {file["size"]} {file["origin"]["path"]}{file["origin"]["filename"]}\n'
             contents += line
         return contents
 
-    def create_fetch_txt(self, files, dest, alternate_uri):
-        content = self.generate_fetch_txt(files, alternate_uri)
+    def create_fetch_txt(self, files, dest):
+        content = self.generate_fetch_txt(files)
         self.write_file(content, dest)
 
-    def prepare_folders(self, source, recid, delimiter_str="::"):
+    def prepare_folders(self, source, recid, timestamp, delimiter_str="::"):
         # Get current path
         path = os.getcwd()
 
         # Prepare the base folder for the BagIt export
         #  e.g. "bagitexport::cds::42"
-        base_name = f"bagitexport{delimiter_str}{source}{delimiter_str}{recid}"
+        base_name = (
+            f"sip{delimiter_str}{source}{delimiter_str}{recid}{delimiter_str}{timestamp}"
+        )
         base_path = f"{path}/{base_name}"
 
         os.mkdir(base_path)
@@ -284,7 +311,9 @@ class BasePipeline:
         return files
 
     def create_sip_meta(self, files, audit, timestamp, base_path, metadata_url=None):
+        source = audit[0]["tool"]["params"]["source"]
         bic_meta = {
+            "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
             "created_by": f"bagit-create {__version__}",
             "audit": audit,
             "source": audit[0]["tool"]["params"]["source"],
@@ -293,30 +322,49 @@ class BasePipeline:
             "contentFiles": files,
             "sip_creation_timestamp": timestamp,
         }
+        if source == "local":
+            bic_meta.update(
+                {
+                    "source_details": {
+                        "source_path": os.path.abspath(
+                            audit[0]["tool"]["params"]["source_path"]
+                        ),
+                        "source_base_path": audit[0]["tool"]["params"][
+                            "source_base_path"
+                        ],
+                    },
+                    "author": audit[0]["tool"]["params"]["author"],
+                }
+            )
 
         bic_log_file_entry = {
-            "filename": "bagitcreate.log",
-            "path": "bagitcreate.log",
+            "origin": {
+                "filename": "bagitcreate.log",
+                "path": "",
+            },
             "metadata": False,
             "downloaded": True,
-            "localpath": f"data/meta/bagitcreate.log",
+            "bagpath": f"data/meta/bagitcreate.log",
         }
 
         files.append(bic_log_file_entry)
+
+        bic_meta_file_entry = {
+            "origin": {
+                "filename": "sip.json",
+                "path": "",
+            },
+            "metadata": False,
+            "downloaded": True,
+            "bagpath": f"data/meta/sip.json",
+        }
+
+        files.append(bic_meta_file_entry)
 
         self.write_file(
             json.dumps(bic_meta, indent=4), f"{base_path}/data/meta/sip.json"
         )
 
-        bic_meta_file_entry = {
-            "filename": "sip.json",
-            "path": "sip.json",
-            "metadata": False,
-            "downloaded": True,
-            "localpath": f"data/meta/sip.json",
-        }
-
-        files.append(bic_meta_file_entry)
         return files
 
     def verify_bag(self, path):
@@ -326,7 +374,7 @@ class BasePipeline:
         try:
             valid = bag.validate()
         except bagit.BagValidationError as err:
-            print(f"Bag validation failed: {err}")
+            log.error(f"Bag validation failed: {err}")
         if valid:
             log.info(f"Bag successfully validated")
         log.info("--\n")
@@ -348,14 +396,21 @@ class BasePipeline:
 
     # Checks the input from the cli and raises error if there is a mistake
     def check_parameters_input(
-        recid, source, localsource, bibdoc, bd_ssh_host, loglevels, alternate_uri
+        recid,
+        source,
+        source_path,
+        author,
+        source_base_path,
+        bibdoc,
+        bd_ssh_host,
+        loglevel,
     ):
         """
         Checks if the combination of the parameters for the job make up for
         a valid operation
         """
 
-        if (bibdoc or bd_ssh_host) and source != "cds":
+        if (bibdoc or bd_ssh_host) and (source != "cds" and source != "ilcdoc"):
             raise WrongInputException(
                 "bibdoc and bd_ssh_host parameters are only accepted when selecting CDS\
                 as a source."
@@ -371,8 +426,19 @@ class BasePipeline:
 
         if source != "local" and not recid:
             raise WrongInputException("Recid is missing.")
-        if localsource and source != "local":
-            raise WrongInputException("This pipeline is not expecting a localsource.")
+        if source_path and source != "local":
+            raise WrongInputException("This pipeline is not expecting a source_path.")
+        if source == "local" and not author:
+            raise WrongInputException("Author is missing")
+        if source == "local" and not source_path:
+            raise WrongInputException("source_path is missing")
+        if (source_base_path or source_path or author) and (source != "local"):
+            raise WrongInputException(
+                "source_base_path, source_path and author are parameters used only when source is local."
+            )
+        if source_base_path:
+            if not source_base_path in os.path.abspath(source_path):
+                raise WrongInputException("source_base_path should include source_path")
 
 
 class WrongInputException(Exception):

@@ -11,11 +11,16 @@ log = logging.getLogger("basic-logger")
 
 class IndicoV1Pipeline(base.BasePipeline):
     def __init__(self, base_url):
+
         log.info(f"Indico v1 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
 
     # get metadata according to indico api guidelines
-    def get_metadata(self, search_id):
+    def get_metadata(self, record_id, source):
+        """
+        Get JSON metadata from an Indico record ID
+        Returns: [metadata_serialized, metadata_upstream_url, operation_status_code]
+        """
 
         # Get Indico API Key from environment variable (or indico.ini)
         if os.environ.get("INDICO_KEY"):
@@ -31,54 +36,71 @@ class IndicoV1Pipeline(base.BasePipeline):
         headers = {"Authorization": "Bearer " + api_key}
 
         # Indico API export base endpoint
-        endpoint = f"https://indico.cern.ch/export/event/{search_id}.json"
+        endpoint = f"{self.base_url}/export/event/{record_id}.json"
 
         # Query params
         payload = {"detail": "contributions", "occ": "yes", "pretty": "yes"}
 
-        response = requests.get(endpoint, headers=headers, params=payload)
+        r = requests.get(endpoint, headers=headers, params=payload)
 
-        if response.status_code == 200:
-            if response.json()["count"] == 1:
-                metadata_filename = "metadata.json"
-                return (
-                    response.content,
-                    response.url,
-                    response.status_code,
-                    metadata_filename,
-                )
-            else:
-                raise RecidException(
-                    f"Wrong recid. The {search_id} does not exist or it is not"
-                    " available."
-                )
+        log.debug(f"Getting {r.url}")
+
+        if r.status_code != 200:
+            raise APIException(f"Metadata request gave HTTP {r.status_code}.")
+
+        self.metadata_url = r.url
+        try:
+            self.metadata_size = r.headers["Content-length"]
+        except Exception:
+            self.metadata_size = 0
+
+        if r.json()["count"] == 1:
+            metadata_filename = f"metadata-{source}-{record_id}.xml"
+            return (
+                r.content,
+                r.url,
+                r.status_code,
+                metadata_filename,
+            )
         else:
-            raise APIException(f"Indico API returned HTTP {response.status_code}.")
+            raise RecidException(
+                f"Wrong recid. The {record_id} does not exist or it is not" " available."
+            )
 
     # Download Remote Folders in the cwd
     def download_files(self, files, files_base_path):
         log.info(f"Downloading {len(files)} files to {files_base_path}..")
 
-        for sourcefile in files:
+        for idx, sourcefile in enumerate(files):
             if sourcefile["metadata"] == False:
-                destination = f'{files_base_path}/{sourcefile["filename"]}'
-                src = sourcefile["url"]
-                sourcefile["downloaded"] = self.download_file(src, destination)
+                destination = f'{files_base_path}/{sourcefile["origin"]["filename"]}'
+
+                log.debug(
+                    f'Downloading {sourcefile["origin"]["filename"]} from {sourcefile["origin"]["url"]}..'
+                )
+
+                files[idx]["downloaded"] = self.downloadRemoteFile(
+                    sourcefile["origin"]["url"], destination
+                )
+            else:
+                log.debug(f"Skipped downloading..")
+        return files
 
     def create_manifests(self, files, base_path):
         algs = ["md5", "sha1"]
         for alg in algs:
             log.info(f"Generating manifest {alg}..")
-            content = self.generate_manifest(files, alg, base_path)
+            content, files = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
+        return files
 
-    def parse_metadata(self, metadataFilename):
+    def parse_metadata(self, metadata_filename):
 
         # Gets metadata and transforms to JSON
         log.info("Parsing metadata..")
         files = []
 
-        with open(metadataFilename) as jsonFile:
+        with open(metadata_filename) as jsonFile:
             metadataFile = json.load(jsonFile)
             jsonFile.close()
 
@@ -89,7 +111,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                     obj = self.get_data_from_json(att)
 
                     if obj is not None:
-                        if obj["filename"]:
+                        if obj["origin"]["filename"]:
                             files.append(obj)
                         else:
                             log.warning(
@@ -102,7 +124,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                         obj = self.get_data_from_json(att)
 
                         if obj is not None:
-                            if obj["filename"]:
+                            if obj["origin"]["filename"]:
                                 files.append(obj)
                             else:
                                 log.warning(
@@ -111,54 +133,42 @@ class IndicoV1Pipeline(base.BasePipeline):
                                 )
 
             # add extra metadata
-            obj = {}
-
-            if "title" in results["title"]:
-                obj["title"] = results["title"]
-
-            if "startDate" in results:
-                obj["startDate"] = results["startDate"]
-
-            if "endDate" in results:
-                obj["endDate"] = results["endDate"]
-
-            if "room" in results:
-                obj["room"] = results["room"]
-
-            if "location" in results["location"]:
-                obj["location"] = results["location"]
-
-            obj["metadata"] = True  # is metadata no files
-            obj["downloaded"] = True
-            obj["filename"] = "metadata.json"
-            obj["localpath"] = f"data/meta/metadata.json"
-
-            files.append(obj)
-        return files
+            meta_file_entry = {
+                "origin": {
+                    "filename": f"{ntpath.basename(metadata_filename)}",
+                    "path": "",
+                    "url": self.metadata_url,
+                },
+                "metadata": True,
+                "downloaded": True,
+                "bagpath": f"data/content/{ntpath.basename(metadata_filename)}",
+                "size": self.metadata_size,
+            }
+            files.append(meta_file_entry)
+        return files, meta_file_entry
 
     def get_data_from_json(self, att):
-        obj = {}
+        obj = {"origin": {}}
 
         obj["size"] = 0
 
         if "link_url" in att:
             return None
         if "size" in att:
-            obj["size"] = att["size"]
+            obj["origin"]["size"] = att["size"]
         if "download_url" in att:
-            obj["url"] = att["download_url"]
-            obj["filename"] = ntpath.basename(obj["url"])
-            self.filename1 = ntpath.basename(obj["url"])
-            obj["path"] = obj["filename"]
+            obj["origin"]["url"] = att["download_url"]
+            obj["origin"]["filename"] = ntpath.basename(obj["origin"]["url"])
+            self.filename1 = ntpath.basename(obj["origin"]["url"])
+            obj["origin"]["path"] = ""
+            obj[
+                "bagpath"
+            ] = f"data/content/{obj['origin']['path']}{obj['origin']['filename']}"
         if "title" in att:
-            obj["title"] = att["title"]
-
-        if "content_type" in att:
-            obj["content_type"] = att["content_type"]
+            obj["origin"]["title"] = att["title"]
 
         obj["metadata"] = False
         obj["downloaded"] = False
-        obj["localpath"] = f"data/content/{self.filename1}"
 
         return obj
 

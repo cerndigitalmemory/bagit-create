@@ -20,10 +20,11 @@ def process(
     recid,
     source,
     loglevel,
-    target=None,
-    localsource=None,
+    target,
+    source_path,
+    author=None,
+    source_base_path=None,
     dry_run=False,
-    alternate_uri=False,
     bibdoc=False,
     bd_ssh_host=None,
     timestamp=0,
@@ -37,9 +38,10 @@ def process(
         "source": source,
         "loglevel": loglevel,
         "target": target,
-        "localsource": localsource,
+        "source_path": source_path,
+        "author": author,
+        "source_base_path": source_base_path,
         "dry_run": dry_run,
-        "alternate_uri": alternate_uri,
         "bibdoc": bibdoc,
         "bd_ssh_host": bd_ssh_host,
         "timestamp": timestamp,
@@ -47,7 +49,14 @@ def process(
 
     try:
         base.BasePipeline.check_parameters_input(
-            recid, source, localsource, bibdoc, bd_ssh_host, loglevel, alternate_uri
+            recid,
+            source,
+            source_path,
+            author,
+            source_base_path,
+            bibdoc,
+            bd_ssh_host,
+            loglevel,
         )
     except WrongInputException as e:
         return {"status": 1, "errormsg": e}
@@ -56,14 +65,14 @@ def process(
 
     # DEBUG, INFO, WARNING, ERROR log levels
     loglevels = [10, 20, 30, 40]
-    log = logging.getLogger("basic-logger")
+    log = logging.getLogger("bic-basic-logger")
     log.setLevel(logging.DEBUG)
 
     log.propagate = False
 
     ## Console Handler
     # create console handler logging to the shell
-    # what has been requested by the user (-v or -vv)
+    # what has been requested by the author (-v or -vv)
     ch_formatter = logging.Formatter("%(message)s")
     ch = logging.StreamHandler()
     ch.setLevel(loglevels[loglevel])
@@ -86,9 +95,9 @@ def process(
 
     if dry_run:
         log.warning(
-            "This will be a DRY RUN. A 'light' bag will be created, not downloading"
-            "or moving any payload file, but checksums *must* be available from"
-            "the metadata, or no valid CERN SIP will be created."
+            """This will be a DRY RUN. A 'light' bag will be created, not downloading
+            or moving any payload file, but checksums *must* be available from
+            the metadata, or no valid CERN SIP will be created."""
         )
     try:
         # Initialize the pipeline
@@ -104,10 +113,13 @@ def process(
             pipeline = invenio_v3.InvenioV3Pipeline(source)
         elif source == "indico":
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/")
+        elif source == "ilcagenda":
+            pipeline = indico.IndicoV1Pipeline("https://agenda.linearcollider.org/")
         elif source == "local":
-            pipeline = local.LocalV1Pipeline(localsource)
-            localsource = pipeline.get_abs_path(localsource)
-            recid = pipeline.get_local_checksum(localsource)
+            pipeline = local.LocalV1Pipeline(source_path)
+            source_path = pipeline.get_abs_path(source_path)
+            recid = pipeline.get_local_recid(source_path, author)
+            params["recid"] = recid
 
         # Save job details (as audit step 0)
         audit = [
@@ -115,22 +127,23 @@ def process(
                 "tool": {
                     "name": "CERN BagIt Create",
                     "version": __version__,
-                    "url": "https://gitlab.cern.ch/digitalmemory/bagit-create",
+                    "website": "https://gitlab.cern.ch/digitalmemory/bagit-create",
                     "params": params,
                 },
                 "action": "sip_create",
                 "timestamp": timestamp,
+                "message": "",
             }
         ]
 
-        base_path, name = pipeline.prepare_folders(source, recid)
+        base_path, name = pipeline.prepare_folders(source, recid, timestamp)
 
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
 
         if source == "local":
             # Look for files in the source folder and prepare the files object
-            files = pipeline.scan_files(localsource)
+            files = pipeline.scan_files(source_path)
             metadata_url = None
         else:
             # Get metadata from upstream
@@ -139,35 +152,41 @@ def process(
                 metadata_url,
                 status_code,
                 metadata_filename,
-            ) = pipeline.get_metadata(recid)
+            ) = pipeline.get_metadata(recid, source)
 
             # Save metadata file in the meta folder
-            pipeline.write_file(metadata, f"{base_path}/data/meta/{metadata_filename}")
+            pipeline.write_file(
+                metadata, f"{base_path}/data/content/{metadata_filename}"
+            )
 
             # Parse metadata for files
-            files = pipeline.parse_metadata(f"{base_path}/data/meta/{metadata_filename}")
+            files, meta_file_entry = pipeline.parse_metadata(
+                f"{base_path}/data/content/{metadata_filename}"
+            )
+
+            if bibdoc:
+                # Get files metadata from bibdocfile
+                output, files = pipeline.run_bibdoc(files, recid, bd_ssh_host)
+                # Save bibdoc output
+                pipeline.write_file(output, f"{base_path}/data/meta/bibdoc.txt")
+                files.append(meta_file_entry)
 
         if dry_run is True:
             # Create fetch.txt
-            pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt", alternate_uri)
+            pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt")
         else:
 
             if source == "local":
                 files = pipeline.copy_files(
-                    files, localsource, f"{base_path}/data/content"
+                    files, source_path, f"{base_path}/data/content"
                 )
 
             else:
                 # Download files
-                pipeline.download_files(files, f"{base_path}/data/content")
-
-        # Create sip.json
-        files = pipeline.create_sip_meta(
-            files, audit, timestamp, base_path, metadata_url
-        )
+                files = pipeline.download_files(files, f"{base_path}/data/content")
 
         # To allow consistency and hashing of the attached log,
-        # No events after this point will be logged to the file
+        # no events after this point will be logged to the file
 
         # Close the stream and release the lock on the file
         log.handlers[1].stream.close()
@@ -182,10 +201,23 @@ def process(
             "bagitcreate.log",
         )
 
-        pipeline.create_manifests(files, base_path)
-        # file entries for "sip.json" and "bagitcreate.log" get added there
+        # Create manifest files, according to the specified algorithms in the pipeline
+        #  Uses the checksums from the parsed metadata if available
+        #  Newly computed checksum get added to the SIP metadata, too.
+        files = pipeline.create_manifests(files, base_path)
 
-        # Create manifest files
+        # Create sip.json
+        #  File entries for sip.json and the log files will be added here
+        files = pipeline.create_sip_meta(
+            files, audit, timestamp, base_path, metadata_url
+        )
+
+        # Compute checksums just for the last 2 added files (the sip.json and the log file)
+        #  and *append* them to the already created manifests
+        files = pipeline.create_manifests(files[-2:], base_path)
+
+        # Add bag-info.txt file
+        #  containing the final payload size and number of files
         pipeline.add_bag_info(base_path, f"{base_path}/bag-info.txt")
 
         # Verify created Bag
@@ -205,12 +237,22 @@ def process(
 
         log.info("SIP successfully created")
 
+        # Clear up logging handlers so subsequent executions in the same python thread
+        #  don't stack up
+        if log.hasHandlers():
+            log.handlers.clear()
+
         return {"status": 0, "errormsg": None}
 
     # Folder exists, gracefully stop
     except FileExistsError as e:
 
         log.error(f"Job failed with error: {e}")
+
+        # Clear up logging handlers so subsequent executions in the same python thread
+        #  don't stack up
+        if log.hasHandlers():
+            log.handlers.clear()
 
         return {"status": 1, "errormsg": e}
 
@@ -219,5 +261,10 @@ def process(
     except Exception as e:
         log.error(f"Job failed with error: {e}")
         pipeline.delete_folder(base_path)
+
+        # Clear up logging handlers so subsequent executions in the same python thread
+        #  don't stack up
+        if log.hasHandlers():
+            log.handlers.clear()
 
         return {"status": 1, "errormsg": e}
