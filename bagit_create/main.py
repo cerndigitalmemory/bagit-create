@@ -65,7 +65,7 @@ def process(
 
     # DEBUG, INFO, WARNING, ERROR log levels
     loglevels = [10, 20, 30, 40]
-    log = logging.getLogger("basic-logger")
+    log = logging.getLogger("bic-basic-logger")
     log.setLevel(logging.DEBUG)
 
     log.propagate = False
@@ -237,12 +237,22 @@ def process(
 
         log.info("SIP successfully created")
 
+        # Clear up logging handlers so subsequent executions in the same python thread
+        #  don't stack up
+        if log.hasHandlers():
+            log.handlers.clear()
+
         return {"status": 0, "errormsg": None}
 
     # Folder exists, gracefully stop
     except FileExistsError as e:
 
         log.error(f"Job failed with error: {e}")
+
+        # Clear up logging handlers so subsequent executions in the same python thread
+        #  don't stack up
+        if log.hasHandlers():
+            log.handlers.clear()
 
         return {"status": 1, "errormsg": e}
 
@@ -251,5 +261,10 @@ def process(
     except Exception as e:
         log.error(f"Job failed with error: {e}")
         pipeline.delete_folder(base_path)
+
+        # Clear up logging handlers so subsequent executions in the same python thread
+        #  don't stack up
+        if log.hasHandlers():
+            log.handlers.clear()
 
         return {"status": 1, "errormsg": e}
