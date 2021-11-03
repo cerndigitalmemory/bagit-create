@@ -248,3 +248,8 @@ def process(
 
     # For any other error, print details about what happened and clean up
     #  any created file and folder
+    except Exception as e:
+        log.error(f"Job failed with error: {e}")
+        pipeline.delete_folder(base_path)
+
+        return {"status": 1, "errormsg": e}
