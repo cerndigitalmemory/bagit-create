@@ -67,9 +67,9 @@ export INDICO_KEY=<INDICO_API_TOKEN>
 
 Some examples:
 
-```bash
-# CDS #
+CDS:
 
+```bash
 # (Expect error) Removed resource
 bic --recid 1 --source cds
 
@@ -81,19 +81,33 @@ bic --recid 1000571 --source cds --dry-run
 
 # Resource with just a PDF
 bic --recid 2728246 --source cds
+```
 
+ilcdoc:
+
+```bash
 # ilcdoc #
 bic --source ilcdoc --recid 62959 --verbose
 bic --source ilcdoc --recid 34794 --verbose
+```
 
-# Zenodo #
+Zenodo
+
+```bash
 bic --recid 3911261 --source zenodo --verbose
 bic --recid 3974864 --source zenodo --verbose
+```
 
-# Indico #
+Indico
+
+```bash
 bic --recid 1024767 --source indico 
+```
 
-# CERN Open Data #
+
+CERN Open Data
+
+```bash
 bic --recid 1 --source cod --dry-run --verbose
 bic --recid 8884 --source cod --dry-run --verbose --alternate-uri
 bic --recid 8884 --source cod --dry-run --verbose
