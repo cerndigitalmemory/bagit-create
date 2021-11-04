@@ -34,43 +34,8 @@ def test_mergelists_inverted():
     assert pipeline.merge_lists(b, a, "filename") == c2
 
 
-files = [
-    {
-        "url": "http://someurl.com/42.txt",
-        "size": "123123",
-        "path": "data/local/42.txt",
-        "filename": "42.txt",
-        "checksum": "md5:anothersamplehash",
-        "localpath": "data/local/42.txt",
-    },
-    {
-        "url": "http://someurl.com/43.txt",
-        "size": "1024",
-        "path": "data/local/43.txt",
-        "filename": "43.txt",
-        "checksum": "md5:asamplehash",
-        "localpath": "data/local/43.txt",
-    },
-]
-
-fetch_txt = """http://someurl.com/42.txt 123123 data/local/42.txt
-http://someurl.com/43.txt 1024 data/local/43.txt
-"""
-
-manifest_md5 = """anothersamplehash data/local/42.txt
-asamplehash data/local/43.txt
-"""
-
-
-def test_fetch_txt():
-    assert pipeline.generate_fetch_txt(files) == fetch_txt
-
-
-def test_manifest_md5():
-    assert pipeline.generate_manifest(files, "md5", "") == manifest_md5
-
 def test_target_option():
-   
+
     src = "/tmp/test_temp_folder_1"
     dest = "/tmp/destination_temp_folder"
 
@@ -80,15 +45,17 @@ def test_target_option():
         shutil.rmtree(src)
         os.mkdir(src)
     os.mkdir(f"{src}/test_temp_folder_2")
-    f1 = open(f"{src}/test_temp_file_1", 'w')
-    f2 = open(f"{src}/test_temp_folder_2/test_temp_file_2", 'w')
+    f1 = open(f"{src}/test_temp_file_1", "w")
+    f2 = open(f"{src}/test_temp_folder_2/test_temp_file_2", "w")
 
-    #Temp directory structure
-    # - tmpdir1
-    #   - f1
-    #   - tmpdir2
-    #       - f2
-    # We want to check if the two files will be moved at the destination folder  
+    """
+    Temp directory structure
+    - tmpdir1
+        - f1
+        - tmpdir2
+            - f2
+    We want to check if the two files will be moved at the destination folder
+    """
 
     f1.close()
     f2.close()
@@ -111,14 +78,16 @@ def test_target_option():
 
         # Check if the folders have been moved to the target directory
         # No need to check if the directories have been created. We do it by checking the folders
-    
+
         if os.path.isfile(f"{dest}/test_temp_folder_1/test_temp_file_1"):
             file_1_exists = True
-        if os.path.isfile(f"{dest}/test_temp_folder_1/test_temp_folder_2/test_temp_file_2"):
+        if os.path.isfile(
+            f"{dest}/test_temp_folder_1/test_temp_folder_2/test_temp_file_2"
+        ):
             file_2_exists = True
     except:
         shutil.rmtree(dest)
-        shutil.rmtree(src) 
+        shutil.rmtree(src)
 
     # Clear src and destination folders
     shutil.rmtree(dest)
@@ -126,5 +95,3 @@ def test_target_option():
 
     assert file_1_exists == True
     assert file_2_exists == True
-
-

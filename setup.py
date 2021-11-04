@@ -52,6 +52,8 @@ setup(
         "urllib3==1.26.4",
         "bagit==1.8.1",
         "checksumdir==1.2.0",
+        "jsonschema==4.1.2",
+        "oais-utils==0.0.2",
     ],
     entry_points={
         "console_scripts": [
