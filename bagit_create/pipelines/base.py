@@ -215,16 +215,22 @@ class BasePipeline:
         """
         contents = ""
         for file in files:
-            if type(file["origin"]["url"]) is list:
-                url = file["origin"]["url"][0]
-            else:
-                url = file["origin"]["url"]
+            try:
+                param = file["origin"]["url"]
+            except KeyError:
+                param = file["origin"]["sourcePath"]
+                param = "file:/" + param
+            except:
+                raise Exception(f"Malformed files object")
+            if type(param) is list:
+                param = param[0]
 
             # Workaround to get a valid fetch.txt (/eos/ is a malformed URL)
-            if url[:5] == "/eos/":
-                url = f"eos:/{url}"
-            line = f'{url} {file["size"]} {file["origin"]["path"]}{file["origin"]["filename"]}\n'
+            if param[:5] == "/eos/":
+                param = f"eos:/{param}"
+            line = f'{param} {file["size"]} {file["origin"]["path"]}{file["origin"]["filename"]}\n'
             contents += line
+        print(contents)
         return contents
 
     def create_fetch_txt(self, files, dest):
