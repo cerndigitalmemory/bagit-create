@@ -217,8 +217,10 @@ class BasePipeline:
         for file in files:
             try:
                 param = file["origin"]["url"]
+            # If there is no "url" key it means it is a local mode so try with sourcepath, if that does not also exist raise a general error
             except KeyError:
                 param = file["origin"]["sourcePath"]
+                # Adds the file:/ so it can be validated by bagit.validate
                 param = "file:/" + param
             except:
                 raise Exception(f"Malformed files object")
