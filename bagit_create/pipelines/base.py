@@ -202,7 +202,7 @@ class BasePipeline:
 
         return contents, files
 
-    def generate_fetch_txt(self, files):
+    def generate_fetch_txt(self, files, source):
         """
         Given an array of "files" dictionaries (containing the `url`, `size` and `path` keys)
         generate the contents for the fetch.txt file (BagIt specification)
@@ -216,12 +216,14 @@ class BasePipeline:
         contents = ""
         for file in files:
             try:
-                param = file["origin"]["url"]
-            # If there is no "url" key it means it is a local mode so try with sourcepath, if that does not also exist raise a general error
-            except KeyError:
-                param = file["origin"]["sourcePath"]
-                # Adds the file:/ so it can be validated by bagit.validate
-                param = "file:/" + param
+                if source == "local":
+                    param = file["origin"]["sourcePath"]
+                    # Adds the file:/ so it can be validated by bagit.validate
+                    param = "file://" + param
+                    print(param)
+                # If there is no "url" key it means it is a local mode so try with sourcepath, if that does not also exist raise a general error
+                else:
+                    param = file["origin"]["url"]
             except:
                 raise Exception(f"Malformed files object")
             if type(param) is list:
@@ -232,11 +234,10 @@ class BasePipeline:
                 param = f"eos:/{param}"
             line = f'{param} {file["size"]} {file["origin"]["path"]}{file["origin"]["filename"]}\n'
             contents += line
-        print(contents)
         return contents
 
-    def create_fetch_txt(self, files, dest):
-        content = self.generate_fetch_txt(files)
+    def create_fetch_txt(self, files, source, dest):
+        content = self.generate_fetch_txt(files, source)
         self.write_file(content, dest)
 
     def prepare_folders(self, source, recid, timestamp, delimiter_str="::"):
