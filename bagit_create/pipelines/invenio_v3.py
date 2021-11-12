@@ -121,11 +121,11 @@ class InvenioV3Pipeline(base.BasePipeline):
         else:
             return get_dict_value(self.metadata, key_list)
 
-    def download_files(self, files, files_base_path):
-        log.info(f"Downloading {len(files)} files to {files_base_path}..")
+    def download_files(self, files, base_path):
+        log.info(f"Downloading {len(files)} files to {base_path}..")
         for sourcefile in files:
             if sourcefile["metadata"] == False:
-                destination = f'{files_base_path}/{sourcefile["origin"]["filename"]}'
+                destination = f'{base_path}/{sourcefile["bagpath"]}'
 
                 log.debug(
                     f'Downloading {sourcefile["origin"]["filename"]} from {sourcefile["origin"]["url"]}..'

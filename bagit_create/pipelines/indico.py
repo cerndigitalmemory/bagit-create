@@ -5,6 +5,7 @@ import json
 import ntpath
 import os
 import configparser
+import regex as re
 
 log = logging.getLogger("basic-logger")
 
@@ -23,13 +24,10 @@ class IndicoV1Pipeline(base.BasePipeline):
         """
 
         # Get Indico API Key from environment variable (or indico.ini)
-        if os.environ.get("INDICO_KEY"):
-            api_key = os.environ.get("INDICO_KEY")
-        else:
-            self.config_file = configparser.ConfigParser()
-            self.config_file.read(os.path.join(os.path.dirname(__file__), "indico.ini"))
-            self.config = self.config_file["indico"]
-            api_key = self.config["api_key"]
+        if source == "indico":
+            api_key = self.get_api_key(source, "INDICO_KEY")
+        elif source == "ilcagenda":
+            api_key = self.get_api_key(source, "ILCAGENDA_KEY")
 
         ## Prepare call Indico API
         # Authenticate with API Key
@@ -68,12 +66,12 @@ class IndicoV1Pipeline(base.BasePipeline):
             )
 
     # Download Remote Folders in the cwd
-    def download_files(self, files, files_base_path):
-        log.info(f"Downloading {len(files)} files to {files_base_path}..")
+    def download_files(self, files, base_path):
+        log.info(f"Downloading {len(files)} files to {base_path}..")
 
         for idx, sourcefile in enumerate(files):
             if sourcefile["metadata"] == False:
-                destination = f'{files_base_path}/{sourcefile["origin"]["filename"]}'
+                destination = f'{base_path}/{sourcefile["bagpath"]}'
 
                 log.debug(
                     f'Downloading {sourcefile["origin"]["filename"]} from {sourcefile["origin"]["url"]}..'
@@ -109,8 +107,8 @@ class IndicoV1Pipeline(base.BasePipeline):
                 # Check for attachments
                 for att in folders["attachments"]:
                     obj = self.get_data_from_json(att)
-
-                    if obj is not None:
+                    if obj:
+                        obj = self.check_name_conflicts(obj, files)
                         if obj["origin"]["filename"]:
                             files.append(obj)
                         else:
@@ -123,7 +121,8 @@ class IndicoV1Pipeline(base.BasePipeline):
                     for att in folders["attachments"]:
                         obj = self.get_data_from_json(att)
 
-                        if obj is not None:
+                        if obj:
+                            obj = self.check_name_conflicts(obj, files)
                             if obj["origin"]["filename"]:
                                 files.append(obj)
                             else:
@@ -169,6 +168,39 @@ class IndicoV1Pipeline(base.BasePipeline):
 
         obj["metadata"] = False
         obj["downloaded"] = False
+
+        return obj
+
+    def get_api_key(self, source, key):
+        if os.environ.get(key):
+            api_key = os.environ.get(key)
+        else:
+            self.config_file = configparser.ConfigParser()
+            self.config_file.read(os.path.join(os.path.dirname(__file__), "indico.ini"))
+            self.config = self.config_file[source]
+            api_key = self.config["api_key"]
+        return api_key
+
+    def check_name_conflicts(self, obj, files):
+        bagpath = obj["bagpath"]
+        self.unique = False
+        next_suffix = 1
+        while self.unique == False:
+            self.unique = True
+            for file in files:
+                if file["bagpath"] == bagpath:
+                    file_name, file_extension = os.path.splitext(bagpath)
+
+                    if re.search("_(\d+)$", file_name):
+                        split = re.split("_(\d+)$", file_name)
+                        bagpath = split[0] + "_" + str(next_suffix) + file_extension
+
+                    else:
+                        bagpath = file_name + "_" + str(next_suffix) + file_extension
+                    self.unique = False
+                    next_suffix = next_suffix + 1
+
+        obj["bagpath"] = bagpath
 
         return obj
 
