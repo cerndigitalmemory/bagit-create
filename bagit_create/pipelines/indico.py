@@ -24,10 +24,13 @@ class IndicoV1Pipeline(base.BasePipeline):
         """
 
         # Get Indico API Key from environment variable (or indico.ini)
-        if source == "indico":
-            api_key = self.get_api_key(source, "INDICO_KEY")
-        elif source == "ilcagenda":
-            api_key = self.get_api_key(source, "ILCAGENDA_KEY")
+        if os.environ.get("INDICO_KEY"):
+            api_key = os.environ.get("INDICO_KEY")
+        else:
+            self.config_file = configparser.ConfigParser()
+            self.config_file.read(os.path.join(os.path.dirname(__file__), "indico.ini"))
+            self.config = self.config_file[source]
+            api_key = self.config["api_key"]
 
         ## Prepare call Indico API
         # Authenticate with API Key
@@ -93,8 +96,9 @@ class IndicoV1Pipeline(base.BasePipeline):
         return files
 
     def parse_metadata(self, metadata_filename):
-
-        # Gets metadata and transforms to JSON
+        """
+        Gets the received JSON file and creates the files object.
+        """
         log.info("Parsing metadata..")
         files = []
 
@@ -106,11 +110,11 @@ class IndicoV1Pipeline(base.BasePipeline):
             for folders in results["folders"]:
                 # Check for attachments
                 for att in folders["attachments"]:
-                    obj = self.get_data_from_json(att)
-                    if obj:
-                        obj = self.check_name_conflicts(obj, files)
-                        if obj["origin"]["filename"]:
-                            files.append(obj)
+                    file_object = self.get_data_from_json(att)
+                    if file_object:
+                        file_object = self.check_name_conflicts(file_object, files)
+                        if file_object["origin"]["filename"]:
+                            files.append(file_object)
                         else:
                             log.warning(
                                 f"Skipped entry. No basename found (probably an URL?)"
@@ -119,12 +123,12 @@ class IndicoV1Pipeline(base.BasePipeline):
             for contributions in results["contributions"]:
                 for folders in contributions["folders"]:
                     for att in folders["attachments"]:
-                        obj = self.get_data_from_json(att)
+                        file_object = self.get_data_from_json(att)
 
-                        if obj:
-                            obj = self.check_name_conflicts(obj, files)
-                            if obj["origin"]["filename"]:
-                                files.append(obj)
+                        if file_object:
+                            file_object = self.check_name_conflicts(file_object, files)
+                            if file_object["origin"]["filename"]:
+                                files.append(file_object)
                             else:
                                 log.warning(
                                     f"Skipped entry. No basename found (probably an"
@@ -147,62 +151,72 @@ class IndicoV1Pipeline(base.BasePipeline):
         return files, meta_file_entry
 
     def get_data_from_json(self, att):
-        obj = {"origin": {}}
+        file_object = {"origin": {}}
 
-        obj["size"] = 0
+        file_object["size"] = 0
 
         if "link_url" in att:
             return None
         if "size" in att:
-            obj["origin"]["size"] = att["size"]
+            file_object["origin"]["size"] = att["size"]
         if "download_url" in att:
-            obj["origin"]["url"] = att["download_url"]
-            obj["origin"]["filename"] = ntpath.basename(obj["origin"]["url"])
-            self.filename1 = ntpath.basename(obj["origin"]["url"])
-            obj["origin"]["path"] = ""
-            obj[
+            file_object["origin"]["url"] = att["download_url"]
+            file_object["origin"]["filename"] = ntpath.basename(
+                file_object["origin"]["url"]
+            )
+            self.filename1 = ntpath.basename(file_object["origin"]["url"])
+            file_object["origin"]["path"] = ""
+            file_object[
                 "bagpath"
-            ] = f"data/content/{obj['origin']['path']}{obj['origin']['filename']}"
+            ] = f"data/content/{file_object['origin']['path']}{file_object['origin']['filename']}"
         if "title" in att:
-            obj["origin"]["title"] = att["title"]
+            file_object["origin"]["title"] = att["title"]
 
-        obj["metadata"] = False
-        obj["downloaded"] = False
+        file_object["metadata"] = False
+        file_object["downloaded"] = False
 
-        return obj
+        return file_object
 
-    def get_api_key(self, source, key):
-        if os.environ.get(key):
-            api_key = os.environ.get(key)
-        else:
-            self.config_file = configparser.ConfigParser()
-            self.config_file.read(os.path.join(os.path.dirname(__file__), "indico.ini"))
-            self.config = self.config_file[source]
-            api_key = self.config["api_key"]
-        return api_key
+    def check_name_conflicts(self, file_object, files):
+        """
+        Finds if there are two files with the same name at the same folder.
+        If this happens, saves them at different bagpaths with the same filename.
 
-    def check_name_conflicts(self, obj, files):
-        bagpath = obj["bagpath"]
-        self.unique = False
-        next_suffix = 1
-        while self.unique == False:
-            self.unique = True
-            for file in files:
-                if file["bagpath"] == bagpath:
-                    file_name, file_extension = os.path.splitext(bagpath)
+        ex. filename1.jpg data/content/filename1.jpg
+            filename1.jpg data/content/filename1_duplicate1.jpg
+        """
+        bagpath = file_object["bagpath"]
+        unique = True
+        unique, bagpath = self.check_duplicate(files, unique, bagpath)
 
-                    if re.search("_(\d+)$", file_name):
-                        split = re.split("_(\d+)$", file_name)
-                        bagpath = split[0] + "_" + str(next_suffix) + file_extension
+        while unique == False:
+            unique, bagpath = self.check_duplicate(files, unique, bagpath)
 
-                    else:
-                        bagpath = file_name + "_" + str(next_suffix) + file_extension
-                    self.unique = False
-                    next_suffix = next_suffix + 1
+        file_object["bagpath"] = bagpath
 
-        obj["bagpath"] = bagpath
+        return file_object
 
-        return obj
+    def check_duplicate(self, files, unique, bagpath):
+        """
+        For each new file_object checks in the files list if there is another entry with the same filename.
+        If there is, then appends the _duplicate suffix
+        """
+        # Set unique to True so if a same bagpath is not found, it will return True and exit from the loop
+        unique = True
+        for file in files:
+            # For each bagpath check in the files object if there is another identical
+            if file["bagpath"] == bagpath:
+                # If there is split the filename and the file extention ans save them in file_name and file_extention accordingly
+                file_name, file_extension = os.path.splitext(bagpath)
+
+                # Check if the file_name ends with _duplicateX, (X is a number).
+                # If it does then that means that this is the third time this file exists at the same bagpath, so increase the suffix number by one
+
+                bagpath = file_name + "_duplicate" + file_extension
+
+                # If the filename was changed check again if there is another filename with the same name
+                unique = False
+        return unique, bagpath
 
 
 class RecidException(Exception):
