@@ -218,10 +218,12 @@ class BasePipeline:
             try:
                 if source == "local":
                     param = file["origin"]["sourcePath"]
+
                     # Adds the file:/ so it can be validated by bagit.validate
-                    param = "file://" + param
-                    print(param)
-                # If there is no "url" key it means it is a local mode so try with sourcepath, if that does not also exist raise a general error
+                    # TODO: We must use the file:// but this fails on bagit validate
+                    param = "file:/" + param
+
+                # If there is no local mode get the origin url
                 else:
                     param = file["origin"]["url"]
             except:
