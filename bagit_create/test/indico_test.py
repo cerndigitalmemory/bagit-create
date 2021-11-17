@@ -11,13 +11,13 @@ def test_indico_results():
 
         # Run Bagit Create with the following parameters:
         # Save the results to tmpdir1
-        x = main.process(
+        main.process(
             recid=1024767,
             source="indico",
             loglevel=0,
             target=tmpdir1,
         )
-        print(x)
+
         # Check inside the tmpdir1 for any folders. If it finds one, this will be the folder created by Bagit Create.
         target_sip_list = os.listdir(tmpdir1)
 
