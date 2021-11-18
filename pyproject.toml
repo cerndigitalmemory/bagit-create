@@ -1,11 +1,2 @@
 [tool.black]
 line-length = 89
-
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py
-[testenv]
-deps = pytest
-commands = pytest --junitxml=report.xml
-"""
