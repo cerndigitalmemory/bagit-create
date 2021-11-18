@@ -34,16 +34,6 @@ def test_mergelists_inverted():
     assert pipeline.merge_lists(b, a, "filename") == c2
 
 
-# These tests can be removed right? (if we create a test that runs with dry_run)
-
-# def test_fetch_txt():
-#     assert pipeline.generate_fetch_txt(files) == fetch_txt
-
-
-# def test_manifest_md5():
-#     assert pipeline.generate_manifest(files, "md5", "") == manifest_md5
-
-
 def test_target_option():
 
     src = "/tmp/test_temp_folder_1"
@@ -58,12 +48,14 @@ def test_target_option():
     f1 = open(f"{src}/test_temp_file_1", "w")
     f2 = open(f"{src}/test_temp_folder_2/test_temp_file_2", "w")
 
-    # Temp directory structure
-    # - tmpdir1
-    #   - f1
-    #   - tmpdir2
-    #       - f2
-    # We want to check if the two files will be moved at the destination folder
+    """
+    Temp directory structure
+    - tmpdir1
+        - f1
+        - tmpdir2
+            - f2
+    We want to check if the two files will be moved at the destination folder
+    """
 
     f1.close()
     f2.close()
