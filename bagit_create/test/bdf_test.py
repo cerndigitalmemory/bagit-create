@@ -46,14 +46,33 @@ recast_atlas_2019_08_pyhf:2751237:2276586:::doctype=Plot
 
 parsed_metadata = [
     {
-        "fullpath": "/opt/cdsweb/var/data/files/g227/2276585/content.pdf;1",
-        "filename": "2101.02245.pdf",
+        "metadata": False,
+        "origin": {
+            "fullpath": "/opt/cdsweb/var/data/files/g227/2276585/content.pdf;1",
+            "path": "",
+            "filename": "content.pdf;1",
+            "url": [
+                "http://cds.cern.ch/record/2751237/files/2101.02245.pdf?version=1",
+                "http://cds.cern.ch/record/2751237/files/2101.02245.pdf",
+            ],
+            "checksum": "md5:be99bc4762f1add866d8c08abb2e0657",
+        },
         "checksum": "md5:be99bc4762f1add866d8c08abb2e0657",
+        "bagpath": "data/content/content.pdf;1",
+        "size": "3865962",
+        "downloaded": False,
     },
     {
-        "fullpath": "/opt/cdsweb/var/data/files/g227/2276586/content.png;1",
-        "filename": "recast_atlas_2019_08_pyhf.png",
+        "metadata": False,
+        "origin": {
+            "fullpath": "/opt/cdsweb/var/data/files/g227/2276586/content.png;1",
+            "path": "",
+            "filename": "content.png;1",
+            "checksum": "md5:6e40ebc1649be639050f0fdd7f67aa45",
+        },
         "checksum": "md5:6e40ebc1649be639050f0fdd7f67aa45",
+        "bagpath": "data/content/content.png;1",
+        "downloaded": False,
     },
 ]
 
