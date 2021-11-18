@@ -12,7 +12,7 @@ test:
       - IMAGE: ["python:3.6", "python:3.7"]
   script:
     - pip install -e .
-    - pip install pytest
+    - pip install pytest oais_utils==0.0.3
     - INDICO_KEY="$INDICO_KEY" python -m pytest --junitxml=path
   artifacts:
     when: always
