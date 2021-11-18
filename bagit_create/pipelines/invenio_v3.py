@@ -68,24 +68,26 @@ class InvenioV3Pipeline(base.BasePipeline):
         files = self.get_fileslist()
         files_obj = []
 
-        for sourcefile in files:
-            filename = self.get_filename(sourcefile)
-            if self.has_file_baseuri():
-                file_uri = self.get_file_baseuri()
-                url = file_uri + "/" + filename
-            else:
-                url = self.get_file_uri(sourcefile)
-            file_obj = {
-                "origin": {"url": url, "filename": filename, "path": ""},
-                "downloaded": False,
-                "metadata": False,
-                "bagpath": f"data/content/{filename}",
-                "checksum": sourcefile["checksum"],
-                "size": sourcefile["size"],
-            }
-            files_obj.append(file_obj)
+        # Records with only metadata have the files key set to None
+        if files:
+            for sourcefile in files:
+                filename = self.get_filename(sourcefile)
+                if self.has_file_baseuri():
+                    file_uri = self.get_file_baseuri()
+                    url = file_uri + "/" + filename
+                else:
+                    url = self.get_file_uri(sourcefile)
+                file_obj = {
+                    "origin": {"url": url, "filename": filename, "path": ""},
+                    "downloaded": False,
+                    "metadata": False,
+                    "bagpath": f"data/content/{filename}",
+                    "checksum": sourcefile["checksum"],
+                    "size": sourcefile["size"],
+                }
+                files_obj.append(file_obj)
 
-        log.debug(f"Got {len(files)} files")
+            log.debug(f"Got {len(files)} files")
 
         meta_file_entry = {
             "origin": {
@@ -107,9 +109,8 @@ class InvenioV3Pipeline(base.BasePipeline):
         key_list = self.config["files"].split(",")
 
         if self.config.getboolean("files_separately", fallback=False):
-            res = requests.get(
-                self.base_endpoint + str(self.recid) + "/files", headers=self.headers
-            )
+            url = self.base_endpoint + str(self.recid) + "/files"
+            res = requests.get(url, headers=self.headers)
 
             if res.status_code != 200:
                 raise Exception(f"File list request gave HTTP {res.status_code}.")
@@ -140,7 +141,7 @@ class InvenioV3Pipeline(base.BasePipeline):
                     {sourcefile["origin"]["url"]}..'
                 )
 
-        log.warning("Finished downloading")
+        log.info("Finished downloading")
         return files
 
     def has_file_baseuri(self):
