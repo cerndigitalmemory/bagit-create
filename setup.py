@@ -53,6 +53,7 @@ setup(
         "bagit==1.8.1",
         "checksumdir==1.2.0",
         "jsonschema==3.0.2",
+        "oais-utils==0.0.2",
     ],
     entry_points={
         "console_scripts": [
