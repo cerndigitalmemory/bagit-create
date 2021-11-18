@@ -68,8 +68,7 @@ class InvenioV3Pipeline(base.BasePipeline):
         files = self.get_fileslist()
         files_obj = []
 
-        # In Inveniordm there are many pages with metadata only
-        # If the files object is None, do not look for files
+        # Records with only metadata have the files key set to None
         if files:
             for sourcefile in files:
                 filename = self.get_filename(sourcefile)
