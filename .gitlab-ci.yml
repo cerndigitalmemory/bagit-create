@@ -13,7 +13,7 @@ test:
   script:
     - pip install -e .
     - pip install pytest
-    - INDICO_KEY="$INDICO_KEY" python -m pytest
+    - INDICO_KEY="$INDICO_KEY" python -m pytest --junitxml=path
   artifacts:
     when: always
     reports:
