@@ -172,6 +172,9 @@ class IndicoV1Pipeline(base.BasePipeline):
         if "title" in att:
             file_object["origin"]["title"] = att["title"]
 
+        if "id" in att:
+            file_object["origin"]["id"] = att["id"]
+
         file_object["metadata"] = False
         file_object["downloaded"] = False
 
@@ -212,7 +215,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                 # Check if the file_name ends with _duplicateX, (X is a number).
                 # If it does then that means that this is the third time this file exists at the same bagpath, so increase the suffix number by one
 
-                bagpath = file_name + "_duplicate" + file_extension
+                bagpath = file_name + "-" + str(file["origin"]["id"]) + file_extension
 
                 # If the filename was changed check again if there is another filename with the same name
                 unique = False
