@@ -110,9 +110,12 @@ class IndicoV1Pipeline(base.BasePipeline):
             for folders in results["folders"]:
                 # Check for attachments
                 for att in folders["attachments"]:
-                    file_object = self.get_data_from_json(att)
+                    # Gets the file_object and the file_id (in case it is a duplicate)
+                    file_object, file_id = self.get_data_from_json(att)
                     if file_object:
-                        file_object = self.check_name_conflicts(file_object, files)
+                        file_object = self.check_name_conflicts(
+                            file_object, files, file_id
+                        )
                         if file_object["origin"]["filename"]:
                             files.append(file_object)
                         else:
@@ -123,10 +126,11 @@ class IndicoV1Pipeline(base.BasePipeline):
             for contributions in results["contributions"]:
                 for folders in contributions["folders"]:
                     for att in folders["attachments"]:
-                        file_object = self.get_data_from_json(att)
-
+                        file_object, file_id = self.get_data_from_json(att)
                         if file_object:
-                            file_object = self.check_name_conflicts(file_object, files)
+                            file_object = self.check_name_conflicts(
+                                file_object, files, file_id
+                            )
                             if file_object["origin"]["filename"]:
                                 files.append(file_object)
                             else:
@@ -173,14 +177,14 @@ class IndicoV1Pipeline(base.BasePipeline):
             file_object["origin"]["title"] = att["title"]
 
         if "id" in att:
-            file_object["origin"]["id"] = att["id"]
+            id = att["id"]
 
         file_object["metadata"] = False
         file_object["downloaded"] = False
 
-        return file_object
+        return file_object, id
 
-    def check_name_conflicts(self, file_object, files):
+    def check_name_conflicts(self, file_object, files, id):
         """
         Finds if there are two files with the same name at the same folder.
         If this happens, saves them at different bagpaths with the same filename.
@@ -190,16 +194,16 @@ class IndicoV1Pipeline(base.BasePipeline):
         """
         bagpath = file_object["bagpath"]
         unique = True
-        unique, bagpath = self.check_duplicate(files, unique, bagpath)
+        unique, bagpath = self.check_duplicate(files, unique, bagpath, id)
 
         while unique == False:
-            unique, bagpath = self.check_duplicate(files, unique, bagpath)
+            unique, bagpath = self.check_duplicate(files, unique, bagpath, id)
 
         file_object["bagpath"] = bagpath
 
         return file_object
 
-    def check_duplicate(self, files, unique, bagpath):
+    def check_duplicate(self, files, unique, bagpath, id):
         """
         For each new file_object checks in the files list if there is another entry with the same filename.
         If there is, then appends the _duplicate suffix
@@ -215,7 +219,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                 # Check if the file_name ends with _duplicateX, (X is a number).
                 # If it does then that means that this is the third time this file exists at the same bagpath, so increase the suffix number by one
 
-                bagpath = file_name + "-" + str(file["origin"]["id"]) + file_extension
+                bagpath = file_name + "-" + str(id) + file_extension
 
                 # If the filename was changed check again if there is another filename with the same name
                 unique = False
