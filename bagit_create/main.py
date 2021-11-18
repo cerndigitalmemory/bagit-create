@@ -173,7 +173,7 @@ def process(
 
         if dry_run is True:
             # Create fetch.txt
-            pipeline.create_fetch_txt(files, f"{base_path}/fetch.txt")
+            pipeline.create_fetch_txt(files, source, f"{base_path}/fetch.txt")
         else:
 
             if source == "local":

@@ -202,7 +202,7 @@ class BasePipeline:
 
         return contents, files
 
-    def generate_fetch_txt(self, files):
+    def generate_fetch_txt(self, files, source):
         """
         Given an array of "files" dictionaries (containing the `url`, `size` and `path` keys)
         generate the contents for the fetch.txt file (BagIt specification)
@@ -215,20 +215,31 @@ class BasePipeline:
         """
         contents = ""
         for file in files:
-            if type(file["origin"]["url"]) is list:
-                url = file["origin"]["url"][0]
-            else:
-                url = file["origin"]["url"]
+            try:
+                if source == "local":
+                    param = file["origin"]["sourcePath"]
+
+                    # Adds the file:/ so it can be validated by bagit.validate
+                    # TODO: We must use the file:// but this fails on bagit validate
+                    param = "file:/" + param
+
+                # If there is no local mode get the origin url
+                else:
+                    param = file["origin"]["url"]
+            except:
+                raise Exception(f"Malformed files object")
+            if type(param) is list:
+                param = param[0]
 
             # Workaround to get a valid fetch.txt (/eos/ is a malformed URL)
-            if url[:5] == "/eos/":
-                url = f"eos:/{url}"
-            line = f'{url} {file["size"]} {file["origin"]["path"]}{file["origin"]["filename"]}\n'
+            if param[:5] == "/eos/":
+                param = f"eos:/{param}"
+            line = f'{param} {file["size"]} {file["origin"]["path"]}{file["origin"]["filename"]}\n'
             contents += line
         return contents
 
-    def create_fetch_txt(self, files, dest):
-        content = self.generate_fetch_txt(files)
+    def create_fetch_txt(self, files, source, dest):
+        content = self.generate_fetch_txt(files, source)
         self.write_file(content, dest)
 
     def prepare_folders(self, source, recid, timestamp, delimiter_str="::"):
