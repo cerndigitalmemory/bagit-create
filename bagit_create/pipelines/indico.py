@@ -5,7 +5,6 @@ import json
 import ntpath
 import os
 import configparser
-import regex as re
 
 log = logging.getLogger("basic-logger")
 
@@ -65,7 +64,7 @@ class IndicoV1Pipeline(base.BasePipeline):
             )
         else:
             raise RecidException(
-                f"Wrong recid. The {record_id} does not exist or it is not" " available."
+                f"Wrong recid. The {record_id} does not exist or it is not available."
             )
 
     # Download Remote Folders in the cwd
@@ -73,18 +72,19 @@ class IndicoV1Pipeline(base.BasePipeline):
         log.info(f"Downloading {len(files)} files to {base_path}..")
 
         for idx, sourcefile in enumerate(files):
-            if sourcefile["metadata"] == False:
+            if sourcefile["metadata"] is False:
                 destination = f'{base_path}/{sourcefile["bagpath"]}'
 
                 log.debug(
-                    f'Downloading {sourcefile["origin"]["filename"]} from {sourcefile["origin"]["url"]}..'
+                    f'Downloading {sourcefile["origin"]["filename"]} from \
+                    {sourcefile["origin"]["url"]}..'
                 )
 
                 files[idx]["downloaded"] = self.downloadRemoteFile(
                     sourcefile["origin"]["url"], destination
                 )
             else:
-                log.debug(f"Skipped downloading..")
+                log.debug("Skipped downloading..")
         return files
 
     def create_manifests(self, files, base_path):
@@ -120,7 +120,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                             files.append(file_object)
                         else:
                             log.warning(
-                                f"Skipped entry. No basename found (probably an URL?)"
+                                "Skipped entry. No basename found (probably an URL?)"
                             )
 
             for contributions in results["contributions"]:
@@ -196,7 +196,7 @@ class IndicoV1Pipeline(base.BasePipeline):
         unique = True
         unique, bagpath = self.check_duplicate(files, unique, bagpath, id)
 
-        while unique == False:
+        while unique is False:
             unique, bagpath = self.check_duplicate(files, unique, bagpath, id)
 
         file_object["bagpath"] = bagpath
@@ -205,23 +205,26 @@ class IndicoV1Pipeline(base.BasePipeline):
 
     def check_duplicate(self, files, unique, bagpath, id):
         """
-        For each new file_object checks in the files list if there is another entry with the same filename.
-        If there is, then appends the _duplicate suffix
+        For each new file_object checks in the files list if there is another entry with
+        the same filename.
+        If there is, then appends the file id (from Indico metadata).
         """
-        # Set unique to True so if a same bagpath is not found, it will return True and exit from the loop
+
+        # Set unique to True so if a same bagpath is not found, it will return True and
+        # exit from the loop
         unique = True
         for file in files:
             # For each bagpath check in the files object if there is another identical
             if file["bagpath"] == bagpath:
-                # If there is split the filename and the file extention ans save them in file_name and file_extention accordingly
+                # Split the filename and the file extention ans save them in
+                #  file_name and file_extention accordingly
+
                 file_name, file_extension = os.path.splitext(bagpath)
-
-                # Check if the file_name ends with _duplicateX, (X is a number).
-                # If it does then that means that this is the third time this file exists at the same bagpath, so increase the suffix number by one
-
+                # Append file ID in the file_name
                 bagpath = file_name + "-" + str(id) + file_extension
 
-                # If the filename was changed check again if there is another filename with the same name
+                # If the filename was changed check again if there is another filename
+                #  with the same name
                 unique = False
         return unique, bagpath
 
