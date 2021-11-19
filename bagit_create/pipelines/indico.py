@@ -97,7 +97,7 @@ class IndicoV1Pipeline(base.BasePipeline):
 
     def parse_metadata(self, metadata_filename):
         """
-        Gets the received JSON file and creates the files object.
+        Reads the metadata from a given path.
         """
         log.info("Parsing metadata..")
         files = []
@@ -110,10 +110,10 @@ class IndicoV1Pipeline(base.BasePipeline):
             for folders in results["folders"]:
                 # Check for attachments
                 for att in folders["attachments"]:
-                    # Gets the file_object and the file_id (in case it is a duplicate)
+                    # Gets the file_object and the file_id.
                     file_object, file_id = self.get_data_from_json(att)
                     if file_object:
-                        file_object = self.check_name_conflicts(
+                        file_object = self.resolve_name_conflicts(
                             file_object, files, file_id
                         )
                         if file_object["origin"]["filename"]:
@@ -128,7 +128,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                     for att in folders["attachments"]:
                         file_object, file_id = self.get_data_from_json(att)
                         if file_object:
-                            file_object = self.check_name_conflicts(
+                            file_object = self.resolve_name_conflicts(
                                 file_object, files, file_id
                             )
                             if file_object["origin"]["filename"]:
@@ -160,7 +160,7 @@ class IndicoV1Pipeline(base.BasePipeline):
         file_object["size"] = 0
 
         if "link_url" in att:
-            return None
+            return None, None
         if "size" in att:
             file_object["origin"]["size"] = att["size"]
         if "download_url" in att:
@@ -181,52 +181,46 @@ class IndicoV1Pipeline(base.BasePipeline):
 
         file_object["metadata"] = False
         file_object["downloaded"] = False
-
         return file_object, id
 
-    def check_name_conflicts(self, file_object, files, id):
+    def resolve_name_conflicts(self, file_object, files, id):
         """
         Finds if there are two files with the same name at the same folder.
-        If this happens, saves them at different bagpaths with the same filename.
+        If this happens, it prefixes the file name with the file_id.
 
         ex. filename1.jpg data/content/filename1.jpg
-            filename1.jpg data/content/filename1_duplicate1.jpg
+            filename1.jpg data/content/{file_id}-filename1.jpg
         """
         bagpath = file_object["bagpath"]
-        unique = True
-        unique, bagpath = self.check_duplicate(files, unique, bagpath, id)
-
-        while unique is False:
-            unique, bagpath = self.check_duplicate(files, unique, bagpath, id)
+        bagpath = self.resolve_duplicate(files, bagpath, id)
 
         file_object["bagpath"] = bagpath
 
         return file_object
 
-    def check_duplicate(self, files, unique, bagpath, id):
+    def resolve_duplicate(self, files, bagpath, id):
         """
-        For each new file_object checks in the files list if there is another entry with
-        the same filename.
-        If there is, then appends the file id (from Indico metadata).
+        For each new file_object checks in the files list if there is another entry with the same filename.
+        If there is, then appends the {file_id}- prefix
         """
-
-        # Set unique to True so if a same bagpath is not found, it will return True and
-        # exit from the loop
-        unique = True
         for file in files:
             # For each bagpath check in the files object if there is another identical
             if file["bagpath"] == bagpath:
-                # Split the filename and the file extention ans save them in
-                #  file_name and file_extention accordingly
-
+                # If there is split the filename and the file extention ans save them in file_name and file_extention accordingly
                 file_name, file_extension = os.path.splitext(bagpath)
-                # Append file ID in the file_name
-                bagpath = file_name + "-" + str(id) + file_extension
+                # Get the filename of the given path and add the {id}- preffix.
+                try:
+                    file_base_path, file_name = (
+                        os.path.split(file_name)[0],
+                        os.path.split(file_name)[1],
+                    )
+                except:
+                    file_base_path = None
+                bagpath = os.path.join(
+                    file_base_path, str(id) + "-" + file_name + file_extension
+                )
 
-                # If the filename was changed check again if there is another filename
-                #  with the same name
-                unique = False
-        return unique, bagpath
+        return bagpath
 
 
 class RecidException(Exception):
