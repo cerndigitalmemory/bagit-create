@@ -154,12 +154,12 @@ class InvenioV1Pipeline(base.BasePipeline):
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
         return files
 
-    def download_files(self, files, files_base_path):
+    def download_files(self, files, base_path):
         """
         Given a Files object, download files in the specified path
         """
 
-        log.info(f"Downloading {len(files)} files to {files_base_path}..")
+        log.info(f"Downloading {len(files)} files to {base_path}..")
         for idx, sourcefile in enumerate(files):
             # We're looking for files not flagged as metadata and not downloaded yet
             if sourcefile["metadata"] == False and sourcefile["downloaded"] == False:
@@ -170,7 +170,7 @@ class InvenioV1Pipeline(base.BasePipeline):
                     download_url = sourcefile["origin"]["url"]
 
                 # prepare the destination path
-                destination = f'{files_base_path}/{sourcefile["origin"]["filename"]}'
+                destination = f'{base_path}/{sourcefile["bagpath"]}'
 
                 log.debug(
                     f'Downloading {sourcefile["origin"]["filename"]} from {download_url}..'

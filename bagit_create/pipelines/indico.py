@@ -28,7 +28,7 @@ class IndicoV1Pipeline(base.BasePipeline):
         else:
             self.config_file = configparser.ConfigParser()
             self.config_file.read(os.path.join(os.path.dirname(__file__), "indico.ini"))
-            self.config = self.config_file["indico"]
+            self.config = self.config_file[source]
             api_key = self.config["api_key"]
 
         ## Prepare call Indico API
@@ -64,26 +64,27 @@ class IndicoV1Pipeline(base.BasePipeline):
             )
         else:
             raise RecidException(
-                f"Wrong recid. The {record_id} does not exist or it is not" " available."
+                f"Wrong recid. The {record_id} does not exist or it is not available."
             )
 
     # Download Remote Folders in the cwd
-    def download_files(self, files, files_base_path):
-        log.info(f"Downloading {len(files)} files to {files_base_path}..")
+    def download_files(self, files, base_path):
+        log.info(f"Downloading {len(files)} files to {base_path}..")
 
         for idx, sourcefile in enumerate(files):
-            if sourcefile["metadata"] == False:
-                destination = f'{files_base_path}/{sourcefile["origin"]["filename"]}'
+            if sourcefile["metadata"] is False:
+                destination = f'{base_path}/{sourcefile["bagpath"]}'
 
                 log.debug(
-                    f'Downloading {sourcefile["origin"]["filename"]} from {sourcefile["origin"]["url"]}..'
+                    f'Downloading {sourcefile["origin"]["filename"]} from \
+                    {sourcefile["origin"]["url"]}..'
                 )
 
                 files[idx]["downloaded"] = self.downloadRemoteFile(
                     sourcefile["origin"]["url"], destination
                 )
             else:
-                log.debug(f"Skipped downloading..")
+                log.debug("Skipped downloading..")
         return files
 
     def create_manifests(self, files, base_path):
@@ -95,8 +96,9 @@ class IndicoV1Pipeline(base.BasePipeline):
         return files
 
     def parse_metadata(self, metadata_filename):
-
-        # Gets metadata and transforms to JSON
+        """
+        Reads the metadata from a given path.
+        """
         log.info("Parsing metadata..")
         files = []
 
@@ -108,24 +110,29 @@ class IndicoV1Pipeline(base.BasePipeline):
             for folders in results["folders"]:
                 # Check for attachments
                 for att in folders["attachments"]:
-                    obj = self.get_data_from_json(att)
-
-                    if obj is not None:
-                        if obj["origin"]["filename"]:
-                            files.append(obj)
+                    # Gets the file_object and the file_id.
+                    file_object, file_id = self.get_data_from_json(att)
+                    if file_object:
+                        file_object = self.resolve_name_conflicts(
+                            file_object, files, file_id
+                        )
+                        if file_object["origin"]["filename"]:
+                            files.append(file_object)
                         else:
                             log.warning(
-                                f"Skipped entry. No basename found (probably an URL?)"
+                                "Skipped entry. No basename found (probably an URL?)"
                             )
 
             for contributions in results["contributions"]:
                 for folders in contributions["folders"]:
                     for att in folders["attachments"]:
-                        obj = self.get_data_from_json(att)
-
-                        if obj is not None:
-                            if obj["origin"]["filename"]:
-                                files.append(obj)
+                        file_object, file_id = self.get_data_from_json(att)
+                        if file_object:
+                            file_object = self.resolve_name_conflicts(
+                                file_object, files, file_id
+                            )
+                            if file_object["origin"]["filename"]:
+                                files.append(file_object)
                             else:
                                 log.warning(
                                     f"Skipped entry. No basename found (probably an"
@@ -148,29 +155,72 @@ class IndicoV1Pipeline(base.BasePipeline):
         return files, meta_file_entry
 
     def get_data_from_json(self, att):
-        obj = {"origin": {}}
+        file_object = {"origin": {}}
 
-        obj["size"] = 0
+        file_object["size"] = 0
 
         if "link_url" in att:
-            return None
+            return None, None
         if "size" in att:
-            obj["origin"]["size"] = att["size"]
+            file_object["origin"]["size"] = att["size"]
         if "download_url" in att:
-            obj["origin"]["url"] = att["download_url"]
-            obj["origin"]["filename"] = ntpath.basename(obj["origin"]["url"])
-            self.filename1 = ntpath.basename(obj["origin"]["url"])
-            obj["origin"]["path"] = ""
-            obj[
+            file_object["origin"]["url"] = att["download_url"]
+            file_object["origin"]["filename"] = ntpath.basename(
+                file_object["origin"]["url"]
+            )
+            self.filename1 = ntpath.basename(file_object["origin"]["url"])
+            file_object["origin"]["path"] = ""
+            file_object[
                 "bagpath"
-            ] = f"data/content/{obj['origin']['path']}{obj['origin']['filename']}"
+            ] = f"data/content/{file_object['origin']['path']}{file_object['origin']['filename']}"
         if "title" in att:
-            obj["origin"]["title"] = att["title"]
+            file_object["origin"]["title"] = att["title"]
 
-        obj["metadata"] = False
-        obj["downloaded"] = False
+        if "id" in att:
+            id = att["id"]
 
-        return obj
+        file_object["metadata"] = False
+        file_object["downloaded"] = False
+        return file_object, id
+
+    def resolve_name_conflicts(self, file_object, files, id):
+        """
+        Finds if there are two files with the same name at the same folder.
+        If this happens, it prefixes the file name with the file_id.
+
+        ex. filename1.jpg data/content/filename1.jpg
+            filename1.jpg data/content/{file_id}-filename1.jpg
+        """
+        bagpath = file_object["bagpath"]
+        bagpath = self.resolve_duplicate(files, bagpath, id)
+
+        file_object["bagpath"] = bagpath
+
+        return file_object
+
+    def resolve_duplicate(self, files, bagpath, id):
+        """
+        For each new file_object checks in the files list if there is another entry with the same filename.
+        If there is, then appends the {file_id}- prefix
+        """
+        for file in files:
+            # For each bagpath check in the files object if there is another identical
+            if file["bagpath"] == bagpath:
+                # If there is split the filename and the file extention ans save them in file_name and file_extention accordingly
+                file_name, file_extension = os.path.splitext(bagpath)
+                # Get the filename of the given path and add the {id}- preffix.
+                try:
+                    file_base_path, file_name = (
+                        os.path.split(file_name)[0],
+                        os.path.split(file_name)[1],
+                    )
+                except:
+                    file_base_path = None
+                bagpath = os.path.join(
+                    file_base_path, str(id) + "-" + file_name + file_extension
+                )
+
+        return bagpath
 
 
 class RecidException(Exception):

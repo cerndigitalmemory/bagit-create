@@ -183,7 +183,7 @@ def process(
 
             else:
                 # Download files
-                files = pipeline.download_files(files, f"{base_path}/data/content")
+                files = pipeline.download_files(files, base_path)
 
         # To allow consistency and hashing of the attached log,
         # no events after this point will be logged to the file
