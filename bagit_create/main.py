@@ -242,7 +242,7 @@ def process(
         if log.hasHandlers():
             log.handlers.clear()
 
-        return {"status": 0, "errormsg": None, "filename": name}
+        return {"status": 0, "errormsg": None, "foldername": name}
 
     # Folder exists, gracefully stop
     except FileExistsError as e:
