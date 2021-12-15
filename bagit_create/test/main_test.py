@@ -5,7 +5,7 @@ import ntpath, os
 from os import walk
 import shutil
 
-pipeline = invenio_v1.InvenioV1Pipeline("https://some/invenio/v1/instance")
+pipeline = invenio_v1.InvenioV1Pipeline("https://some/invenio/v1/instance", recid=1)
 
 a = [{"filename": "42.txt", "path": "8"}, {"filename": "47.txt", "path": "/opt/47"}]
 b = [
