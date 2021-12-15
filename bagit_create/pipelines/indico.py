@@ -55,7 +55,7 @@ class IndicoV1Pipeline(base.BasePipeline):
             self.metadata_size = 0
 
         if r.json()["count"] == 1:
-            metadata_filename = f"metadata-{source}-{record_id}.xml"
+            metadata_filename = f"metadata-{source}-{record_id}.json"
             return (
                 r.content,
                 r.url,
