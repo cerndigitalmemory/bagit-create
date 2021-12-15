@@ -179,6 +179,10 @@ class IndicoV1Pipeline(base.BasePipeline):
         if "id" in att:
             id = att["id"]
 
+        if "checksum" in att:
+            # Append md5: and set the checksum
+            file_object["checksum"] = f'md5:{att["checksum"]}'
+
         file_object["metadata"] = False
         file_object["downloaded"] = False
         return file_object, id
