@@ -3,7 +3,7 @@ import logging
 import os, requests, json
 import configparser
 
-log = logging.getLogger("basic-logger")
+log = logging.getLogger("bic-basic-logger")
 
 
 def get_dict_value(dct, keys):

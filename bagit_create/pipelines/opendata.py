@@ -8,7 +8,7 @@ import json
 
 from cernopendata_client import searcher, downloader
 
-log = logging.getLogger("basic-logger")
+log = logging.getLogger("bic-basic-logger")
 
 
 class OpenDataPipeline(base.BasePipeline):

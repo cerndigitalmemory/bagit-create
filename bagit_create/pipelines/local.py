@@ -14,7 +14,7 @@ import checksumdir
 import hashlib
 import shutil
 
-log = logging.getLogger("basic-logger")
+log = logging.getLogger("bic-basic-logger")
 
 
 class LocalV1Pipeline(base.BasePipeline):

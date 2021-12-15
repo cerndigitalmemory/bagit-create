@@ -4,7 +4,7 @@ import subprocess
 import logging
 import ntpath
 
-log = logging.getLogger("basic-logger")
+log = logging.getLogger("bic-basic-logger")
 
 
 def run(resid, ssh_host=None):

@@ -17,7 +17,7 @@ from jsonschema import validate
 
 my_fs = open_fs("/")
 
-log = logging.getLogger("basic-logger")
+log = logging.getLogger("bic-basic-logger")
 
 
 class BasePipeline:
@@ -448,7 +448,7 @@ class BasePipeline:
                 "source_base_path, source_path and author are parameters used only when source is local."
             )
         if source_base_path:
-            if not source_base_path in os.path.abspath(source_path):
+            if source_base_path not in os.path.abspath(source_path):
                 raise WrongInputException("source_base_path should include source_path")
 
 

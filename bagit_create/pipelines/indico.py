@@ -6,7 +6,7 @@ import ntpath
 import os
 import configparser
 
-log = logging.getLogger("basic-logger")
+log = logging.getLogger("bic-basic-logger")
 
 
 class IndicoV1Pipeline(base.BasePipeline):
