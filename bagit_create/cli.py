@@ -111,6 +111,18 @@ import click
     default=None,
     is_flag=False,
 )
+@click.option(
+    "--cert",
+    "-c",
+    help="""
+    [Invenio v1.x ONLY] Full path to the certificate to use to authenticate.
+    Don't specify extension, only the file name. A '.key' and a '.pem' will be loaded.
+    Read documentation (CERN SSO authentication) to learn more on how to generate it.
+    """,
+    type=Text,
+    default=None,
+    is_flag=False,
+)
 def cli(
     recid,
     source,
@@ -124,6 +136,7 @@ def cli(
     very_verbose,
     bibdoc,
     bd_ssh_host,
+    cert
 ):
 
     # Select the desired log level (default is 2, warning)
@@ -148,6 +161,7 @@ def cli(
         alternate_uri,
         bibdoc,
         bd_ssh_host,
+        cert
     )
     print(f"Job result: {result}")
 
