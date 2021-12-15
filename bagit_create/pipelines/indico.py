@@ -179,6 +179,10 @@ class IndicoV1Pipeline(base.BasePipeline):
         if "id" in att:
             id = att["id"]
 
+        if "checksum" in att:
+            # Indico uses md5 for checksuming but returns only the checksum without the md5: tag that is needed too be appended.
+            file_object["checksum"] = "md5:" + att["checksum"]
+
         file_object["metadata"] = False
         file_object["downloaded"] = False
         return file_object, id
