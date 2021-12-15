@@ -50,14 +50,14 @@ def test_cod_pipeline():
     )
     assert valid == True
 
-
+"""
 def test_inveniordm_pipeline():
     test_variables = {"source": "inveniordm", "recid": "v3vqp-bfg07", "dry_run": True}
     valid = pipeline_results(
         test_variables["source"], test_variables["recid"], test_variables["dry_run"]
     )
     assert valid == True
-
+"""
 
 def pipeline_results(source, recid, dry_run):
     # Prepare a temporary folder to save the results
