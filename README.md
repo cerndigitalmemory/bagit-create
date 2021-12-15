@@ -88,7 +88,7 @@ Once you have your `myCert.key` and `myCert.pem` files, you can run BagIt-Create
 bic --source cds --recid 2748063 --cert /home/avivace/Downloads/myCert
 ```
 
-Will make the tool look for "/home/avivace/Downloads/**myCert.key**" and "/home/avivace/Downloads/**myCert.pem**" and the pipeline will run authenticating every request with the obtained Cookies, producing an SIP of the desired restricted record.
+Will make the tool look for "/home/avivace/Downloads/**myCert.key**" and "/home/avivace/Downloads/**myCert.pem**" and the pipeline will run authenticating every HTTP request with the obtained Cookies, producing a SIP of the desired restricted record.
 
 For more information, check the [cern-sso-python](https://gitlab.cern.ch/digitalmemory/cern-sso-python) docs.
 
