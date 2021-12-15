@@ -63,6 +63,36 @@ To use any Indico pipeline you need an API Token. From your browser, login to th
 export INDICO_KEY=<INDICO_API_TOKEN>
 ```
 
+This will also allow you to run the tool for **restricted** events you have access to.
+
+### CERN SSO Authentication for Invenio v1.x
+
+BIC can run in a "authenticated" mode for Invenio v1.x pipelines (e.g. CDS) by getting CERN SSO HTTP cookies through the [cern-sso-python](https://gitlab.cern.ch/digitalmemory/cern-sso-python) tool.
+
+For this, you'll need to provide a Grid User certificate obtained from the [CERN Certification Authority](https://ca.cern.ch/ca/) of an account that has access to the desired restricted record. 
+
+Once you downloaded your `.p12` certificate, you'll need to process the certificate files to remove passwords and separate the key and certificate:
+
+```bash
+openssl pkcs12 -clcerts -nokeys -in myCert.p12 -out myCert.pem
+# A passphrase is required here (after the Import one)
+openssl pkcs12 -nocerts -in myCert.p12 -out myCert.tmp.key
+openssl rsa -in ~/private/myCert.tmp.key -out myCert.key
+```
+
+>  WARNING: openssl rsa.. command removes the passphrase from the private key. Keep it in a secure location.
+
+Once you have your `myCert.key` and `myCert.pem` files, you can run BagIt-Create with the `--cert` option, providing the path to those files (without extension, as it is assumed that your certificate and key files have the same base name and are located in the same folder, and that the key has the file ending `.key` and the certificate `.pem`). E.g.:
+
+```bash
+bic --source cds --recid 2748063 --cert /home/avivace/Downloads/myCert
+```
+
+Will make the tool look for "/home/avivace/Downloads/**myCert.key**" and "/home/avivace/Downloads/**myCert.pem**" and the pipeline will run authenticating every request with the obtained Cookies, producing an SIP of the desired restricted record.
+
+For more information, check the [cern-sso-python](https://gitlab.cern.ch/digitalmemory/cern-sso-python) docs.
+
+
 ### CLI
 
 Some examples:
