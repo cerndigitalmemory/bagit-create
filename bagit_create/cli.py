@@ -123,6 +123,28 @@ import click
     default=None,
     is_flag=False,
 )
+@click.option(
+    "--invcookie",
+    "-ic",
+    help="""
+    [Invenio v1.x ONLY] Use custom INVENIOSESSION cookie value to authenticate.
+    Useful for local accounts.
+    """,
+    type=Text,
+    default=None,
+    is_flag=False,
+)
+@click.option(
+    "--skipssl",
+    "-ss",
+    help="""
+    [Invenio v1.x ONLY] Skip SSL authentication in HTTP requests.
+    Useful for misconfigured or deprecated instances.
+    """,
+    type=Text,
+    default=False,
+    is_flag=True,
+)
 def cli(
     recid,
     source,
@@ -136,7 +158,9 @@ def cli(
     very_verbose,
     bibdoc,
     bd_ssh_host,
-    cert
+    cert,
+    invcookie,
+    skipssl
 ):
 
     # Select the desired log level (default is 2, warning)
@@ -161,7 +185,9 @@ def cli(
         alternate_uri,
         bibdoc,
         bd_ssh_host,
-        cert
+        cert,
+        invcookie,
+        skipssl
     )
     print(f"Job result: {result}")
 

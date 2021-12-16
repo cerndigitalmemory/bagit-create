@@ -96,9 +96,9 @@ def getRawFilesLocs(metadata_filename):
     return files
 
 
-def downloadRemoteFile(src, dest):
+def downloadRemoteFile(src, dest, verify=True):
     try:
-        r = requests.get(src, stream=True)
+        r = requests.get(src, stream=True, verify=verify)
         with open(dest, "wb") as f:
             for chunk in r.raw.stream(1024, decode_content=False):
                 if chunk:

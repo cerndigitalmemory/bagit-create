@@ -12,11 +12,13 @@ log = logging.getLogger("bic-basic-logger")
 
 
 class InvenioV1Pipeline(base.BasePipeline):
-    def __init__(self, base_url, recid, cert_path=None):
+    def __init__(self, base_url, recid, cert_path=None, invcookie=None, 
+                 skipssl=False):
 
         log.info(f"Invenio v1 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
-        
+        self.verifyssl = not skipssl
+
         if cert_path:
             log.info("Running in authenticated mode, trying SSO with the given certificate..")
 
@@ -32,6 +34,11 @@ class InvenioV1Pipeline(base.BasePipeline):
             except Exception:
                 log.error("SSO failed. Check if the .key and .pem files are in the provided path with the provided (same) file name and they are generated from a valid CERN User Grid certificate (.p12).")
                 raise Exception("CERN SSO failed")
+        elif invcookie:
+            log.info("Setting Invenio cookie")
+            self.cookies = {
+                'INVENIOSESSION': invcookie
+            }
         else:
             self.cookies = None
 
@@ -69,7 +76,8 @@ class InvenioV1Pipeline(base.BasePipeline):
 
         payload = {"of": of}
 
-        r = requests.get(record_url, params=payload, cookies=self.cookies)
+        r = requests.get(record_url, params=payload, cookies=self.cookies, 
+                         verify=self.verifyssl)
 
         log.debug(f"Getting {r.url}")
 
@@ -199,7 +207,7 @@ class InvenioV1Pipeline(base.BasePipeline):
                 )
 
                 files[idx]["downloaded"] = cds.downloadRemoteFile(
-                    download_url, destination
+                    download_url, destination, self.verifyssl
                 )
 
             else:
