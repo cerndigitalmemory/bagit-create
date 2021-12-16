@@ -92,6 +92,15 @@ Will make the tool look for "/home/avivace/Downloads/**myCert.key**" and "/home/
 
 For more information, check the [cern-sso-python](https://gitlab.cern.ch/digitalmemory/cern-sso-python) docs.
 
+### Local authentication for Invenio v1.x
+
+To authenticate with a local account (i.e. without CERN SSO), login on your Invenio v1.x instance with a browser and what your `INVENIOSESSION` cookie is set to.
+
+On Firefox, open the Developers tools, go in the "Storage" tab and select "Cookies". Copy that value and pass it to BagIt Create with the `--invcookie` option:
+
+```bash
+bic --source cds --recid 2748063 --invcookie COOKIECONTENTHERE
+```
 
 ### CLI
 
