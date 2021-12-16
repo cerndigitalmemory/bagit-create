@@ -28,7 +28,9 @@ def process(
     bibdoc=False,
     bd_ssh_host=None,
     timestamp=0,
-    cert=None
+    cert=None,
+    invcookie=None,
+    skipssl=False
 ):
     # Save timestamp
     timestamp = int(time.time())
@@ -105,11 +107,12 @@ def process(
         # Initialize the pipeline
         if source == "cds":
             pipeline = invenio_v1.InvenioV1Pipeline(
-                "https://cds.cern.ch/record/", cert_path=cert, recid=recid)
+                "https://cds.cern.ch/record/", cert_path=cert, recid=recid, 
+                invcookie=invcookie, skipssl=skipssl)
         elif source == "ilcdoc":
             pipeline = invenio_v1.InvenioV1Pipeline(
                 "http://ilcdoc.linearcollider.org/record/", cert_path=cert, 
-                recid=recid
+                recid=recid, invcookie=invcookie, skipssl=skipssl
             )
         elif source == "cod":
             pipeline = opendata.OpenDataPipeline("http://opendata.cern.ch")
