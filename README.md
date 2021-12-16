@@ -39,6 +39,75 @@ python -m pytest
 
 ## Usage
 
+### Options
+
+```sh
+  --version                       Show the version and exit.
+  --recid TEXT                    Record ID of the resource the upstream
+                                  digital repository. Required by every
+                                  pipeline but local.                      
+                                                                                   
+  -s, --source [cds|ilcdoc|cod|zenodo|inveniordm|indico|local|ilcagenda]  
+                                  Select source pipeline from the supported 
+                                  ones.  [required]                
+
+  -d, --dry-run                   Skip downloads and create a `light` bag,
+                                  without any payload.                        
+                                                                                   
+  -a, --alternate-uri             Use alternative uri instead of https for
+                                  fetch.txt (e.g. root endpoints  for CERN   
+                                  Open Data instead of http).               
+                                                                                   
+  -v, --verbose                   Enable basic logging (verbose, 'info'
+                                  level).
+
+  -vv, --very-verbose             Enable verbose logging (very verbose,
+                                  'debug' level).
+
+  -b, --bibdoc                    [ONLY for Supported Invenio v1 pipelines]
+                                  Get metadata for a CDS record from the
+                                  bibdocfile utility
+                                  (`/opt/cdsweb/bin/bibdocfile` must be
+                                  available in the system).
+
+  --bd-ssh-host TEXT              [ONLY for Supported Invenio v1 pipelines]
+                                  Specify SSH host to run bibdocfile. Access
+                                  must be promptless. (See documentation for
+                                  usage and configuration). By default uses
+                                  the local machine.
+
+  -t, --target TEXT               Output folder for the generated SIP. By
+                                  default uses the same folder  the tool is
+                                  being executed from.
+
+  -sp, --source-path TEXT         [Local source ONLY, required] Set path of
+                                  the local folder to use as a source.
+
+  -u, --author TEXT               [Local source ONLY] Specify the Author of
+                                  data.
+
+  -sbp, --source-base-path TEXT   [Local source ONLY] Specify a part of the
+                                  path as  relevant for extracting an
+                                  hierachy.
+
+  -ic, --invcookie TEXT           [Invenio v1.x ONLY] Use custom
+                                  INVENIOSESSION cookie value to authenticate.
+                                  Useful for local accounts.
+
+  -ss, --skipssl                  [Invenio v1.x ONLY] Skip SSL authentication
+                                  in HTTP requests. Useful for misconfigured
+                                  or deprecated instances.
+
+  -c, --cert TEXT                 [Invenio v1.x ONLY] Full path to the
+                                  certificate to use to authenticate. Don't
+                                  specify extension, only the file name. A
+                                  '.key' and a '.pem' will be loaded. Read
+                                  documentation (CERN SSO authentication) to
+                                  learn more on how to generate it.
+
+  --help                          Show this message and exit.
+```
+
 ### Supported sources
 
 Four pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data, Indico) are currently implemented, supporting the following digital repositories:
@@ -164,60 +233,6 @@ bic --recid 10102 --source cod --verbose
 bic --recid 10103 --source cod --verbose
 bic --recid 10104 --source cod --verbose
 bic --recid 10105 --source cod --verbose
-```
-
-CLI options:
-
-```
-  --version                       Show the version and exit.
-  --recid TEXT                    Record ID of the resource the upstream
-                                  digital repository. Required by every
-                                  pipeline but local.
-
-  -s, --source [cds|ilcdoc|cod|zenodo|inveniordm|indico|local|ilcagenda]
-                                  Select source pipeline from the supported
-                                  ones.  [required]
-
-  -d, --dry-run                   Skip downloads and create a `light` bag,
-                                  without any payload.
-
-  -a, --alternate-uri             Use alternative uri instead of https for
-                                  fetch.txt (e.g. root endpoints  for CERN
-                                  Open Data instead of http).
-
-  -v, --verbose                   Enable basic logging (verbose, 'info'
-                                  level).
-
-  -vv, --very-verbose             Enable verbose logging (very verbose,
-                                  'debug' level).
-
-  -b, --bibdoc                    [ONLY for Supported Invenio v1 pipelines]
-                                  Get metadata for a CDS record from the
-                                  bibdocfile utility
-                                  (`/opt/cdsweb/bin/bibdocfile` must be
-                                  available in the system).
-
-  --bd-ssh-host TEXT              [ONLY for Supported Invenio v1 pipelines]
-                                  Specify SSH host to run bibdocfile. Access
-                                  must be promptless. (See documentation for
-                                  usage and configuration). By default uses
-                                  the local machine.
-
-  -t, --target TEXT               Output folder for the generated SIP. By
-                                  default uses the same folder  the tool is
-                                  being executed from.
-
-  -sp, --source_path TEXT         [Local source ONLY, required] Set path of
-                                  the local folder to use as a source.
-
-  -u, --author TEXT               [Local source ONLY] Specify the Author of
-                                  data.
-
-  -tb, --source_base_path TEXT    [Local source ONLY] Specify a part of the
-                                  path as  relevant for extracting an
-                                  hierachy.
-
-  --help                          Show this message and exit.
 ```
 
 ### Module
