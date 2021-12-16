@@ -96,7 +96,7 @@ For more information, check the [cern-sso-python](https://gitlab.cern.ch/digital
 
 To authenticate with a local account (i.e. without CERN SSO), login on your Invenio v1.x instance with a browser and what your `INVENIOSESSION` cookie is set to.
 
-On Firefox, open the Developers tools, go in the "Storage" tab and select "Cookies". Copy that value and pass it to BagIt Create with the `--invcookie` option:
+On Firefox, open the Developers tools, go in the "Storage" tab and select "Cookies", you should see an `INVENIOSESSION` cookie. Copy its value and pass it to BagIt Create with the `--invcookie` option:
 
 ```bash
 bic --source cds --recid 2748063 --invcookie COOKIECONTENTHERE
