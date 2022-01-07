@@ -53,7 +53,7 @@ setup(
         "bagit==1.8.1",
         "checksumdir==1.2.0",
         "jsonschema==3.0.2",
-        "python-cern-sso @ git+https://github.com/cerndigitalmemory/cern-sso-python",
+        "python-cern-sso==1.3.3",
     ],
     entry_points={
         "console_scripts": [
