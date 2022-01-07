@@ -2,7 +2,9 @@
 
 [![PyPI version](https://badge.fury.io/py/bagit-create.svg)](https://pypi.org/project/bagit-create/)
 
-Python module and CLI tool to prepare SIPs (according to the [CERN SIP specification](https://gitlab.cern.ch/digitalmemory/sip-spec)), harvesting metadata and files from various souces, such as digital repositories powered by Invenio software, Invenio, CERN Open Data,..
+"BagIt Create" is a tool to export digital repository records in packages with a consistent format, according to the [CERN Submission Information Package specification](https://gitlab.cern.ch/digitalmemory/sip-spec).
+
+Digital Repositories powered by Invenio v1, Invenio v3, Invenio RDM, CERN Open Data and Indico are supported, as well as locally found folders.
 
 ## Install
 
@@ -14,9 +16,14 @@ pip install bagit-create
 
 # Check installed version
 bic --version
+
+# Create bag for CDS record 2728246
+bic --recid 2728246 --source cds
 ```
 
-For development, you can clone this repository and then install it with the `-e` flag:
+### Development
+
+Clone this repository and then install the package with the `-e` flag:
 
 ```bash
 # Clone the repository
@@ -38,6 +45,69 @@ python -m pytest
 ```
 
 ## Usage
+
+### CLI
+
+Some examples:
+
+CDS:
+
+```bash
+# (Expect error) Removed resource
+bic --recid 1 --source cds
+
+# (Expect error) Public resource but metadata requires authorisation
+bic --recid 1000 --source cds
+
+# Resource with a lot of large videos, light bag
+bic --recid 1000571 --source cds --dry-run
+
+# Resource with just a PDF
+bic --recid 2728246 --source cds
+```
+
+ilcdoc:
+
+```bash
+# ilcdoc #
+bic --source ilcdoc --recid 62959 --verbose
+bic --source ilcdoc --recid 34794 --verbose
+```
+
+Zenodo
+
+```bash
+bic --recid 3911261 --source zenodo --verbose
+bic --recid 3974864 --source zenodo --verbose
+```
+
+Indico
+
+```bash
+bic --recid 1024767 --source indico 
+```
+
+CERN Open Data
+
+```bash
+bic --recid 1 --source cod --dry-run --verbose
+bic --recid 8884 --source cod --dry-run --verbose --alternate-uri
+bic --recid 8884 --source cod --dry-run --verbose
+bic --recid 5200 --source cod --dry-run --verbose
+bic --recid 8888 --source cod --dry-run --verbose
+
+bic --recid 10101 --source cod --dry-run --verbose
+bic --recid 10102 --source cod --dry-run --verbose
+bic --recid 10103 --source cod --dry-run --verbose
+bic --recid 10104 --source cod --dry-run --verbose
+bic --recid 10105 --source cod --dry-run --verbose
+
+bic --recid 10101 --source cod --verbose
+bic --recid 10102 --source cod --verbose
+bic --recid 10103 --source cod --verbose
+bic --recid 10104 --source cod --verbose
+bic --recid 10105 --source cod --verbose
+```
 
 ### Options
 
@@ -108,9 +178,9 @@ python -m pytest
   --help                          Show this message and exit.
 ```
 
-### Supported sources
+## Features
 
-Four pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data, Indico) are currently implemented, supporting the following digital repositories:
+### Supported sources
 
 | Name                  | Source ID    | URL                                | Pipeline                    |
 |---------------------- |--------------|------------------------------------|-----------------------------|
@@ -118,11 +188,14 @@ Four pipelines (Invenio 1.x, Invenio 3.x, CERN Open Data, Indico) are currently 
 | ILC Document Server   | ilcdoc       | http://ilcdoc.linearcollider.org   | Invenio v1.x                |
 | CERN Open Data        | cod          | https://opendata.cern.ch/          | CERN Open Data              |
 | Zenodo                | zenodo       | https://zenodo.org/                | Invenio v3.x                |
-| CERN Indico           | indico       | https://indico.cern.ch/            | Indico v3.0.x\*             |
-| ILC Agenda            | ilcagenda    | https://agenda.linearcollider.org/ | Indico v3.0.x\*             |
+| CERN Indico           | indico       | https://indico.cern.ch/            | Indico v3.0.x             |
+| ILC Agenda            | ilcagenda    | https://agenda.linearcollider.org/ | Indico v3.0.x             |
 
+Additional configuration may be required (e.g. for restricted events).
 
-\* requires additional configuration
+### Light bags
+
+With the `--dry-run` option, BIC can create "light" bags skipping any payload download (i.e. attached files) but generating the same manifest (exposing upstream file locations and URLs), allowing the full bag to be "populated" in the future.
 
 ### Indico
 
@@ -171,70 +244,6 @@ On Firefox, open the Developers tools, go in the "Storage" tab and select "Cooki
 bic --source cds --recid 2748063 --invcookie COOKIECONTENTHERE
 ```
 
-### CLI
-
-Some examples:
-
-CDS:
-
-```bash
-# (Expect error) Removed resource
-bic --recid 1 --source cds
-
-# (Expect error) Public resource but metadata requires authorisation
-bic --recid 1000 --source cds
-
-# Resource with a lot of large videos, light bag
-bic --recid 1000571 --source cds --dry-run
-
-# Resource with just a PDF
-bic --recid 2728246 --source cds
-```
-
-ilcdoc:
-
-```bash
-# ilcdoc #
-bic --source ilcdoc --recid 62959 --verbose
-bic --source ilcdoc --recid 34794 --verbose
-```
-
-Zenodo
-
-```bash
-bic --recid 3911261 --source zenodo --verbose
-bic --recid 3974864 --source zenodo --verbose
-```
-
-Indico
-
-```bash
-bic --recid 1024767 --source indico 
-```
-
-
-CERN Open Data
-
-```bash
-bic --recid 1 --source cod --dry-run --verbose
-bic --recid 8884 --source cod --dry-run --verbose --alternate-uri
-bic --recid 8884 --source cod --dry-run --verbose
-bic --recid 5200 --source cod --dry-run --verbose
-bic --recid 8888 --source cod --dry-run --verbose
-
-bic --recid 10101 --source cod --dry-run --verbose
-bic --recid 10102 --source cod --dry-run --verbose
-bic --recid 10103 --source cod --dry-run --verbose
-bic --recid 10104 --source cod --dry-run --verbose
-bic --recid 10105 --source cod --dry-run --verbose
-
-bic --recid 10101 --source cod --verbose
-bic --recid 10102 --source cod --verbose
-bic --recid 10103 --source cod --verbose
-bic --recid 10104 --source cod --verbose
-bic --recid 10105 --source cod --verbose
-```
-
 ### Module
 
 BIC can easily be run inside other Python scripts. Just import it and use the `process` method with the same parameters you can pass to the CLI.
@@ -278,16 +287,6 @@ Now, just run `bic` as documented here but prepend `tsocks` to the command:
 
 ```bash
 tsocks bic --recid 1024767 --source indico -vv
-```
-
-### Module
-
-The BagIt-Create tool can be used from other python scripts easily:
-
-```python
-from bagit_create.main import process
-
-process(recid=2272168, source="cds")
 ```
 
 ### bibdocfile
