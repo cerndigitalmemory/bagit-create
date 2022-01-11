@@ -38,7 +38,7 @@ setup(
         "cernopendata-client==0.2.0",
         "certifi==2020.12.5",
         "chardet==4.0.0",
-        "click==7.1.2",
+        "click<9.0,>=8.0.3",
         "flake8==3.9.0",
         "fs==2.4.12",
         "idna==2.10",
