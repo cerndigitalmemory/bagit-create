@@ -28,10 +28,17 @@ class IndicoV1Pipeline(base.BasePipeline):
         if os.environ.get("INDICO_KEY"):
             api_key = os.environ.get("INDICO_KEY")
         else:
-            self.config_file = configparser.ConfigParser()
-            self.config_file.read(os.path.join(os.path.dirname(__file__), "indico.ini"))
-            self.config = self.config_file[source]
-            api_key = self.config["api_key"]
+            try:
+                self.config_file = configparser.ConfigParser()
+                self.config_file.read(
+                    os.path.join(os.path.dirname(__file__), "indico.ini")
+                )
+                self.config = self.config_file[source]
+                api_key = self.config["api_key"]
+            except:
+                raise Exception(
+                    f"{source} token has not be found. Check the token configuration."
+                )
 
         ## Prepare call Indico API
         # Authenticate with API Key
