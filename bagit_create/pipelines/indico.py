@@ -1,10 +1,12 @@
-from . import base
-import logging
-import requests
+import configparser
 import json
+import logging
 import ntpath
 import os
-import configparser
+
+import requests
+
+from . import base
 
 log = logging.getLogger("bic-basic-logger")
 
@@ -64,7 +66,7 @@ class IndicoV1Pipeline(base.BasePipeline):
             )
         else:
             raise RecidException(
-                f"Wrong recid. The {record_id} does not exist or it is not available."
+                f"Wrong recid. The record {record_id} does not exist or it is not available."
             )
 
     # Download Remote Folders in the cwd
@@ -135,8 +137,8 @@ class IndicoV1Pipeline(base.BasePipeline):
                                 files.append(file_object)
                             else:
                                 log.warning(
-                                    f"Skipped entry. No basename found (probably an"
-                                    f" URL?)"
+                                    "Skipped entry. No basename found (probably an"
+                                    " URL?)"
                                 )
 
             # add extra metadata
@@ -218,7 +220,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                         os.path.split(file_name)[0],
                         os.path.split(file_name)[1],
                     )
-                except:
+                except Exception:
                     file_base_path = None
                 bagpath = os.path.join(
                     file_base_path, str(id) + "-" + file_name + file_extension
