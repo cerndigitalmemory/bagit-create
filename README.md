@@ -8,6 +8,13 @@ Digital Repositories powered by Invenio v1, Invenio v3, Invenio RDM, CERN Open D
 
 ## Install
 
+Pre-requisites:
+
+```bash
+# On CentOS
+yum install gcc krb5-devel python3-devel
+```
+
 If you just need to run BagIt Create from the command line:
 
 ```bash
