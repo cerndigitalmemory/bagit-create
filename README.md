@@ -27,6 +27,15 @@ bic --version
 # Create bag for CDS record 2728246
 bic --recid 2728246 --source cds
 ```
+### LXPLUS
+
+BagIt-Create can be easily installed and used on LXPLUS (e.g. if you need access to mounted EOS folders):
+
+```bash
+pip3 install bagit-create --user
+```
+
+Check if `.local/bin` (where pip puts the executables) is in the path. If not `export PATH=$PATH:~/.local/bin`.
 
 ### Development
 
