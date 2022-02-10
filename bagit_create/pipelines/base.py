@@ -61,10 +61,25 @@ class BasePipeline:
             log.error("sip.json validation failed with error", err)
 
     def downloadRemoteFile(self, src, dest):
+        status_code = self.getRemoteFile(src, dest)
+
+        # If returns server error try again after 10 seconds
+        if (status_code == 500) or (status_code == 504):
+            time.sleep(10)
+            status_code = self.getRemoteFile(src, dest)
+
+        # If it is 200 after the first or second try, continues otherwise logs an error
+        if status_code == 200:
+            return True
+        else:
+            log.error("Download failed: ", src)
+
+    def getRemoteFile(self, src, dest):
         r = requests.get(src)
-        with open(dest, "wb") as f:
-            f.write(r.content)
-        return True
+        if r.status_code == 200:
+            with open(dest, "wb") as f:
+                f.write(r.content)
+        return r.status_code
 
     def downloadEOSfile(self, src, dest):
         try:
