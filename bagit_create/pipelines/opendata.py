@@ -95,7 +95,7 @@ class OpenDataPipeline(base.BasePipeline):
                 files.append(file)
         return files, {}
 
-    def download_files(self, files, temp_files_path):
+    def download_files(self, files, temp_files_path, source=None):
         log.info(f"Downloading {len(files)} files to {temp_files_path}..")
         skipped = 0
         for file in files:

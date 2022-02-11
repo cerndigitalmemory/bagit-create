@@ -27,14 +27,6 @@ def test_cds_pipeline():
     assert valid == True
 
 
-def test_cds_pipeline():
-    test_variables = {"source": "ilcdoc", "recid": 62959, "dry_run": True}
-    valid = pipeline_results(
-        test_variables["source"], test_variables["recid"], test_variables["dry_run"]
-    )
-    assert valid == True
-
-
 def test_zenodo_pipeline():
     test_variables = {"source": "zenodo", "recid": 3911261, "dry_run": True}
     valid = pipeline_results(
@@ -50,6 +42,7 @@ def test_cod_pipeline():
     )
     assert valid == True
 
+
 """
 def test_inveniordm_pipeline():
     test_variables = {"source": "inveniordm", "recid": "v3vqp-bfg07", "dry_run": True}
@@ -58,6 +51,7 @@ def test_inveniordm_pipeline():
     )
     assert valid == True
 """
+
 
 def pipeline_results(source, recid, dry_run):
     # Prepare a temporary folder to save the results

@@ -17,13 +17,7 @@ class IndicoV1Pipeline(base.BasePipeline):
         log.info(f"Indico v1 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
 
-    # get metadata according to indico api guidelines
-    def get_metadata(self, record_id, source):
-        """
-        Get JSON metadata from an Indico record ID
-        Returns: [metadata_serialized, metadata_upstream_url, operation_status_code]
-        """
-
+    def get_api_key_indico(self, source):
         # Get Indico API Key from environment variable (or indico.ini)
         if os.environ.get("INDICO_KEY"):
             api_key = os.environ.get("INDICO_KEY")
@@ -39,6 +33,16 @@ class IndicoV1Pipeline(base.BasePipeline):
                 raise Exception(
                     f"{source} token has not been found. Check the token configuration."
                 )
+        return api_key
+
+    # get metadata according to indico api guidelines
+    def get_metadata(self, record_id, source):
+        """
+        Get JSON metadata from an Indico record ID
+        Returns: [metadata_serialized, metadata_upstream_url, operation_status_code]
+        """
+
+        api_key = self.get_api_key_indico(source)
 
         ## Prepare call Indico API
         # Authenticate with API Key
@@ -77,7 +81,7 @@ class IndicoV1Pipeline(base.BasePipeline):
             )
 
     # Download Remote Folders in the cwd
-    def download_files(self, files, base_path):
+    def download_files(self, files, base_path, source):
         log.info(f"Downloading {len(files)} files to {base_path}..")
 
         for idx, sourcefile in enumerate(files):
@@ -90,7 +94,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                 )
 
                 files[idx]["downloaded"] = self.downloadRemoteFile(
-                    sourcefile["origin"]["url"], destination
+                    sourcefile["origin"]["url"], destination, source
                 )
             else:
                 log.debug("Skipped downloading..")

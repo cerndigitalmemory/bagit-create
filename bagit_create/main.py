@@ -30,7 +30,7 @@ def process(
     timestamp=0,
     cert=None,
     invcookie=None,
-    skipssl=False
+    skipssl=False,
 ):
     # Save timestamp
     timestamp = int(time.time())
@@ -48,7 +48,7 @@ def process(
         "bibdoc": bibdoc,
         "bd_ssh_host": bd_ssh_host,
         "timestamp": timestamp,
-        "cert": cert
+        "cert": cert,
     }
 
     try:
@@ -107,12 +107,19 @@ def process(
         # Initialize the pipeline
         if source == "cds":
             pipeline = invenio_v1.InvenioV1Pipeline(
-                "https://cds.cern.ch/record/", cert_path=cert, recid=recid, 
-                invcookie=invcookie, skipssl=skipssl)
+                "https://cds.cern.ch/record/",
+                cert_path=cert,
+                recid=recid,
+                invcookie=invcookie,
+                skipssl=skipssl,
+            )
         elif source == "ilcdoc":
             pipeline = invenio_v1.InvenioV1Pipeline(
-                "http://ilcdoc.linearcollider.org/record/", cert_path=cert, 
-                recid=recid, invcookie=invcookie, skipssl=skipssl
+                "http://ilcdoc.linearcollider.org/record/",
+                cert_path=cert,
+                recid=recid,
+                invcookie=invcookie,
+                skipssl=skipssl,
             )
         elif source == "cod":
             pipeline = opendata.OpenDataPipeline("http://opendata.cern.ch")
@@ -190,7 +197,7 @@ def process(
 
             else:
                 # Download files
-                files = pipeline.download_files(files, base_path)
+                files = pipeline.download_files(files, base_path, source)
 
         # To allow consistency and hashing of the attached log,
         # no events after this point will be logged to the file
