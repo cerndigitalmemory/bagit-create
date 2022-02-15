@@ -1,7 +1,11 @@
-from . import base
-import logging
-import os, requests, json
 import configparser
+import json
+import logging
+import os
+
+import requests
+
+from . import base
 
 log = logging.getLogger("bic-basic-logger")
 
@@ -97,7 +101,7 @@ class InvenioV3Pipeline(base.BasePipeline):
             },
             "metadata": True,
             "downloaded": True,
-            "bagpath": f"data/content/metadata.json",
+            "bagpath": "data/content/metadata.json",
             "size": self.metadata_size,
         }
 
@@ -125,7 +129,7 @@ class InvenioV3Pipeline(base.BasePipeline):
     def download_files(self, files, base_path):
         log.info(f"Downloading {len(files)} files to {base_path}..")
         for sourcefile in files:
-            if sourcefile["metadata"] == False:
+            if sourcefile["metadata"] is False:
                 destination = f'{base_path}/{sourcefile["bagpath"]}'
 
                 log.debug(
