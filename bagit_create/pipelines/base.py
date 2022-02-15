@@ -1,19 +1,21 @@
-import requests
 import json
-import os
 import logging
-import time
+import os
 import re
-import fs
-from fs import open_fs
-from ..version import __version__
-import bagit
 import shutil
-from itertools import chain
-from zlib import adler32
+import time
 from datetime import date
+from itertools import chain
 from pathlib import Path
+from zlib import adler32
+
+import bagit
+import fs
+import requests
+from fs import open_fs
 from jsonschema import validate
+
+from ..version import __version__
 
 my_fs = open_fs("/")
 
@@ -226,8 +228,8 @@ class BasePipeline:
                 # If there is no local mode get the origin url
                 else:
                     param = file["origin"]["url"]
-            except:
-                raise Exception(f"Malformed files object")
+            except Exception:
+                raise Exception("Malformed files object")
             if type(param) is list:
                 param = param[0]
 
@@ -283,12 +285,12 @@ class BasePipeline:
     ):
         # Copy each file from the temp folder to the AIU folders
         for idx, file in enumerate(files):
-            if file["downloaded"] and file["metadata"] == False:
+            if file["downloaded"] and file["metadata"] is False:
                 filehash = self.compute_hash(f"{temp_relpath}/{file['filename']}")
                 aiufoldername = f"{base_path}/data/{recid}{delimiter_str}{filehash}"
                 try:
                     os.mkdir(aiufoldername)
-                except:
+                except Exception:
                     log.warning(
                         "Trying to create an already existing AIU. Duplicate files or"
                         " colliding checksums?"
@@ -301,10 +303,10 @@ class BasePipeline:
                         f"{temp_relpath}/{file['filename']}",
                         f"{base_path}/data/{recid}{delimiter_str}{filehash}/{file['filename']}",
                     )
-                except:
+                except Exception:
                     log.warning(f"{temp_relpath}/{file['filename']} already exists")
 
-            if file["downloaded"] == False and file["metadata"] == False:
+            if file["downloaded"] is False and file["metadata"] is False:
                 if "checksum" in file:
                     p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
                     m = p.match(file["checksum"])
@@ -355,7 +357,7 @@ class BasePipeline:
             },
             "metadata": False,
             "downloaded": True,
-            "bagpath": f"data/meta/bagitcreate.log",
+            "bagpath": "data/meta/bagitcreate.log",
         }
 
         files.append(bic_log_file_entry)
@@ -367,7 +369,7 @@ class BasePipeline:
             },
             "metadata": False,
             "downloaded": True,
-            "bagpath": f"data/meta/sip.json",
+            "bagpath": "data/meta/sip.json",
         }
 
         files.append(bic_meta_file_entry)
@@ -387,7 +389,7 @@ class BasePipeline:
         except bagit.BagValidationError as err:
             log.error(f"Bag validation failed: {err}")
         if valid:
-            log.info(f"Bag successfully validated")
+            log.info("Bag successfully validated")
         log.info("--\n")
         return valid
 
