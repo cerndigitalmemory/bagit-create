@@ -14,8 +14,17 @@ log = logging.getLogger("bic-basic-logger")
 class IndicoV1Pipeline(base.BasePipeline):
     def __init__(self, base_url):
 
-        log.info(f"Indico v1 pipeline initialised.\nBase URL: {base_url}")
+        log.info(f"Indico v3 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
+        self.source = "indico"
+
+        # Get Indico API Key from environment variable
+        if os.environ.get("INDICO_KEY"):
+            self.api_key = os.environ.get("INDICO_KEY")
+        else:
+            raise Exception(
+                "INDICO_KEY environment variable was not found. Please set it with the API token value."
+            )
 
     # get metadata according to indico api guidelines
     def get_metadata(self, record_id, source):
@@ -24,25 +33,9 @@ class IndicoV1Pipeline(base.BasePipeline):
         Returns: [metadata_serialized, metadata_upstream_url, operation_status_code]
         """
 
-        # Get Indico API Key from environment variable (or indico.ini)
-        if os.environ.get("INDICO_KEY"):
-            api_key = os.environ.get("INDICO_KEY")
-        else:
-            try:
-                self.config_file = configparser.ConfigParser()
-                self.config_file.read(
-                    os.path.join(os.path.dirname(__file__), "indico.ini")
-                )
-                self.config = self.config_file[source]
-                api_key = self.config["api_key"]
-            except Exception:
-                raise Exception(
-                    f"{source} token has not been found. Check the token configuration."
-                )
-
         # Prepare call Indico API
         # Authenticate with API Key
-        headers = {"Authorization": "Bearer " + api_key}
+        headers = {"Authorization": "Bearer " + self.api_key}
 
         # Indico API export base endpoint
         endpoint = f"{self.base_url}/export/event/{record_id}.json"
@@ -79,6 +72,8 @@ class IndicoV1Pipeline(base.BasePipeline):
     # Download Remote Folders in the cwd
     def download_files(self, files, base_path):
         log.info(f"Downloading {len(files)} files to {base_path}..")
+        
+        headers = {"Authorization": "Bearer " + self.api_key}
 
         for idx, sourcefile in enumerate(files):
             if sourcefile["metadata"] is False:
@@ -90,7 +85,7 @@ class IndicoV1Pipeline(base.BasePipeline):
                 )
 
                 files[idx]["downloaded"] = self.downloadRemoteFile(
-                    sourcefile["origin"]["url"], destination
+                    sourcefile["origin"]["url"], destination, headers
                 )
             else:
                 log.debug("Skipped downloading..")
