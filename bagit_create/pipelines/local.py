@@ -1,18 +1,12 @@
-from posixpath import islink, relpath
-from . import base
-import logging
-import fs
-from fs import open_fs
-from fs import copy
-import json
-import os
-import ntpath
-from os import stat
-from pwd import getpwuid
-from os import walk
-import checksumdir
 import hashlib
+import logging
+import ntpath
+import os
 import shutil
+from os import stat, walk
+from pwd import getpwuid
+
+from . import base
 
 log = logging.getLogger("bic-basic-logger")
 
@@ -54,7 +48,6 @@ class LocalV1Pipeline(base.BasePipeline):
         return files
 
     def copy_files(self, files, source_dir, dest_dir):
-        my_fs = open_fs("/")
         if os.path.isfile(source_dir):
             shutil.copy(
                 f"{source_dir}",
@@ -66,7 +59,7 @@ class LocalV1Pipeline(base.BasePipeline):
                 if source_dir == dirpath:
                     target = dest_dir
                 else:
-                    dest_relpath = dirpath[len(source_dir) + 1 :]
+                    dest_relpath = dirpath[len(source_dir) + 1:]
                     target = f"{dest_dir}/{dest_relpath}"
                     os.mkdir(target)
 
@@ -114,14 +107,14 @@ class LocalV1Pipeline(base.BasePipeline):
         obj = {"origin": {}}
 
         obj["origin"]["filename"] = file
-        ## If you are in the root directory just use filename
+        # If you are in the root directory just use filename
 
         if dirpath == src or isFile:
             obj["origin"]["path"] = ""
             sourcePath = f"{file}"
         # Otherwise prepare the relative path
         else:
-            relpath = dirpath[len(src) + 1 :]
+            relpath = dirpath[len(src) + 1:]
             obj["origin"]["path"] = relpath
             sourcePath = f"{relpath}/{file}"
         obj["origin"]["sourcePath"] = f"{os.path.abspath(dirpath)}/{file}"
@@ -131,15 +124,15 @@ class LocalV1Pipeline(base.BasePipeline):
         try:
             obj["size"] = os.path.getsize(f"{dirpath}/{file}")
         except OSError:
-            log.debug(f" Size cannot be found. Skipping field. ")
+            log.debug(" Size cannot be found. Skipping field. ")
         try:
             obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
         except OSError:
-            log.debug(f" Date cannot be found. Skipping field. ")
+            log.debug(" Date cannot be found. Skipping field. ")
         try:
             obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
         except OSError:
-            log.debug(f" Creator cannot be found. Skipping field. ")
+            log.debug(" Creator cannot be found. Skipping field. ")
 
         obj["metadata"] = False
         obj["downloaded"] = False

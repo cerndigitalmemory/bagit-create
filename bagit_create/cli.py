@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 from typing import Text
+
+import click
+
 from .main import process
 from .version import __version__
-import click
 
 """bagit-create command line tool."""
 
@@ -35,7 +37,7 @@ import click
     "-a",
     "--alternate-uri",
     help="""
-         Use alternative uri instead of https for fetch.txt (e.g. root endpoints 
+         Use alternative uri instead of https for fetch.txt (e.g. root endpoints
          for CERN Open Data instead of http).""",
     default=False,
     is_flag=True,
@@ -78,7 +80,7 @@ import click
     "--target",
     "-t",
     help="""
-    Output folder for the generated SIP. By default uses the same folder 
+    Output folder for the generated SIP. By default uses the same folder
     the tool is being executed from.""",
     type=Text,
     default=None,
@@ -105,7 +107,7 @@ import click
     "--source-base-path",
     "-sbp",
     help="""
-    [Local source ONLY] Specify a part of the path as 
+    [Local source ONLY] Specify a part of the path as
     relevant for extracting an hierachy.""",
     type=Text,
     default=None,

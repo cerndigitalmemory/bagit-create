@@ -35,12 +35,12 @@ class IndicoV1Pipeline(base.BasePipeline):
                 )
                 self.config = self.config_file[source]
                 api_key = self.config["api_key"]
-            except:
+            except Exception:
                 raise Exception(
                     f"{source} token has not been found. Check the token configuration."
                 )
 
-        ## Prepare call Indico API
+        # Prepare call Indico API
         # Authenticate with API Key
         headers = {"Authorization": "Bearer " + api_key}
 

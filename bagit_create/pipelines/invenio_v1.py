@@ -1,18 +1,19 @@
-from . import base
 import logging
+import ntpath
+import re
+
+import cern_sso
 import requests
 from pymarc import marcxml
-import ntpath
-from .. import cds
-from .. import bibdocfile
-import re
-import cern_sso
+
+from .. import bibdocfile, cds
+from . import base
 
 log = logging.getLogger("bic-basic-logger")
 
 
 class InvenioV1Pipeline(base.BasePipeline):
-    def __init__(self, base_url, recid, cert_path=None, invcookie=None, 
+    def __init__(self, base_url, recid, cert_path=None, invcookie=None,
                  skipssl=False):
 
         log.info(f"Invenio v1 pipeline initialised.\nBase URL: {base_url}")
@@ -26,8 +27,8 @@ class InvenioV1Pipeline(base.BasePipeline):
             key_file = f"{cert_path}.key"
             try:
                 # Authenticate against the record URL
-                self.cookies = cern_sso.cert_sign_on(f"{base_url}{recid}", 
-                                                     cert_file=cert_file, 
+                self.cookies = cern_sso.cert_sign_on(f"{base_url}{recid}",
+                                                     cert_file=cert_file,
                                                      key_file=key_file)
 
                 log.info("SSO successful. Proceeding.")
@@ -76,7 +77,7 @@ class InvenioV1Pipeline(base.BasePipeline):
 
         payload = {"of": of}
 
-        r = requests.get(record_url, params=payload, cookies=self.cookies, 
+        r = requests.get(record_url, params=payload, cookies=self.cookies,
                          verify=self.verifyssl)
 
         log.debug(f"Getting {r.url}")
@@ -110,7 +111,7 @@ class InvenioV1Pipeline(base.BasePipeline):
             record = marcxml.parse_xml_to_array(metadata_filename)[0]
         except Exception:
             raise Exception("""
-                Malformed metadata. Check if the record exists and it's public. 
+                Malformed metadata. Check if the record exists and it's public.
                 If it requires authentication, use the --cert option to enable CERN SSO.
                 """)
         # Look for 856 entries
@@ -192,7 +193,7 @@ class InvenioV1Pipeline(base.BasePipeline):
         log.info(f"Downloading {len(files)} files to {base_path}..")
         for idx, sourcefile in enumerate(files):
             # We're looking for files not flagged as metadata and not downloaded yet
-            if sourcefile["metadata"] == False and sourcefile["downloaded"] == False:
+            if sourcefile["metadata"] is False and sourcefile["downloaded"] is False:
                 # If the origin url is a list, use the first for downloading
                 if type(sourcefile["origin"]["url"]) == list:
                     download_url = sourcefile["origin"]["url"][0]

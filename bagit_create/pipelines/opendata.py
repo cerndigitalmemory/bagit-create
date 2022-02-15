@@ -1,12 +1,10 @@
-from . import base
-import logging
-import requests
-from pymarc import marcxml
-import ntpath
-from .. import cds
 import json
+import logging
 
-from cernopendata_client import searcher, downloader
+import requests
+from cernopendata_client import searcher
+
+from . import base
 
 log = logging.getLogger("bic-basic-logger")
 
@@ -100,7 +98,7 @@ class OpenDataPipeline(base.BasePipeline):
         skipped = 0
         for file in files:
 
-            if file["metadata"] == False:
+            if file["metadata"] is False:
                 destination = f'{temp_files_path}/{file["origin"]["filename"]}'
                 # If more than one URL is available, use the first one (HTTP)
                 if type(file["origin"]["url"]) == list:
@@ -121,7 +119,7 @@ class OpenDataPipeline(base.BasePipeline):
                         destination,
                     )
 
-                    if file["downloaded"] == False:
+                    if file["downloaded"] is False:
                         skipped += 1
         if skipped > 0:
             log.info(
