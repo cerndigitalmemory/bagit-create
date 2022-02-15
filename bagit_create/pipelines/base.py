@@ -62,8 +62,8 @@ class BasePipeline:
         except Exception as err:
             log.error("sip.json validation failed with error", err)
 
-    def downloadRemoteFile(self, src, dest):
-        r = requests.get(src)
+    def downloadRemoteFile(self, src, dest, headers={}):
+        r = requests.get(src, headers=headers)
         with open(dest, "wb") as f:
             f.write(r.content)
         return True
