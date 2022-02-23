@@ -25,7 +25,8 @@ def process(
     timestamp=0,
     cert=None,
     invcookie=None,
-    skipssl=False
+    skipssl=False,
+    url=None,
 ):
     # Save timestamp
     timestamp = int(time.time())
@@ -33,6 +34,7 @@ def process(
     # Save parameters with which bagit-create was called
     params = {
         "recid": recid,
+        "url": url,
         "source": source,
         "loglevel": loglevel,
         "target": target,
@@ -49,6 +51,7 @@ def process(
     try:
         base.BasePipeline.check_parameters_input(
             recid,
+            url,
             source,
             source_path,
             author,
@@ -71,7 +74,7 @@ def process(
 
     ## Console Handler
     # create console handler logging to the shell
-    # what has been requested by the author (-v or -vv)
+    # what has been requested by the user (-v or -vv)
     ch_formatter = logging.Formatter("%(message)s")
     ch = logging.StreamHandler()
     ch.setLevel(loglevels[loglevel])
@@ -91,6 +94,11 @@ def process(
     log.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     log.debug(f"Set log level: {loglevels[loglevel]}")
     log.debug(f"Parametrs: {params}")
+
+    if url:
+        # If an URL is provided, parse it to get Source and Record ID
+        source, recid = base.BasePipeline.parse_url(url)
+        log.info(f"Got record {recid} from {source} from parsing URL")
 
     if dry_run:
         log.warning(
