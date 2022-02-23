@@ -56,15 +56,30 @@ pip install -e .
 # Check installed version
 bic --version
 
+# You're done! Create a SIP for a CDS resource from its URL:
+bic --url http://cds.cern.ch/record/2665537
+
 # Run tests
 python -m pytest
 ```
 
 ## Usage
 
-### CLI
+You usually just need to specify the location of the record you are trying to create a package for.
 
-Some examples:
+You can do it by specifying the "Source" (see [supported sources](#supported-sources)) and the Record ID:
+
+```bash
+bic --recid 2728246 --source cds
+```
+
+or passing an URL (currently only works with CDS, Zenodo and CERN Open Data links):
+
+```
+bic --url http://cds.cern.ch/record/2665537
+```
+
+### Examples
 
 CDS:
 
@@ -135,7 +150,10 @@ bic --recid 10105 --source cod --verbose
                                                                                    
   -s, --source [cds|ilcdoc|cod|zenodo|inveniordm|indico|local|ilcagenda]  
                                   Select source pipeline from the supported 
-                                  ones.  [required]                
+                                  ones.           
+
+  -u, --url TEXT                  Provide an URL for the Record
+                                  [Works with CDS, Open Data and Zenodo links]
 
   -d, --dry-run                   Skip downloads and create a `light` bag,
                                   without any payload.                        
@@ -208,6 +226,10 @@ bic --recid 10105 --source cod --verbose
 | ILC Agenda            | ilcagenda    | https://agenda.linearcollider.org/ | Indico v3.0.x             |
 
 Additional configuration may be required (e.g. for restricted events).
+
+### URL parsing
+
+Instead of passing Source + Record ID you can just use the record URL with the `--url` option.
 
 ### Light bags
 
