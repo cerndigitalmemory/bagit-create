@@ -461,7 +461,7 @@ class BasePipeline:
         a valid operation
         """
 
-        if not url and not (source and recid):
+        if not url and not (source and recid) and source is not "local":
             raise WrongInputException(
                 "Source and Record ID are required if you don't provide an URL"
             )
