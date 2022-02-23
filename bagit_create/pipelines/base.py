@@ -6,7 +6,8 @@ import shutil
 import time
 from datetime import date
 from itertools import chain
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+from urllib.parse import unquote, urlparse
 from zlib import adler32
 
 import bagit
@@ -310,7 +311,6 @@ class BasePipeline:
                 if "checksum" in file:
                     p = re.compile(r"([A-z0-9]*):([A-z0-9]*)")
                     m = p.match(file["checksum"])
-                    alg = m.groups()[0].lower()
                     matched_checksum = m.groups()[1]
                     files[idx][
                         "localpath"
@@ -407,9 +407,47 @@ class BasePipeline:
         # move folder to the target location
         fs.move.move_fs(base_path, new_path)
 
+    def parse_url(url):
+        """
+        Parses URLs with the pattern
+        <HOSTNAME>/record/<RECORD_ID>
+        (CDS, Zenodo, Open Data)
+        """
+        o = urlparse(url)
+        if o.hostname == "cds.cern.ch":
+            source = "cds"
+        elif o.hostname == "opendata.cern.ch":
+            source = "cod"
+        elif o.hostname == "zenodo.org":
+            source = "zenodo"
+        else:
+            raise WrongInputException(
+                "Unable to parse the given URL. Try manually passing the source and the record ID."
+            )
+
+        path_parts = PurePosixPath(
+            unquote(
+                urlparse(
+                    url
+                ).path
+            )
+        ).parts
+
+        # Ensures the path is in the form /record/<RECORD_ID>
+        if path_parts[0] == '/' and path_parts[1] == 'record':
+            # The ID is the second part of the path
+            recid = path_parts[2]
+        else:
+            raise WrongInputException(
+                "Unable to parse the given URL. Try manually passing the source and the record ID."
+            )
+
+        return (source, recid)
+
     # Checks the input from the cli and raises error if there is a mistake
     def check_parameters_input(
         recid,
+        url,
         source,
         source_path,
         author,
@@ -422,6 +460,16 @@ class BasePipeline:
         Checks if the combination of the parameters for the job make up for
         a valid operation
         """
+
+        if not url and not (source and recid):
+            raise WrongInputException(
+                "Source and Record ID are required if you don't provide an URL"
+            )
+
+        if url and (source or recid):
+            raise WrongInputException(
+                "You can either specify an URL or a Source and Record ID"
+            )
 
         if (bibdoc or bd_ssh_host) and (source != "cds" and source != "ilcdoc"):
             raise WrongInputException(
@@ -437,8 +485,6 @@ class BasePipeline:
         if recid and source == "local":
             raise WrongInputException("The local pipeline is not expecting a recid.")
 
-        if source != "local" and not recid:
-            raise WrongInputException("Recid is missing.")
         if source_path and source != "local":
             raise WrongInputException("This pipeline is not expecting a source_path.")
         if source == "local" and not author:

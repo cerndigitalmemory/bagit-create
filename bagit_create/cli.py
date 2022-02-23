@@ -17,10 +17,15 @@ from .version import __version__
     help="Record ID of the resource the upstream digital repository. Required by every pipeline but local.",
 )
 @click.option(
+    "-u",
+    "--url",
+    help="Provide an URL for the Record. Must be from the supported sources.",
+    type=Text
+)
+@click.option(
     "-s",
     "--source",
     help="Select source pipeline from the supported ones.",
-    required=True,
     type=click.Choice(
         ["cds", "ilcdoc", "cod", "zenodo", "inveniordm", "indico", "local", "ilcagenda"],
         case_sensitive=False,
@@ -162,7 +167,8 @@ def cli(
     bd_ssh_host,
     cert,
     invcookie,
-    skipssl
+    skipssl,
+    url
 ):
 
     # Select the desired log level (default is 2, warning)
@@ -189,7 +195,8 @@ def cli(
         bd_ssh_host,
         cert,
         invcookie,
-        skipssl
+        skipssl,
+        url
     )
     print(f"Job result: {result}")
 
