@@ -1,7 +1,9 @@
-from .. import main
-import tempfile
 import os
+import tempfile
+
 from oais_utils.validate import validate_sip
+
+from .. import main
 
 """
 All these tests cover different supported pipelines. 
@@ -27,12 +29,14 @@ def test_cds_pipeline():
     assert valid == True
 
 
+"""
 def test_cds_pipeline():
     test_variables = {"source": "ilcdoc", "recid": 62959, "dry_run": True}
     valid = pipeline_results(
         test_variables["source"], test_variables["recid"], test_variables["dry_run"]
     )
     assert valid == True
+"""
 
 
 def test_zenodo_pipeline():
