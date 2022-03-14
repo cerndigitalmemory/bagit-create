@@ -6,8 +6,7 @@ import shutil
 import time
 from datetime import date
 from itertools import chain
-from pathlib import Path, PurePosixPath
-from urllib.parse import unquote, urlparse
+from pathlib import Path
 from zlib import adler32
 
 import bagit
@@ -407,43 +406,6 @@ class BasePipeline:
         # move folder to the target location
         fs.move.move_fs(base_path, new_path)
 
-    def parse_url(url):
-        """
-        Parses URLs with the pattern
-        <HOSTNAME>/record/<RECORD_ID>
-        (CDS, Zenodo, Open Data)
-        """
-        o = urlparse(url)
-        if o.hostname == "cds.cern.ch":
-            source = "cds"
-        elif o.hostname == "opendata.cern.ch":
-            source = "cod"
-        elif o.hostname == "zenodo.org":
-            source = "zenodo"
-        else:
-            raise WrongInputException(
-                "Unable to parse the given URL. Try manually passing the source and the record ID."
-            )
-
-        path_parts = PurePosixPath(
-            unquote(
-                urlparse(
-                    url
-                ).path
-            )
-        ).parts
-
-        # Ensures the path is in the form /record/<RECORD_ID>
-        if path_parts[0] == '/' and path_parts[1] == 'record':
-            # The ID is the second part of the path
-            recid = path_parts[2]
-        else:
-            raise WrongInputException(
-                "Unable to parse the given URL. Try manually passing the source and the record ID."
-            )
-
-        return (source, recid)
-
     # Checks the input from the cli and raises error if there is a mistake
     def check_parameters_input(
         recid,
@@ -461,7 +423,7 @@ class BasePipeline:
         a valid operation
         """
 
-        if not url and not (source and recid) and source is not "local":
+        if not url and not (source and recid) and source != "local":
             raise WrongInputException(
                 "Source and Record ID are required if you don't provide an URL"
             )

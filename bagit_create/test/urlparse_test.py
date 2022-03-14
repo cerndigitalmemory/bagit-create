@@ -1,4 +1,4 @@
-from ..pipelines import base
+from .. import utils
 
 """
 This file contains unit tests for the URL parsing feature on the currently
@@ -20,5 +20,5 @@ cases = [
 
 def test_url_parsing():
     for case in cases:
-        result = source, recid = base.BasePipeline.parse_url(case["url"])
+        result = source, recid = utils.parse_url(case["url"])
         assert result == (case["source"], case["recid"])
