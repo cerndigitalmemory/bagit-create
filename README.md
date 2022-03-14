@@ -1,6 +1,6 @@
 # bagit-create
 
-[![PyPI version](https://badge.fury.io/py/bagit-create.svg)](https://pypi.org/project/bagit-create/)
+[![PyPI version](https://badge.fury.io/py/bagit-create.svg)](https://pypi.org/project/bagit-create/) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) ![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)
 
 "BagIt Create" is a tool to export digital repository records in packages with a consistent format, according to the [CERN Submission Information Package specification](https://gitlab.cern.ch/digitalmemory/sip-spec).
 
@@ -62,6 +62,9 @@ bic --url http://cds.cern.ch/record/2665537
 # Run tests
 python -m pytest
 ```
+
+Code is formatted using **black** and linted with **flake8**. A VSCode settings file is provided for convenience.
+
 
 ## Usage
 
