@@ -4,6 +4,7 @@ import time
 import fs
 from fs import open_fs
 
+from . import utils
 from .pipelines import base, indico, invenio_v1, invenio_v3, local, opendata
 from .pipelines.base import WrongInputException
 from .version import __version__
@@ -97,7 +98,7 @@ def process(
 
     if url:
         # If an URL is provided, parse it to get Source and Record ID
-        source, recid = base.BasePipeline.parse_url(url)
+        source, recid = utils.parse_url(url)
         log.info(f"Got record {recid} from {source} from parsing URL")
 
     if dry_run:
