@@ -14,6 +14,7 @@ class CodimdPipeline(base.BasePipeline):
         self.recid = recid
 
     def get_metadata(self, record_id, source):
+        # We don't have any metadata..
         return (
             {"record_id": record_id},
             "none",
@@ -22,7 +23,8 @@ class CodimdPipeline(base.BasePipeline):
         )
 
     def parse_metadata(self, metadata):
-        files = [{"downloaded": True, "bagpath": "1.md"}]
+        # Let's create an empty file object, we will put the file name after having downloaded it
+        files = [{"downloaded": False}]
 
         meta_file_entry = {
             "origin": {

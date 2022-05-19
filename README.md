@@ -95,6 +95,9 @@ bic --version
 # You're done! Create a SIP for a CDS resource from its URL:
 bic --url http://cds.cern.ch/record/2665537
 
+# Install additional packages for testing
+pip install pytest oais_utils
+
 # Run tests
 python -m pytest
 ```
@@ -262,6 +265,7 @@ bic --recid 10105 --source cod --verbose
 | Zenodo               | zenodo    | https://zenodo.org/                | Invenio v3.x   |
 | CERN Indico          | indico    | https://indico.cern.ch/            | Indico v3.0.x  |
 | ILC Agenda           | ilcagenda | https://agenda.linearcollider.org/ | Indico v3.0.x  |
+| CodiMD               | codimd    | https://codimd.web.cern.ch/        | CodiMD         |
 
 Additional configuration may be required (e.g. for restricted events).
 
