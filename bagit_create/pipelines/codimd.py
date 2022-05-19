@@ -55,6 +55,8 @@ class CodimdPipeline(base.BasePipeline):
             downloaded_file_name = re.findall(
                 "filename=(.+)", r.headers["Content-Disposition"]
             )[0]
+        else:
+            downloaded_file_name = "document.md"
 
         # Decode the urlencoded downloaded file name and slugify it
         #  (as it usually contains encoded entities, coming from the first
