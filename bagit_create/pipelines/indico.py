@@ -1,4 +1,3 @@
-import configparser
 import json
 import logging
 import ntpath
@@ -12,19 +11,17 @@ log = logging.getLogger("bic-basic-logger")
 
 
 class IndicoV1Pipeline(base.BasePipeline):
-    def __init__(self, base_url):
+    def __init__(self, base_url, token=None):
 
         log.info(f"Indico v3 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
         self.source = "indico"
 
         # Get Indico API Key from environment variable
-        if os.environ.get("INDICO_KEY"):
-            self.api_key = os.environ.get("INDICO_KEY")
+        if token:
+            self.api_key = token
         else:
-            raise Exception(
-                "INDICO_KEY environment variable was not found. Please set it with the API token value."
-            )
+            raise Exception("API token not found, set it through the token parameter.")
 
     # get metadata according to indico api guidelines
     def get_metadata(self, record_id, source):
@@ -72,7 +69,7 @@ class IndicoV1Pipeline(base.BasePipeline):
     # Download Remote Folders in the cwd
     def download_files(self, files, base_path):
         log.info(f"Downloading {len(files)} files to {base_path}..")
-        
+
         headers = {"Authorization": "Bearer " + self.api_key}
 
         for idx, sourcefile in enumerate(files):

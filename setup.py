@@ -58,6 +58,7 @@ setup(
         "checksumdir==1.2.0",
         "jsonschema==3.0.2",
         "python-cern-sso==1.3.3",
+        "python-slugify==6.1.2",
     ],
     entry_points={
         "console_scripts": [

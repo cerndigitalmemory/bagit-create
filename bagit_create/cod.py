@@ -7,10 +7,7 @@ import sys
 # WORKAROUND to import the git "master" version
 sys.path.insert(1, "/home/avivace/cern/cernopendata-client")
 
-from cernopendata_client import searcher, downloader
-
-# from .cds import prettyprint
-
+from cernopendata_client import downloader, searcher
 
 SERVER_HTTP_URI = "http://opendata.cern.ch"
 """Default CERN Open Data server to query over HTTP protocol."""
