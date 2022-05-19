@@ -340,10 +340,6 @@ The "Record ID" for CodiMD document is the part of the url that follows the main
 bic --source codimd --recid vgGgOxGQU --token <connect.sid_value_here>
 ```
 
-### Get all your notes
-
-Here's a quick python snippet to trigger the creation of all the notes in your history. Set the <CODIMD_KEY> environment variable to the value of the `connect.sid` cookie.
-
 # Advanced usage
 
 ## Module
