@@ -5,7 +5,7 @@ import fs
 from fs import open_fs
 
 from . import utils
-from .pipelines import base, indico, invenio_v1, invenio_v3, local, opendata
+from .pipelines import base, codimd, indico, invenio_v1, invenio_v3, local, opendata
 from .pipelines.base import WrongInputException
 from .version import __version__
 
@@ -25,7 +25,7 @@ def process(
     bd_ssh_host=None,
     timestamp=0,
     cert=None,
-    invcookie=None,
+    token=None,
     skipssl=False,
     url=None,
 ):
@@ -46,7 +46,7 @@ def process(
         "bibdoc": bibdoc,
         "bd_ssh_host": bd_ssh_host,
         "timestamp": timestamp,
-        "cert": cert
+        "cert": cert,
     }
 
     try:
@@ -111,19 +111,28 @@ def process(
         # Initialize the pipeline
         if source == "cds":
             pipeline = invenio_v1.InvenioV1Pipeline(
-                "https://cds.cern.ch/record/", cert_path=cert, recid=recid,
-                invcookie=invcookie, skipssl=skipssl)
+                "https://cds.cern.ch/record/",
+                cert_path=cert,
+                recid=recid,
+                token=token,
+                skipssl=skipssl,
+            )
         elif source == "ilcdoc":
             pipeline = invenio_v1.InvenioV1Pipeline(
-                "http://ilcdoc.linearcollider.org/record/", cert_path=cert,
-                recid=recid, invcookie=invcookie, skipssl=skipssl
+                "http://ilcdoc.linearcollider.org/record/",
+                cert_path=cert,
+                recid=recid,
+                token=token,
+                skipssl=skipssl,
             )
+        elif source == "codimd":
+            pipeline = codimd.CodimdPipeline(token=token, recid=recid)
         elif source == "cod":
             pipeline = opendata.OpenDataPipeline("http://opendata.cern.ch")
         elif source == "zenodo" or source == "inveniordm":
             pipeline = invenio_v3.InvenioV3Pipeline(source)
         elif source == "indico":
-            pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/")
+            pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/", token=token)
         elif source == "ilcagenda":
             pipeline = indico.IndicoV1Pipeline("https://agenda.linearcollider.org/")
         elif source == "local":
@@ -269,13 +278,3 @@ def process(
 
     # For any other error, print details about what happened and clean up
     #  any created file and folder
-    except Exception as e:
-        log.error(f"Job failed with error: {e}")
-        pipeline.delete_folder(base_path)
-
-        # Clear up logging handlers so subsequent executions in the same python thread
-        #  don't stack up
-        if log.hasHandlers():
-            log.handlers.clear()
-
-        return {"status": 1, "errormsg": e}
