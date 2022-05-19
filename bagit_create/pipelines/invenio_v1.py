@@ -13,33 +13,34 @@ log = logging.getLogger("bic-basic-logger")
 
 
 class InvenioV1Pipeline(base.BasePipeline):
-    def __init__(self, base_url, recid, cert_path=None, invcookie=None,
-                 skipssl=False):
+    def __init__(self, base_url, recid, cert_path=None, token=None, skipssl=False):
 
         log.info(f"Invenio v1 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
         self.verifyssl = not skipssl
 
         if cert_path:
-            log.info("Running in authenticated mode, trying SSO with the given certificate..")
+            log.info(
+                "Running in authenticated mode, trying SSO with the given certificate.."
+            )
 
             cert_file = f"{cert_path}.pem"
             key_file = f"{cert_path}.key"
             try:
                 # Authenticate against the record URL
-                self.cookies = cern_sso.cert_sign_on(f"{base_url}{recid}",
-                                                     cert_file=cert_file,
-                                                     key_file=key_file)
+                self.cookies = cern_sso.cert_sign_on(
+                    f"{base_url}{recid}", cert_file=cert_file, key_file=key_file
+                )
 
                 log.info("SSO successful. Proceeding.")
             except Exception:
-                log.error("SSO failed. Check if the .key and .pem files are in the provided path with the provided (same) file name and they are generated from a valid CERN User Grid certificate (.p12).")
+                log.error(
+                    "SSO failed. Check if the .key and .pem files are in the provided path with the provided (same) file name and they are generated from a valid CERN User Grid certificate (.p12)."
+                )
                 raise Exception("CERN SSO failed")
-        elif invcookie:
+        elif token:
             log.info("Setting Invenio cookie")
-            self.cookies = {
-                'INVENIOSESSION': invcookie
-            }
+            self.cookies = {"INVENIOSESSION": token}
         else:
             self.cookies = None
 
@@ -77,8 +78,9 @@ class InvenioV1Pipeline(base.BasePipeline):
 
         payload = {"of": of}
 
-        r = requests.get(record_url, params=payload, cookies=self.cookies,
-                         verify=self.verifyssl)
+        r = requests.get(
+            record_url, params=payload, cookies=self.cookies, verify=self.verifyssl
+        )
 
         log.debug(f"Getting {r.url}")
 
@@ -110,10 +112,12 @@ class InvenioV1Pipeline(base.BasePipeline):
         try:
             record = marcxml.parse_xml_to_array(metadata_filename)[0]
         except Exception:
-            raise Exception("""
+            raise Exception(
+                """
                 Malformed metadata. Check if the record exists and it's public.
                 If it requires authentication, use the --cert option to enable CERN SSO.
-                """)
+                """
+            )
         # Look for 856 entries
         #  MARC21: 856 - Electronic Location and Access (R)
         files = []

@@ -20,14 +20,24 @@ from .version import __version__
     "-u",
     "--url",
     help="Provide an URL for the Record. Must be from the supported sources.",
-    type=Text
+    type=Text,
 )
 @click.option(
     "-s",
     "--source",
     help="Select source pipeline from the supported ones.",
     type=click.Choice(
-        ["cds", "ilcdoc", "cod", "zenodo", "inveniordm", "indico", "local", "ilcagenda"],
+        [
+            "cds",
+            "ilcdoc",
+            "cod",
+            "zenodo",
+            "inveniordm",
+            "indico",
+            "local",
+            "ilcagenda",
+            "codimd",
+        ],
         case_sensitive=False,
     ),
 )
@@ -131,17 +141,6 @@ from .version import __version__
     is_flag=False,
 )
 @click.option(
-    "--invcookie",
-    "-ic",
-    help="""
-    [Invenio v1.x ONLY] Use custom INVENIOSESSION cookie value to authenticate.
-    Useful for local accounts.
-    """,
-    type=Text,
-    default=None,
-    is_flag=False,
-)
-@click.option(
     "--skipssl",
     "-ss",
     help="""
@@ -151,6 +150,20 @@ from .version import __version__
     type=Text,
     default=False,
     is_flag=True,
+)
+@click.option(
+    "--token",
+    "-tk",
+    help="""
+    Additional authentication token, depending on the chosen source pipeline.
+    See the documentation for more information on how to obtain those strings.
+    [Invenio v1.x] Value of the `INVENIOSESSION` session cookie
+    [Indico] API token
+    [CodiMD] Value of the `connect.sid` cookie
+    """,
+    type=Text,
+    default=False,
+    is_flag=False,
 )
 def cli(
     recid,
@@ -166,9 +179,9 @@ def cli(
     bibdoc,
     bd_ssh_host,
     cert,
-    invcookie,
+    token,
     skipssl,
-    url
+    url,
 ):
 
     # Select the desired log level (default is 2, warning)
@@ -194,9 +207,9 @@ def cli(
         bibdoc,
         bd_ssh_host,
         cert,
-        invcookie,
+        token,
         skipssl,
-        url
+        url,
     )
     print(f"Job result: {result}")
 
