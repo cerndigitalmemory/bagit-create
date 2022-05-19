@@ -13,6 +13,22 @@ validates the result using the oais_utils.validate method and returns True or Fa
 """
 
 
+def test_codimd_pipeline():
+    test_variables = {
+        "source": "codimd",
+        # This note should be set as EDITABLE and be PUBLISHED or it
+        # won't be accessible without a token
+        "recid": "tBD632vFt",
+        "dry_run": False,
+    }
+    valid = pipeline_results(
+        test_variables["source"],
+        test_variables["recid"],
+        test_variables["dry_run"],
+    )
+    assert valid is True
+
+
 def test_indico_pipeline():
     # So we can keep INDICO_KEY uncommitted and read it from an environment variable set for the ci/cd job
     token = os.environ["INDICO_KEY"]

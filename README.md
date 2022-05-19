@@ -1,6 +1,6 @@
 # bagit-create
 
-[![PyPI version](https://badge.fury.io/py/bagit-create.svg)](https://pypi.org/project/bagit-create/) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) ![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)
+[![PyPI version](https://badge.fury.io/py/bagit-create.svg)](https://pypi.org/project/bagit-create/) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 
 "BagIt Create" is a tool to export digital repository records in packages with a consistent format, according to the [CERN Submission Information Package specification](https://gitlab.cern.ch/digitalmemory/sip-spec).
 
@@ -334,9 +334,15 @@ bic --source cds --recid 2748063 --token <INVENIOSESSION_value_here>
 
 To create packages out of CodiMD documents, go to [https://codimd.web.cern.ch/](https://codimd.web.cern.ch/), authenticate and after the redirect to the main page open your browser developer tools (CTRL+SHIFT+I), go to the "Storage" tab and under cookies copy the value of the `connect.sid` cookie.
 
+The "Record ID" for CodiMD document is the part of the url that follows the main domain address (e.g. in `https://codimd.web.cern.ch/KabpdG3TTHKOsig2lq8tnw#` the recid is `KabpdG3TTHKOsig2lq8tnw`)
+
 ```bash
 bic --source codimd --recid vgGgOxGQU --token <connect.sid_value_here>
 ```
+
+### Get all your notes
+
+Here's a quick python snippet to trigger the creation of all the notes in your history. Set the <CODIMD_KEY> environment variable to the value of the `connect.sid` cookie.
 
 # Advanced usage
 

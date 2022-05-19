@@ -1,7 +1,9 @@
 import logging
 import re
+import urllib.parse
 
 import requests
+from slugify import slugify
 
 from . import base
 
@@ -14,7 +16,8 @@ class CodimdPipeline(base.BasePipeline):
         self.recid = recid
 
     def get_metadata(self, record_id, source):
-        # We don't have any metadata..
+        # We don't have any metadata fetch-able via exposed routes, so let's
+        #  put just some basic information
         return (
             {"record_id": record_id},
             "none",
@@ -23,9 +26,11 @@ class CodimdPipeline(base.BasePipeline):
         )
 
     def parse_metadata(self, metadata):
-        # Let's create an empty file object, we will put the file name after having downloaded it
-        files = [{"downloaded": False}]
+        # Let's create an empty file object,
+        #  we will put the file name after having downloaded it
+        files = [{"downloaded": True}]
 
+        # File entry for the metadata file
         meta_file_entry = {
             "origin": {
                 "filename": f"codimd-{self.recid}.json",
@@ -35,7 +40,6 @@ class CodimdPipeline(base.BasePipeline):
             "metadata": True,
             "downloaded": True,
             "bagpath": f"data/content/codimd-{self.recid}.json",
-            "size": "1",
         }
         files.append(meta_file_entry)
         return (files, meta_file_entry)
@@ -48,7 +52,14 @@ class CodimdPipeline(base.BasePipeline):
             cookies={"connect.sid": self.connect_sid_token},
         )
         if "Content-Disposition" in r.headers.keys():
-            fname = re.findall("filename=(.+)", r.headers["Content-Disposition"])[0]
+            downloaded_file_name = re.findall(
+                "filename=(.+)", r.headers["Content-Disposition"]
+            )[0]
+
+        # Decode the urlencoded downloaded file name and slugify it
+        #  (as it usually contains encoded entities, coming from the first
+        #  H1 found inside the document)
+        fname = slugify(urllib.parse.unquote(downloaded_file_name))
 
         with open(f"{base_path}/data/content/{fname}", "wb") as f:
             for chunk in r.raw.stream(1024, decode_content=False):
