@@ -55,13 +55,14 @@ class CodimdPipeline(base.BasePipeline):
             downloaded_file_name = re.findall(
                 "filename=(.+)", r.headers["Content-Disposition"]
             )[0]
+            # Decode the urlencoded downloaded file name and slugify it
+            #  (as it usually contains encoded entities, coming from the first
+            #  H1 found inside the document)
+            fname = slugify(urllib.parse.unquote(downloaded_file_name))
+            # Remove "-md" and put back ".md" as extension
+            fname = fname[:-3] + ".md"
         else:
-            downloaded_file_name = "document.md"
-
-        # Decode the urlencoded downloaded file name and slugify it
-        #  (as it usually contains encoded entities, coming from the first
-        #  H1 found inside the document)
-        fname = slugify(urllib.parse.unquote(downloaded_file_name))
+            fname = "document.md"
 
         with open(f"{base_path}/data/content/{fname}", "wb") as f:
             for chunk in r.raw.stream(1024, decode_content=False):

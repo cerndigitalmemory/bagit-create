@@ -14,7 +14,7 @@ data = r.json()["history"][2:]
 print(f"Found {len(data)} notes in your history..")
 
 for note in data:
-    print(f"Creating SIP for {note['id']}..")
+    print(f"Creating SIP for {note['text']} ({note['id']})..")
     result = bagit_create.main.process(
         source="codimd", recid=note["id"], token="session_id", loglevel=3
     )
