@@ -1,6 +1,6 @@
 clean:
-	rm -rf *::*
-	rm -rf temp_*
+	rm -rf */*::*
+	rm -rf */temp_*
 
 updateremote:
 	tsocks scp *.py am-dev-two:/root/bagit-create
