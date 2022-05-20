@@ -51,6 +51,11 @@ class CodimdPipeline(base.BasePipeline):
             stream=True,
             cookies={"connect.sid": self.connect_sid_token},
         )
+
+        if r.status_code == 404:
+            raise Exception("Note not found (404)")
+        if r.status_code != 200:
+            raise Exception("Connection Error to CodiMD")
         if "Content-Disposition" in r.headers.keys():
             downloaded_file_name = re.findall(
                 "filename=(.+)", r.headers["Content-Disposition"]
@@ -62,6 +67,7 @@ class CodimdPipeline(base.BasePipeline):
             # Remove "-md" and put back ".md" as extension
             fname = fname[:-3] + ".md"
         else:
+            raise Exception("Header is missing..")
             fname = "document.md"
 
         with open(f"{base_path}/data/content/{fname}", "wb") as f:
