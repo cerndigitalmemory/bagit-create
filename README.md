@@ -344,10 +344,10 @@ bic --source codimd --recid vgGgOxGQU --token <connect.sid_value_here>
 
 A small script is included in this repository in `examples/codimd_history.py` which will dump your entire CodiMD "history" (the same history you see on the homepage), creating a bag for each document.
 
-Be sure to replace the `session_id` variable inside the script with the value of the `connect.sid` cookie.
+Set the CODIMD_SESSION env variable to the value of the `connect.sid` cookie before running the script:
 
 ```bash
-python examples/codimd_history.py
+CODIMD_SESSION=<connect.sid_value_here> python examples/codimd_history.py
 ```
 
 # Advanced usage
