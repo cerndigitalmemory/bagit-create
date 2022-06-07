@@ -105,12 +105,18 @@ class BasePipeline:
     def get_metadata(self, recid):
         return None
 
-    def delete_folder(self, path):
+    def delete_folder(self, path, silent_failure=True):
+        """
+        Delete given folder.
+        """
+
         try:
             log.info(f"Deleted {path}")
             shutil.rmtree(path)
         except Exception as e:
             log.info(f"SIP folder was not found: {e}")
+            if not silent_failure:
+                raise e
 
     def write_file(self, content, dest):
         if type(content) is bytes:

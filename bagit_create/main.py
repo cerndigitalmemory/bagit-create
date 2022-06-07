@@ -1,4 +1,3 @@
-from genericpath import exists
 import logging
 import time
 
@@ -109,8 +108,8 @@ def process(
             the metadata, or no valid CERN SIP will be created."""
         )
     try:
-        pipeline = None
         # Initialize the pipeline
+        pipeline = None
         if source == "cds":
             pipeline = invenio_v1.InvenioV1Pipeline(
                 "https://cds.cern.ch/record/",
@@ -158,6 +157,7 @@ def process(
             }
         ]
 
+        # Prepare empty folders
         base_path, name = pipeline.prepare_folders(source, recid, timestamp)
 
         # Create bagit.txt
@@ -197,7 +197,6 @@ def process(
             # Create fetch.txt
             pipeline.create_fetch_txt(files, source, f"{base_path}/fetch.txt")
         else:
-
             if source == "local":
                 files = pipeline.copy_files(
                     files, source_path, f"{base_path}/data/content"
@@ -210,7 +209,7 @@ def process(
         # To allow consistency and hashing of the attached log,
         # no events after this point will be logged to the file
 
-        # Close the stream and release the lock on the file
+        # Close the stream and release the lock on the log file
         log.handlers[1].stream.close()
         # Remove the FileHandler (this allows to keep logging to the shell)
         log.removeHandler(log.handlers[1])
@@ -225,7 +224,7 @@ def process(
 
         # Create manifest files, according to the specified algorithms in the pipeline
         #  Uses the checksums from the parsed metadata if available
-        #  Newly computed checksum get added to the SIP metadata, too.
+        #  otherwise, compute them.
         files = pipeline.create_manifests(files, base_path)
 
         # Create sip.json
@@ -242,7 +241,7 @@ def process(
         #  containing the final payload size and number of files
         pipeline.add_bag_info(base_path, f"{base_path}/bag-info.txt")
 
-        # Verify created Bag
+        # Verify created package against the BagIt standard
         pipeline.verify_bag(base_path)
 
         # If a target folder is specified, move the created Bag there
@@ -250,7 +249,7 @@ def process(
             # If the move fails, the original folder is deleted
             try:
                 pipeline.move_folders(base_path, name, target)
-                pipeline.delete_folder(base_path)
+                pipeline.delete_folder(base_path, silent_failure=False)
             except FileExistsError as e:
                 log.error(f"Job failed with error: {e}")
                 pipeline.delete_folder(base_path)
@@ -260,7 +259,7 @@ def process(
         log.info("SIP successfully created")
 
         # Clear up logging handlers so subsequent executions in the same python thread
-        #  don't stack up
+        #  won't stack up
         if log.hasHandlers():
             log.handlers.clear()
 
@@ -272,7 +271,7 @@ def process(
         log.error(f"Job failed with error: {e}")
 
         # Clear up logging handlers so subsequent executions in the same python thread
-        #  don't stack up
+        #  won't stack up
         if log.hasHandlers():
             log.handlers.clear()
 
@@ -282,11 +281,13 @@ def process(
     #  any created file and folder
     except Exception as e:
         log.error(f"Job failed with error: {e}")
-        if pipeline: 
+        if pipeline:
+            # Try to delete the created folder so we don't 
+            # leave half packages around
             pipeline.delete_folder(base_path)
 
         # Clear up logging handlers so subsequent executions in the same python thread
-        #  don't stack up
+        #  won't stack up
         if log.hasHandlers():
             log.handlers.clear()
 
