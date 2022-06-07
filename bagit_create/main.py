@@ -249,6 +249,7 @@ def process(
             # If the move fails, the original folder is deleted
             try:
                 pipeline.move_folders(base_path, name, target)
+                # If deleting a folder fails here, we need the exception
                 pipeline.delete_folder(base_path, silent_failure=False)
             except FileExistsError as e:
                 log.error(f"Job failed with error: {e}")

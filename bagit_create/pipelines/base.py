@@ -108,6 +108,9 @@ class BasePipeline:
     def delete_folder(self, path, silent_failure=True):
         """
         Delete given folder.
+        By default, any exception that may happen here is just logged and ignored.
+        This is done because we usually call delete_folder while handling other exceptions,
+        possibly even before any folder is created.
         """
 
         try:
