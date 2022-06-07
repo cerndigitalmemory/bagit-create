@@ -105,9 +105,21 @@ class BasePipeline:
     def get_metadata(self, recid):
         return None
 
-    def delete_folder(self, path):
-        log.info(f"Deleted {path}")
-        shutil.rmtree(path)
+    def delete_folder(self, path, silent_failure=True):
+        """
+        Delete given folder.
+        By default, any exception that may happen here is just logged and ignored.
+        This is done because we usually call delete_folder while handling other exceptions,
+        possibly even before any folder is created.
+        """
+
+        try:
+            log.info(f"Deleted {path}")
+            shutil.rmtree(path)
+        except Exception as e:
+            log.info(f"SIP folder was not found: {e}")
+            if not silent_failure:
+                raise e
 
     def write_file(self, content, dest):
         if type(content) is bytes:

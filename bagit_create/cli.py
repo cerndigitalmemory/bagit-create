@@ -162,7 +162,7 @@ from .version import __version__
     [CodiMD] Value of the `connect.sid` cookie
     """,
     type=Text,
-    default=False,
+    default=None,
     is_flag=False,
 )
 def cli(
