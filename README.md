@@ -93,12 +93,14 @@ pip install -e .
 bic --version
 
 # You're done! Create a SIP for a CDS resource from its URL:
-bic --url http://cds.cern.ch/record/2665537
+bic --url http://cds.cern.ch/record/2798105 -v
 
 # Install additional packages for testing
 pip install pytest oais_utils
 
 # Run tests
+# Set an Indico API key, or expect some test to fail
+export INDICO_KEY=<YOUR_INDICO_KEY>
 python -m pytest
 ```
 

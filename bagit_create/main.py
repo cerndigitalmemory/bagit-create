@@ -282,7 +282,7 @@ def process(
     except Exception as e:
         log.error(f"Job failed with error: {e}")
         if pipeline:
-            # Try to delete the created folder so we don't 
+            # Try to delete the created folder so we don't
             # leave half packages around
             pipeline.delete_folder(base_path)
 
