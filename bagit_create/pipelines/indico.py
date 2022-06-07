@@ -17,12 +17,9 @@ class IndicoV1Pipeline(base.BasePipeline):
         self.base_url = base_url
         self.source = "indico"
 
-        # Get Indico API Key from environment variable
-        if token:
-            self.api_key = token
-        else:
-            raise Exception("API token not found, set it through the token parameter.")
-
+        # Get Indico API Key from the parameters
+        self.api_key = None
+       
     # get metadata according to indico api guidelines
     def get_metadata(self, record_id, source):
         """
@@ -30,8 +27,12 @@ class IndicoV1Pipeline(base.BasePipeline):
         Returns: [metadata_serialized, metadata_upstream_url, operation_status_code]
         """
 
+        # If api_key is not set
+        if not self.api_key:
+            raise Exception("API token not found, set it through the token parameter.")
+
         # Prepare call Indico API
-        # Authenticate with API Key
+        # Authenticate with API Keyy
         headers = {"Authorization": "Bearer " + self.api_key}
 
         # Indico API export base endpoint
