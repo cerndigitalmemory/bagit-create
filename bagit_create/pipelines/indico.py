@@ -32,7 +32,7 @@ class IndicoV1Pipeline(base.BasePipeline):
             raise Exception("API token not found, set it through the token parameter.")
 
         # Prepare call Indico API
-        # Authenticate with API Keyy
+        # Authenticate with API Key
         headers = {"Authorization": "Bearer " + self.api_key}
 
         # Indico API export base endpoint
