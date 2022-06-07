@@ -106,8 +106,11 @@ class BasePipeline:
         return None
 
     def delete_folder(self, path):
-        log.info(f"Deleted {path}")
-        shutil.rmtree(path)
+        try:
+            log.info(f"Deleted {path}")
+            shutil.rmtree(path)
+        except Exception as e:
+            log.info(f"SIP folder was not found: {e}")
 
     def write_file(self, content, dest):
         if type(content) is bytes:

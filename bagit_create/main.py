@@ -1,3 +1,4 @@
+from genericpath import exists
 import logging
 import time
 
@@ -108,6 +109,7 @@ def process(
             the metadata, or no valid CERN SIP will be created."""
         )
     try:
+        pipeline = None
         # Initialize the pipeline
         if source == "cds":
             pipeline = invenio_v1.InvenioV1Pipeline(
@@ -280,7 +282,8 @@ def process(
     #  any created file and folder
     except Exception as e:
         log.error(f"Job failed with error: {e}")
-        pipeline.delete_folder(base_path)
+        if pipeline: 
+            pipeline.delete_folder(base_path)
 
         # Clear up logging handlers so subsequent executions in the same python thread
         #  don't stack up
