@@ -33,6 +33,10 @@ def process(
     # Save timestamp
     timestamp = int(time.time())
 
+    # If no target folder is specified, set it to the current folder
+    if target is None:
+        target = os.getcwd()
+
     # Save parameters with which bagit-create was called
     params = {
         "recid": recid,
@@ -86,8 +90,10 @@ def process(
     ## File Handler
     # create file handler logging everything
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    logfilename = f"biclog::{recid}::{source}.tmp"
-    fh = logging.FileHandler(logfilename)
+    log_basepath = "/tmp"
+    log_filename = f"biclog::{recid}::{source}::{timestamp}.tmp"
+    log_fullpath = f"{log_basepath}/{log_filename}"
+    fh = logging.FileHandler(log_fullpath)
     fh.setLevel(10)
     fh.setFormatter(formatter)
     log.addHandler(fh)
@@ -215,10 +221,10 @@ def process(
         # Remove the FileHandler (this allows to keep logging to the shell)
         log.removeHandler(log.handlers[1])
 
-        # Move log file inside the meta folder
-        fs.move.move_file(
-            ".",
-            logfilename,
+        # Copy log file inside the meta folder
+        fs.copy.copy_file(
+            log_basepath,
+            log_filename,
             f"{base_path}/data/meta",
             "bagitcreate.log",
         )
@@ -245,9 +251,6 @@ def process(
         # Verify created package against the BagIt standard
         pipeline.verify_bag(base_path)
 
-        # If no target folder is specified, set it to the current folder
-        if target is None:
-            target = os.getcwd()
         try:
             pipeline.move_folders(base_path, name, target)
             # If deleting a folder fails here, we need the exception
@@ -284,10 +287,21 @@ def process(
     #  any created file and folder
     except Exception as e:
         log.error(f"Job failed with error: {e}")
+
         if pipeline:
             # Try to delete the created folder so we don't
             # leave half packages around
             pipeline.delete_folder(base_path)
+
+        # Copy log file to the target directory
+        fs.copy.copy_file(
+            log_basepath,
+            log_filename,
+            target,
+            log_filename,
+        )
+
+        log.error(f"Saved log of the failed job at {target}/{log_filename}")
 
         # Clear up logging handlers so subsequent executions in the same python thread
         #  won't stack up
