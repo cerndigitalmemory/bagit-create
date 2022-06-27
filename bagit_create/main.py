@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 
 import fs
@@ -244,18 +245,19 @@ def process(
         # Verify created package against the BagIt standard
         pipeline.verify_bag(base_path)
 
-        # If a target folder is specified, move the created Bag there
-        if target:
+        # If no target folder is specified, set it to the current folder
+        if target is None:
+            target = os.getcwd()
+        try:
+            pipeline.move_folders(base_path, name, target)
+            # If deleting a folder fails here, we need the exception
+            pipeline.delete_folder(base_path, silent_failure=False)
+        except FileExistsError as e:
             # If the move fails, the original folder is deleted
-            try:
-                pipeline.move_folders(base_path, name, target)
-                # If deleting a folder fails here, we need the exception
-                pipeline.delete_folder(base_path, silent_failure=False)
-            except FileExistsError as e:
-                log.error(f"Job failed with error: {e}")
-                pipeline.delete_folder(base_path)
+            log.error(f"Job failed with error: {e}")
+            pipeline.delete_folder(base_path)
 
-                return {"status": 1, "errormsg": e}
+            return {"status": 1, "errormsg": e}
 
         log.info("SIP successfully created")
 

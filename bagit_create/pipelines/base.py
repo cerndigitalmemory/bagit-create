@@ -257,11 +257,12 @@ class BasePipeline:
         self.write_file(content, dest)
 
     def prepare_folders(self, source, recid, timestamp, delimiter_str="::"):
-        # Get current path
-        path = os.getcwd()
+        # Sometimes we don't have write permissions on the cwd,
+        #  so let's prepare things in /tmp
+        path = '/tmp'
 
         # Prepare the base folder for the BagIt export
-        #  e.g. "bagitexport::cds::42"
+        #  e.g. "bagitexport::cds::42::4320197"
         base_name = (
             f"sip{delimiter_str}{source}{delimiter_str}{recid}{delimiter_str}{timestamp}"
         )
@@ -269,7 +270,7 @@ class BasePipeline:
 
         os.mkdir(base_path)
 
-        # Create data/ subfolder (bagit payload)
+        # Create a 'data/' subfolder (bagit payload)
         os.mkdir(f"{base_path}/data")
         os.mkdir(f"{base_path}/data/meta")
         os.mkdir(f"{base_path}/data/content")
