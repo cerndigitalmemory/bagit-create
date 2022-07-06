@@ -59,7 +59,7 @@ class LocalV1Pipeline(base.BasePipeline):
                 if source_dir == dirpath:
                     target = dest_dir
                 else:
-                    dest_relpath = dirpath[len(source_dir) + 1:]
+                    dest_relpath = dirpath[len(source_dir) + 1 :]
                     target = f"{dest_dir}/{dest_relpath}"
                     os.mkdir(target)
 
@@ -114,12 +114,18 @@ class LocalV1Pipeline(base.BasePipeline):
             sourcePath = f"{file}"
         # Otherwise prepare the relative path
         else:
-            relpath = dirpath[len(src) + 1:]
+            relpath = dirpath[len(src) + 1 :]
             obj["origin"]["path"] = relpath
             sourcePath = f"{relpath}/{file}"
         obj["origin"]["sourcePath"] = f"{os.path.abspath(dirpath)}/{file}"
 
         obj["bagpath"] = f"data/content/{sourcePath}"
+
+        try:
+            file_stat = os.stat(f"{dirpath}/{file}")
+            obj["rawstat"] = self.stat_to_json(file_stat)
+        except Exception:
+            log.debug("Unable to stat file. Skipping.")
 
         try:
             obj["size"] = os.path.getsize(f"{dirpath}/{file}")
@@ -138,3 +144,8 @@ class LocalV1Pipeline(base.BasePipeline):
         obj["downloaded"] = False
 
         return obj
+
+    def stat_to_json(self, stat_output):
+        return {
+            k: getattr(stat_output, k) for k in dir(stat_output) if k.startswith("st_")
+        }
