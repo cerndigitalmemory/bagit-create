@@ -441,6 +441,11 @@ class BasePipeline:
                 "Source and Record ID are required if you don't provide an URL"
             )
 
+        if not isinstance(author, str):
+            raise WrongInputException(
+                "Author field must be a string"
+            )
+
         if url and (source or recid):
             raise WrongInputException(
                 "You can either specify an URL or a Source and Record ID"
