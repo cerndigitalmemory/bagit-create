@@ -449,7 +449,10 @@ class BasePipeline:
                     "Author field must be a string"
                 )
         elif source == "local" and not author:
-            logging.info("Author not provided. Setting as author the current system user...")
+            """
+            If author is not given by the user, 
+            """
+            log.warn("Author not provided. Setting as author the current system user...")
             try:
                 author = gt.getuser()
             except:
