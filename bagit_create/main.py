@@ -55,7 +55,7 @@ def process(
     }
 
     try:
-        base.BasePipeline.check_parameters_input(
+        author = base.BasePipeline.check_parameters_input(
             recid,
             url,
             source,
@@ -148,6 +148,7 @@ def process(
             source_path = pipeline.get_abs_path(source_path)
             recid = pipeline.get_local_recid(source_path, author)
             params["recid"] = recid
+            params["author"] = author
 
         # Save job details (as audit step 0)
         audit = [

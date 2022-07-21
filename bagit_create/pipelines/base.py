@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 import time
+import getpass as gt
 from datetime import date
 from itertools import chain
 from pathlib import Path
@@ -441,10 +442,21 @@ class BasePipeline:
                 "Source and Record ID are required if you don't provide an URL"
             )
 
-        if source == "local" and not isinstance(author, str):
-            raise WrongInputException(
-                "Author field must be a string"
-            )
+        if source == "local" and author:
+            # Check first if author exists and then check if it is a string
+            if not isinstance(author, str):
+                raise WrongInputException(
+                    "Author field must be a string"
+                )
+        elif source == "local" and not author:
+            logging.info("Author not provided. Setting as author the current system user...")
+            try:
+                author = gt.getuser()
+            except:
+                raise WrongInputException("Author cannot be retrieved. Please provide the author.")
+            finally:
+                if not author:
+                    raise WrongInputException("Author is missing")
 
         if url and (source or recid):
             raise WrongInputException(
@@ -467,8 +479,7 @@ class BasePipeline:
 
         if source_path and source != "local":
             raise WrongInputException("This pipeline is not expecting a source_path.")
-        if source == "local" and not author:
-            raise WrongInputException("Author is missing")
+        
         if source == "local" and not source_path:
             raise WrongInputException("source_path is missing")
         if (source_base_path or source_path or author) and (source != "local"):
@@ -479,6 +490,7 @@ class BasePipeline:
             if source_base_path not in os.path.abspath(source_path):
                 raise WrongInputException("source_base_path should include source_path")
 
+        return author
 
 class WrongInputException(Exception):
     # This exception handles wrong cli commands
