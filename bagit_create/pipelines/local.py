@@ -3,7 +3,7 @@ import logging
 import ntpath
 import os
 import shutil
-from os import stat, walk
+from os import stat, walk, listdir
 from pwd import getpwuid
 
 from . import base
@@ -34,6 +34,8 @@ class LocalV1Pipeline(base.BasePipeline):
             dirpath = ntpath.dirname(src)
             obj = self.get_local_metadata(file, src, dirpath, isFile=True)
             files.append(obj)
+        elif len(listdir(src)) == 0:
+            raise Exception("Given directory is empty.")
         else:
             # Walk through the whole directory and prepare an object for each found file
             for (dirpath, dirnames, filenames) in walk(src, followlinks=True):
