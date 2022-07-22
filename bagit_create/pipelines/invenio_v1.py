@@ -193,7 +193,6 @@ class InvenioV1Pipeline(base.BasePipeline):
         """
         Given a Files object, download files in the specified path
         """
-
         log.info(f"Downloading {len(files)} files to {base_path}..")
         for idx, sourcefile in enumerate(files):
             # We're looking for files not flagged as metadata and not downloaded yet
@@ -211,13 +210,19 @@ class InvenioV1Pipeline(base.BasePipeline):
                     f'Downloading {sourcefile["origin"]["filename"]} from {download_url}..'
                 )
 
-                files[idx]["downloaded"] = cds.downloadRemoteFile(
+                downloaded = cds.downloadRemoteFile(
                     download_url, destination, self.verifyssl
                 )
+
+                if downloaded:
+                    files[idx]["downloaded"] = downloaded
+                else:
+                    files[idx].pop("bagpath")
 
             else:
                 log.debug(
                     f'Skipped downloading of {sourcefile["origin"]["filename"]} from              '
                     f'       {sourcefile["origin"]["url"]}..'
                 )
+
         return files

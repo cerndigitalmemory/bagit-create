@@ -180,7 +180,7 @@ class BasePipeline:
         contents = ""
 
         for idx, file in enumerate(files):
-            path = f"{basepath}/{file['bagpath']}"
+
             checksum = None
             # Check if there's the "checksum" value in the File
             if "checksum" in file:
@@ -200,6 +200,7 @@ class BasePipeline:
             # If we didn't find the required checksum but the file has been downloaded,
             #  compute it
             if not checksum and file["downloaded"]:
+                path = f"{basepath}/{file['bagpath']}"
                 checksum = self.compute_hash(path, algorithm)
                 # Add the newly computed checksum to the SIP metadata
                 if "checksum" in files[idx]:
@@ -209,7 +210,7 @@ class BasePipeline:
 
             # If there's no checksum and it's not possibile to compute it from disk, throw an error
             if not checksum and not file["downloaded"]:
-                pass
+                continue
 
             line = f"{checksum} {file['bagpath']}\n"
             contents += line
@@ -259,7 +260,7 @@ class BasePipeline:
     def prepare_folders(self, source, recid, timestamp, delimiter_str="::"):
         # Sometimes we don't have write permissions on the cwd,
         #  so let's prepare things in /tmp
-        path = '/tmp'
+        path = "/tmp"
 
         # Prepare the base folder for the BagIt export
         #  e.g. "bagitexport::cds::42::4320197"
@@ -442,9 +443,7 @@ class BasePipeline:
             )
 
         if source == "local" and not isinstance(author, str):
-            raise WrongInputException(
-                "Author field must be a string"
-            )
+            raise WrongInputException("Author field must be a string")
 
         if url and (source or recid):
             raise WrongInputException(
