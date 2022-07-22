@@ -109,7 +109,8 @@ def downloadRemoteFile(src, dest, verify=True):
         #    f.write(r.content)
 
     except Exception as e:
-        logging.warning(f"Couldn't not download file {src}. Error {e}")
+        logging.warning(f"Could not download file {src}. Error {e}")
+        return False
     return True
 
 
