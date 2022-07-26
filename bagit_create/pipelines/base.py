@@ -15,7 +15,7 @@ import requests
 from fs import open_fs
 from jsonschema import validate
 
-from ..version import __version__
+from ..version import complete_version
 
 my_fs = open_fs("/")
 
@@ -41,7 +41,7 @@ class BasePipeline:
         size = sum(f.stat().st_size for f in payload_path.glob("**/*") if f.is_file())
 
         baginfo = (
-            f"Bag-Software-Agent: bagit-create {__version__}"
+            f"Bag-Software-Agent: bagit-create {complete_version}"
             " <https://github.com/cerndigitalmemory/bagit-create>\nBagging-Date:"
             f" {d}\nPayload-Oxum: {size}.{file_count}\n"
         )
@@ -343,7 +343,7 @@ class BasePipeline:
         source = audit[0]["tool"]["params"]["source"]
         bic_meta = {
             "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
-            "created_by": f"bagit-create {__version__}",
+            "created_by": f"bagit-create {complete_version}",
             "audit": audit,
             "source": audit[0]["tool"]["params"]["source"],
             "recid": audit[0]["tool"]["params"]["recid"],

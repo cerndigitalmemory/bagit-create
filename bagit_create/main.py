@@ -8,7 +8,7 @@ from fs import open_fs
 from . import utils
 from .pipelines import base, codimd, indico, invenio_v1, invenio_v3, local, opendata
 from .pipelines.base import WrongInputException
-from .version import __version__
+from .version import complete_version
 
 my_fs = open_fs(".")
 
@@ -98,7 +98,7 @@ def process(
     fh.setFormatter(formatter)
     log.addHandler(fh)
 
-    log.info(f"BagIt Create tool {__version__}")
+    log.info(f"BagIt Create tool {complete_version}")
     log.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     log.debug(f"Set log level: {loglevels[loglevel]}")
     log.debug(f"Parametrs: {params}")
@@ -154,7 +154,7 @@ def process(
             {
                 "tool": {
                     "name": "CERN BagIt Create",
-                    "version": __version__,
+                    "version": complete_version,
                     "website": "https://gitlab.cern.ch/digitalmemory/bagit-create",
                     "params": params,
                 },
