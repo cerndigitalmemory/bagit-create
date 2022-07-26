@@ -125,7 +125,10 @@ class BasePipeline:
         if type(content) is bytes:
             open(f"{dest}", "ab").write(content)
         elif type(content) is dict:
-            open(f"{dest}", "a").write(json.dumps(content, indent=4))
+            # Serialize to JSON with Unicode Data as-is into an UTF-8 encoded file
+            open(f"{dest}", "a", encoding="utf-8").write(
+                json.dumps(content, indent=4, ensure_ascii=False)
+            )
         else:
             open(f"{dest}", "a").write(content)
         log.info(f"Wrote {os.path.basename(dest)}")
@@ -387,9 +390,7 @@ class BasePipeline:
 
         files.append(bic_meta_file_entry)
 
-        self.write_file(
-            json.dumps(bic_meta, indent=4), f"{base_path}/data/meta/sip.json"
-        )
+        self.write_file(bic_meta, f"{base_path}/data/meta/sip.json")
 
         return files
 
