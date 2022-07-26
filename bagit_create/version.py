@@ -2,7 +2,8 @@ import os
 import subprocess
 
 # Change this when releasing a new version
-VERSION = "0.1.9"
+# The version setuptools will read
+__version__ = "0.1.9"
 
 
 def get_commit_hash():
@@ -25,15 +26,16 @@ def get_commit_hash():
 
 def get_version():
     """
-    Returns a string like `bic, version 0.1.9 git/47278a2` when running from a git cloned copy of BIC
+    Returns a string like `bic, version 0.1.9 git.47278a2` when running from a git cloned copy of BIC
     or simply `bic, version 0.1.9` when running from a released version of the tool
     """
     git_commit = get_commit_hash()
 
     if git_commit is not None:
-        return f"{VERSION}-git{git_commit}"
+        return f"{__version__}-git.{git_commit}"
     else:
-        return VERSION
+        return __version__
 
 
-__version__ = get_version()
+# This is read and exposed by the CLI --version
+complete_version = get_version()

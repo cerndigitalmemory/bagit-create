@@ -5,13 +5,13 @@ from typing import Text
 import click
 
 from .main import process
-from .version import __version__
+from .version import complete_version
 
 """bagit-create command line tool."""
 
 
 @click.command()
-@click.version_option(__version__)
+@click.version_option(complete_version)
 @click.option(
     "--recid",
     help="Record ID of the resource the upstream digital repository. Required by every pipeline but local.",
