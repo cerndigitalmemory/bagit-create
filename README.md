@@ -101,6 +101,7 @@ pip install pytest oais_utils
 # Run tests
 # Set an Indico API key, or expect some test to fail
 export INDICO_KEY=<YOUR_INDICO_KEY>
+export GITLAB_KEY=<YOUR_GITLAB_KEY>
 python -m pytest
 ```
 
@@ -123,6 +124,12 @@ bic --url http://cds.cern.ch/record/2665537
 ```
 
 ## Examples
+
+GitLab:
+
+```
+bic --source gitlab --token <YOUR_TOKEN> --recid 104913 -vv
+```
 
 CDS:
 
@@ -351,6 +358,14 @@ Set the CODIMD_SESSION env variable to the value of the `connect.sid` cookie bef
 ```bash
 CODIMD_SESSION=<connect.sid_value_here> python examples/codimd_history.py
 ```
+
+## GitLab
+
+To export projects from CERN GitLab you'll need to provide a Personal access token of an user that has at least a "Maintainer" role on the target repository. This token will also be used to clone the repository.
+
+By default, only files from the default branch will be indexed in the metadata and in the SIP manifest. The exported package will however also contain a full copy of the git repository, including every available branch.
+
+A package created using the "dry run" flag will not contain the repository copy.
 
 # Advanced usage
 

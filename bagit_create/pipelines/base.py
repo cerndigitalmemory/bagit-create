@@ -17,6 +17,7 @@ from jsonschema import validate
 
 from ..version import complete_version
 
+
 my_fs = open_fs("/")
 
 log = logging.getLogger("bic-basic-logger")
@@ -241,6 +242,14 @@ class BasePipeline:
                     # TODO: We must use the file:// but this fails on bagit validate
                     param = "file:/" + param
 
+                if source == "gitlab":
+                    origin = file["origin"]
+                    if "sourcePath" in origin:
+                        param = file["origin"]["sourcePath"]
+
+                    elif "url" in origin:
+                        param = file["origin"]["url"]
+
                 # If there is no local mode get the origin url
                 else:
                     param = file["origin"]["url"]
@@ -431,6 +440,7 @@ class BasePipeline:
         source_base_path,
         bibdoc,
         bd_ssh_host,
+        token,
         loglevel,
     ):
         """
@@ -478,6 +488,8 @@ class BasePipeline:
         if source_base_path:
             if source_base_path not in os.path.abspath(source_path):
                 raise WrongInputException("source_base_path should include source_path")
+        if source == "gitlab" and not token:
+            raise WrongInputException("Gitlab pipeline requires API token.")
 
 
 class WrongInputException(Exception):
