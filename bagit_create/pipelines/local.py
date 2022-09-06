@@ -3,7 +3,7 @@ import logging
 import ntpath
 import os
 import shutil
-from os import stat, walk, listdir
+from os import listdir, stat, walk
 from pwd import getpwuid
 
 from . import base
@@ -16,7 +16,7 @@ class LocalV1Pipeline(base.BasePipeline):
         log.info(f"Local v1 pipeline initialised.\nLocal source: {src}")
         self.src = src
 
-    def scan_files(self, src):
+    def scan_files(self, src, author):
         """
         Walks through the source folder and prepare the "files" object
         """
@@ -44,6 +44,7 @@ class LocalV1Pipeline(base.BasePipeline):
                         file,
                         src,
                         dirpath,
+                        author,
                         isFile=False,
                     )
                     files.append(obj)
@@ -61,7 +62,7 @@ class LocalV1Pipeline(base.BasePipeline):
                 if source_dir == dirpath:
                     target = dest_dir
                 else:
-                    dest_relpath = dirpath[len(source_dir) + 1 :]
+                    dest_relpath = dirpath[len(source_dir) + 1:]
                     target = f"{dest_dir}/{dest_relpath}"
                     os.mkdir(target)
 
@@ -104,7 +105,7 @@ class LocalV1Pipeline(base.BasePipeline):
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
         return files
 
-    def get_local_metadata(self, file, src, dirpath, isFile):
+    def get_local_metadata(self, file, src, dirpath, author, isFile):
         # Prepare the File object
         obj = {"origin": {}}
 
@@ -116,7 +117,7 @@ class LocalV1Pipeline(base.BasePipeline):
             sourcePath = f"{file}"
         # Otherwise prepare the relative path
         else:
-            relpath = dirpath[len(src) + 1 :]
+            relpath = dirpath[len(src) + 1:]
             obj["origin"]["path"] = relpath
             sourcePath = f"{relpath}/{file}"
         obj["origin"]["sourcePath"] = f"{os.path.abspath(dirpath)}/{file}"
@@ -137,10 +138,8 @@ class LocalV1Pipeline(base.BasePipeline):
             obj["date"] = os.path.getmtime(f"{dirpath}/{file}")
         except OSError:
             log.debug(" Date cannot be found. Skipping field. ")
-        try:
-            obj["creator"] = getpwuid(stat(f"{dirpath}/{file}").st_uid).pw_name
-        except OSError:
-            log.debug(" Creator cannot be found. Skipping field. ")
+        if author:
+            obj["creator"] = author
 
         obj["metadata"] = False
         obj["downloaded"] = False

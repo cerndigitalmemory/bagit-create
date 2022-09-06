@@ -13,7 +13,7 @@ test:
   script:
     - pip install -e .
     - pip install pytest oais_utils==0.0.3
-    - INDICO_KEY="$INDICO_KEY" python -m pytest --junitxml=path
+    - INDICO_KEY="$INDICO_KEY" GITLAB_KEY="$GITLAB_KEY" python -m pytest -s --junitxml=path
   artifacts:
     when: always
     reports:

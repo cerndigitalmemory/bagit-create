@@ -37,6 +37,7 @@ from .version import complete_version
             "local",
             "ilcagenda",
             "codimd",
+            "gitlab",
         ],
         case_sensitive=False,
     ),

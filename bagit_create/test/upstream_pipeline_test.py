@@ -81,6 +81,25 @@ def test_cod_pipeline():
     assert valid is True
 
 
+def test_gitlab_pipeline():
+    token = os.environ["GITLAB_KEY"]
+    test_variables = {
+        "source": "gitlab",
+        "recid": 121803,
+        "dry_run": True,
+        "token": token,
+        "loglevel": 0,
+    }
+    valid = pipeline_results(
+        test_variables["source"],
+        test_variables["recid"],
+        test_variables["dry_run"],
+        test_variables["token"],
+        test_variables["loglevel"],
+    )
+    assert valid is True
+
+
 """
 def test_inveniordm_pipeline():
     test_variables = {"source": "inveniordm", "recid": "v3vqp-bfg07", "dry_run": True}
@@ -91,7 +110,7 @@ def test_inveniordm_pipeline():
 """
 
 
-def pipeline_results(source, recid, dry_run, token=None):
+def pipeline_results(source, recid, dry_run, token=None, loglevel=0):
     # Prepare a temporary folder to save the results
     with tempfile.TemporaryDirectory() as tmpdir1:
 
@@ -100,7 +119,7 @@ def pipeline_results(source, recid, dry_run, token=None):
         main.process(
             recid=recid,
             source=source,
-            loglevel=0,
+            loglevel=loglevel,
             target=tmpdir1,
             dry_run=dry_run,
             token=token,

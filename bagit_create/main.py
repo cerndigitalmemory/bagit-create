@@ -6,7 +6,16 @@ import fs
 from fs import open_fs
 
 from . import utils
-from .pipelines import base, codimd, indico, invenio_v1, invenio_v3, local, opendata
+from .pipelines import (
+    base,
+    codimd,
+    indico,
+    invenio_v1,
+    invenio_v3,
+    local,
+    opendata,
+    gitlab,
+)
 from .pipelines.base import WrongInputException
 from .version import complete_version
 
@@ -64,6 +73,7 @@ def process(
             source_base_path,
             bibdoc,
             bd_ssh_host,
+            token,
             loglevel,
         )
     except WrongInputException as e:
@@ -135,6 +145,10 @@ def process(
             )
         elif source == "codimd":
             pipeline = codimd.CodimdPipeline(token=token, recid=recid)
+        elif source == "gitlab":
+            pipeline = gitlab.GitlabPipeline(
+                "https://gitlab.cern.ch", token=token, recid=recid
+            )
         elif source == "cod":
             pipeline = opendata.OpenDataPipeline("http://opendata.cern.ch")
         elif source == "zenodo" or source == "inveniordm":
@@ -172,7 +186,7 @@ def process(
 
         if source == "local":
             # Look for files in the source folder and prepare the files object
-            files = pipeline.scan_files(source_path)
+            files = pipeline.scan_files(source_path, author)
             metadata_url = None
         else:
             # Get metadata from upstream
