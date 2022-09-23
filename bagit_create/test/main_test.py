@@ -1,9 +1,10 @@
-from ..pipelines import invenio_v1
-from ..pipelines import base
-import tempfile
-import ntpath, os
-from os import walk
+import ntpath
+import os
 import shutil
+import tempfile
+from os import walk
+
+from ..pipelines import base, invenio_v1
 
 pipeline = invenio_v1.InvenioV1Pipeline("https://some/invenio/v1/instance", recid=1)
 
@@ -70,7 +71,7 @@ def test_target_option():
     try:
         # Run the move folders function
         pipeline = base.BasePipeline()
-        pipeline.move_folders(src, "test_temp_folder_1", dest)
+        pipeline.copy_folders(src, "test_temp_folder_1", dest)
 
         # Create two flags to assert the test
         file_1_exists = False
