@@ -9,12 +9,12 @@ from . import utils
 from .pipelines import (
     base,
     codimd,
+    gitlab,
     indico,
     invenio_v1,
     invenio_v3,
     local,
     opendata,
-    gitlab,
 )
 from .pipelines.base import WrongInputException
 from .version import complete_version
@@ -266,8 +266,9 @@ def process(
         pipeline.verify_bag(base_path)
 
         try:
-            pipeline.move_folders(base_path, name, target)
-            # If deleting a folder fails here, we need the exception
+            # Copy folder to the requested target location
+            pipeline.copy_folders(base_path, name, target)
+            # Delete temp folder
             pipeline.delete_folder(base_path, silent_failure=False)
         except FileExistsError as e:
             # If the move fails, the original folder is deleted

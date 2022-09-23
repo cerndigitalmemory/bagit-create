@@ -17,7 +17,6 @@ from jsonschema import validate
 
 from ..version import complete_version
 
-
 my_fs = open_fs("/")
 
 log = logging.getLogger("bic-basic-logger")
@@ -416,19 +415,17 @@ class BasePipeline:
         log.info("--\n")
         return valid
 
-    def move_folders(self, base_path, name, target):
-        log.info(f"Moving files to {target} ..")
+    def copy_folders(self, base_path, name, target):
+        log.info(f"Copying files to {target} ..")
 
         # Check if destination folder exists
         if not os.path.isdir(target):
             os.mkdir(target)
 
-        # make a new folder at the target folder with the original name
-        new_path = f"{target}/{name}"
-        os.mkdir(new_path)
+        target_path = f"{target}/{name}"
 
-        # move folder to the target location
-        fs.move.move_fs(base_path, new_path)
+        # copy folder to the target location
+        shutil.copytree(base_path, target_path)
 
     # Checks the input from the cli and raises error if there is a mistake
     def check_parameters_input(
