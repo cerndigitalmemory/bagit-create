@@ -21,7 +21,8 @@ class IndicoV1Pipeline(base.BasePipeline):
         if token:
             self.api_key = token
         else:
-            raise Exception("API token not found, set it through the token parameter.")
+            log.info("No Indico API key set. Running as unauthenticated.")
+            self.api_key = ""
 
     # get metadata according to indico api guidelines
     def get_metadata(self, record_id, source):
@@ -46,7 +47,7 @@ class IndicoV1Pipeline(base.BasePipeline):
 
         if r.status_code != 200:
             raise APIException(
-                f"Metadata request gave HTTP {r.status_code}. Check the indico api key."
+                f"Metadata request gave HTTP {r.status_code}. Check the Indico API key."
             )
 
         self.metadata_url = r.url
@@ -65,7 +66,7 @@ class IndicoV1Pipeline(base.BasePipeline):
             )
         else:
             raise RecidException(
-                f"Wrong recid. The record {record_id} does not exist or it is not available."
+                f"Wrong recid. The record {record_id} does not exist or you need to set an API token to access it."
             )
 
     # Download Remote Folders in the cwd
