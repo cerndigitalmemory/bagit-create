@@ -51,7 +51,7 @@ setup(
         "pyflakes==2.3.0",
         "pymarc==4.0.0",
         "pytz==2021.3",
-        "requests==2.25.1",
+        "requests>=2.26",
         "six==1.15.0",
         "urllib3==1.26.4",
         "bagit==1.8.1",
