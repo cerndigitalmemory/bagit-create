@@ -24,10 +24,19 @@ def get_dict_value(dct, keys):
 
 
 class InvenioV3Pipeline(base.BasePipeline):
-    def __init__(self, source):
-        self.headers = {"Content-Type": "application/json"}
-        self.response_type = "json"
+    def __init__(self, source, token=None):
+        # Set up atuh headers for requesting metadata
+        self.headers = {
+            "Content-Type": "application/json",
+        }
 
+        if token:
+            self.headers["Authorization"] = f"Bearer {token}"
+        else:
+            log.info("No Indico Invenio token passed. Running as unauthenticated.")
+
+        self.token = token
+        self.response_type = "json"
         self.config_file = configparser.ConfigParser()
         self.config_file.read(os.path.join(os.path.dirname(__file__), "invenio.ini"))
         self.config = None
@@ -39,7 +48,8 @@ class InvenioV3Pipeline(base.BasePipeline):
             if instance == source:
                 self.config = self.config_file[instance]
                 self.base_endpoint = self.config["base_endpoint"]
-                # Some instances have the file endpoint separately where the parameters are the filenames
+                # Some instances have the file endpoint separately where the parameters
+                #  are the filenames
                 self.has_file_base_uri = self.config.getboolean("has_file_base_uri")
 
         log.info(f"Invenio v3 pipeline initialised.\nBase URL: {self.base_endpoint}")
@@ -137,7 +147,9 @@ class InvenioV3Pipeline(base.BasePipeline):
                 )
 
                 sourcefile["downloaded"] = self.download_file(
-                    sourcefile["origin"]["url"], destination
+                    sourcefile["origin"]["url"],
+                    destination,
+                    {"Authorization": f"Bearer {self.token}"},
                 )
             else:
                 log.debug(

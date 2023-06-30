@@ -134,8 +134,8 @@ class BasePipeline:
         log.info(f"Wrote {os.path.basename(dest)}")
         log.debug(f"({dest})")
 
-    def download_file(self, sourcefile, dest):
-        with requests.get(sourcefile, stream=True) as r:
+    def download_file(self, sourcefile, dest, headers={}):
+        with requests.get(sourcefile, stream=True, headers=headers) as r:
             r.raise_for_status()
             with open(dest, "wb") as f:
                 for chunk in r.iter_content(chunk_size=512 * 1024):
