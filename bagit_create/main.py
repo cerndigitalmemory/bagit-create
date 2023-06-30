@@ -38,6 +38,9 @@ def process(
     token=None,
     skipssl=False,
     url=None,
+    collection=None,
+    embargo=None,
+    comment=None
 ):
     # Save timestamp
     timestamp = int(time.time())
@@ -61,6 +64,9 @@ def process(
         "bd_ssh_host": bd_ssh_host,
         "timestamp": timestamp,
         "cert": cert,
+        "collection": collection,
+        "embargo": embargo,
+        "comment": comment,
     }
 
     try:
@@ -251,7 +257,8 @@ def process(
         # Create sip.json
         #  File entries for sip.json and the log files will be added here
         files = pipeline.create_sip_meta(
-            files, audit, timestamp, base_path, metadata_url
+            files, audit, timestamp, base_path, metadata_url, collection, embargo,
+            comment
         )
 
         # Compute checksums just for the last 2 added files (the sip.json and the log file)
@@ -288,7 +295,6 @@ def process(
 
     # Folder exists, gracefully stop
     except FileExistsError as e:
-
         log.error(f"Job failed with error: {e}")
 
         # Clear up logging handlers so subsequent executions in the same python thread

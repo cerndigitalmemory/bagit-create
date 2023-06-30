@@ -23,6 +23,24 @@ from .version import complete_version
     type=Text,
 )
 @click.option(
+    "-ct",
+    "--collection",
+    help="Set the 'collection' field in the SIP manifest.",
+    type=Text,
+)
+@click.option(
+    "-em",
+    "--embargo",
+    help="Set the 'embargo_timestamp' field in the SIP manifest.",
+    type=Text,
+)
+@click.option(
+    "-cm",
+    "--comment",
+    help="Set the 'description' field in the SIP manifest.",
+    type=Text,
+)
+@click.option(
     "-s",
     "--source",
     help="Select source pipeline from the supported ones.",
@@ -38,7 +56,7 @@ from .version import complete_version
             "ilcagenda",
             "codimd",
             "gitlab",
-            "cds-rdm-sandbox"
+            "cds-rdm-sandbox",
         ],
         case_sensitive=False,
     ),
@@ -184,8 +202,10 @@ def cli(
     token,
     skipssl,
     url,
+    collection,
+    embargo,
+    comment
 ):
-
     # Select the desired log level (default is 2, warning)
     if very_verbose:
         loglevel = 0
@@ -212,6 +232,9 @@ def cli(
         token,
         skipssl,
         url,
+        collection,
+        embargo,
+        comment,
     )
     print(f"Job result: {result}")
 

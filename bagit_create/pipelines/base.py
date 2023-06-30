@@ -183,7 +183,6 @@ class BasePipeline:
         contents = ""
 
         for idx, file in enumerate(files):
-
             checksum = None
             # Check if there's the "checksum" value in the File
             if "checksum" in file:
@@ -347,7 +346,17 @@ class BasePipeline:
 
         return files
 
-    def create_sip_meta(self, files, audit, timestamp, base_path, metadata_url=None):
+    def create_sip_meta(
+        self,
+        files,
+        audit,
+        timestamp,
+        base_path,
+        metadata_url=None,
+        collection=None,
+        embargo=None,
+        comment=None,
+    ):
         source = audit[0]["tool"]["params"]["source"]
         bic_meta = {
             "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
@@ -358,7 +367,18 @@ class BasePipeline:
             "metadataFile_upstream": metadata_url,
             "contentFiles": files,
             "sip_creation_timestamp": timestamp,
+            "usr-meta": {},
         }
+
+        if collection:
+            bic_meta["usr-meta"]["collection"] = collection
+
+        if embargo:
+            bic_meta["usr-meta"]["embargo_timestamp"] = embargo
+
+        if comment:
+            bic_meta["usr-meta"]["comment"] = comment
+
         if source == "local":
             bic_meta.update(
                 {
