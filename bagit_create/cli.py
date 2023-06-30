@@ -38,6 +38,7 @@ from .version import complete_version
             "ilcagenda",
             "codimd",
             "gitlab",
+            "cds-rdm-sandbox"
         ],
         case_sensitive=False,
     ),
