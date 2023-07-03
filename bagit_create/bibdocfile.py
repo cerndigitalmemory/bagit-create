@@ -1,15 +1,14 @@
 # Runs bibdocfile and parses its output to get details on CDS records
 
-import subprocess
 import logging
 import ntpath
+import subprocess
 
 log = logging.getLogger("bic-basic-logger")
 
 
 def run(resid, ssh_host=None):
     if len(resid) < 16 and resid.isdecimal():
-
         command = [
             "/opt/cdsweb/bin/bibdocfile",
             "--get-info",
@@ -37,7 +36,6 @@ def run(resid, ssh_host=None):
 
 
 def parse(output, resid):
-
     # Keys we want to save
     keys = ["fullpath", "checksum", "name", "fullname", "url", "fullurl", "size"]
 

@@ -40,7 +40,7 @@ def process(
     url=None,
     collection=None,
     embargo=None,
-    comment=None
+    comment=None,
 ):
     # Save timestamp
     timestamp = int(time.time())
@@ -257,8 +257,14 @@ def process(
         # Create sip.json
         #  File entries for sip.json and the log files will be added here
         files = pipeline.create_sip_meta(
-            files, audit, timestamp, base_path, metadata_url, collection, embargo,
-            comment
+            files,
+            audit,
+            timestamp,
+            base_path,
+            metadata_url,
+            collection,
+            embargo,
+            comment,
         )
 
         # Compute checksums just for the last 2 added files (the sip.json and the log file)

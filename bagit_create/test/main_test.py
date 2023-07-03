@@ -36,7 +36,6 @@ def test_mergelists_inverted():
 
 
 def test_target_option():
-
     src = "/tmp/test_temp_folder_1"
     dest = "/tmp/destination_temp_folder"
 

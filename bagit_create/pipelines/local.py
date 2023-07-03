@@ -38,7 +38,7 @@ class LocalV1Pipeline(base.BasePipeline):
             raise Exception("Given directory is empty.")
         else:
             # Walk through the whole directory and prepare an object for each found file
-            for (dirpath, dirnames, filenames) in walk(src, followlinks=True):
+            for dirpath, dirnames, filenames in walk(src, followlinks=True):
                 for file in filenames:
                     obj = self.get_local_metadata(
                         file,
@@ -57,12 +57,11 @@ class LocalV1Pipeline(base.BasePipeline):
                 f"{dest_dir}/{ntpath.basename(source_dir)}",
             )
         else:
-            for (dirpath, dirnames, filenames) in walk(source_dir, followlinks=True):
-
+            for dirpath, dirnames, filenames in walk(source_dir, followlinks=True):
                 if source_dir == dirpath:
                     target = dest_dir
                 else:
-                    dest_relpath = dirpath[len(source_dir) + 1:]
+                    dest_relpath = dirpath[len(source_dir) + 1 :]
                     target = f"{dest_dir}/{dest_relpath}"
                     os.mkdir(target)
 
@@ -117,7 +116,7 @@ class LocalV1Pipeline(base.BasePipeline):
             sourcePath = f"{file}"
         # Otherwise prepare the relative path
         else:
-            relpath = dirpath[len(src) + 1:]
+            relpath = dirpath[len(src) + 1 :]
             obj["origin"]["path"] = relpath
             sourcePath = f"{relpath}/{file}"
         obj["origin"]["sourcePath"] = f"{os.path.abspath(dirpath)}/{file}"

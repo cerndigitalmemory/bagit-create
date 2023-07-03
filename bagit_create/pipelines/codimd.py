@@ -45,7 +45,6 @@ class CodimdPipeline(base.BasePipeline):
         return (files, meta_file_entry)
 
     def download_files(self, files, base_path):
-
         r = requests.get(
             f"https://codimd.web.cern.ch/{self.recid}/download",
             stream=True,

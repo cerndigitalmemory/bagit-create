@@ -12,7 +12,6 @@ log = logging.getLogger("bic-basic-logger")
 
 class IndicoV1Pipeline(base.BasePipeline):
     def __init__(self, base_url, token=None):
-
         log.info(f"Indico v3 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
         self.source = "indico"

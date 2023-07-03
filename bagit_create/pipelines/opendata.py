@@ -97,7 +97,6 @@ class OpenDataPipeline(base.BasePipeline):
         log.info(f"Downloading {len(files)} files to {temp_files_path}..")
         skipped = 0
         for file in files:
-
             if file["metadata"] is False:
                 destination = f'{temp_files_path}/{file["origin"]["filename"]}'
                 # If more than one URL is available, use the first one (HTTP)

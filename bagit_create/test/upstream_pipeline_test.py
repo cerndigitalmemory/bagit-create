@@ -113,7 +113,6 @@ def test_inveniordm_pipeline():
 def pipeline_results(source, recid, dry_run, token=None, loglevel=0):
     # Prepare a temporary folder to save the results
     with tempfile.TemporaryDirectory() as tmpdir1:
-
         # Run Bagit Create with the following parameters:
         # Save the results to tmpdir1
         main.process(

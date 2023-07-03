@@ -1,8 +1,9 @@
 import os
 import time
 
-import bagit_create
 import requests
+
+import bagit_create
 
 session_id = os.environ["CODIMD_SESSION"]
 max_attempts = 5

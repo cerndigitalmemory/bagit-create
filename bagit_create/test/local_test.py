@@ -1,11 +1,13 @@
-from .. import main
+import os
 import tempfile
-import os, pytest
+
+import pytest
 from oais_utils.validate import validate_sip
+
+from .. import main
 
 
 def test_local_files():
-
     # Prepare the mock folders and expected result from file
     with tempfile.TemporaryDirectory() as tmpdir1:
         with tempfile.TemporaryDirectory(dir=tmpdir1) as tmpdir2:

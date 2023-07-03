@@ -2,14 +2,15 @@
 # Interacts with CDS API to get metadata, parses and extract file informations
 # Helper functions to trigger the download of such files from HTTP and EOS
 
-import requests
-from pymarc import marcxml
-from fs import open_fs
-import pprint
-import ntpath
 import logging
+import ntpath
+import pprint
 import re
+
 import fs
+import requests
+from fs import open_fs
+from pymarc import marcxml
 
 my_fs = open_fs("/")
 

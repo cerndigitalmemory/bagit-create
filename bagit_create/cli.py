@@ -204,7 +204,7 @@ def cli(
     url,
     collection,
     embargo,
-    comment
+    comment,
 ):
     # Select the desired log level (default is 2, warning)
     if very_verbose:

@@ -210,7 +210,6 @@ class GitlabPipeline(base.BasePipeline):
                 self.current_time_elapsed <= self.total_seconds_allowed
                 and results_fetched is False
             ):  # If the time elapsed is less than the max allowed time, and if the results are not fetched continues the loop.
-
                 """
                 Calls the check_export function which returns true if it manages to get the data from the Gitlab API
                 """
@@ -290,7 +289,6 @@ class GitlabPipeline(base.BasePipeline):
             r3 = requests.get(url=URL, stream=True, headers=headers)
 
             if r3.ok:
-
                 exported_files_destination = (
                     f"{base_path}/data/content/repository_metadata"
                 )
