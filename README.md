@@ -4,7 +4,7 @@
 
 "BagIt Create" is a tool to export digital repository records in packages with a consistent format, according to the [CERN Submission Information Package specification](https://gitlab.cern.ch/digitalmemory/sip-spec).
 
-Digital Repositories powered by Invenio v1, Invenio v3, Invenio RDM, CERN Open Data and Indico are supported, as well as locally found folders.
+Digital Repositories powered by Invenio v1, Invenio v3, Invenio RDM, CERN Open Data and Indico are supported, as well as GitLab repositories and locally found folders.
 
 Quick start:
 
@@ -190,6 +190,8 @@ bic --recid 10104 --source cod --verbose
 bic --recid 10105 --source cod --verbose
 ```
 
+Some more advanced recipes can be found in the `examples/` folder.
+
 ## Options
 
 ```sh
@@ -275,6 +277,7 @@ bic --recid 10105 --source cod --verbose
 | CERN Indico          | indico    | https://indico.cern.ch/            | Indico v3.0.x  |
 | ILC Agenda           | ilcagenda | https://agenda.linearcollider.org/ | Indico v3.0.x  |
 | CodiMD               | codimd    | https://codimd.web.cern.ch/        | CodiMD         |
+| GitLab               | gitlab    | https://gitlab.cern.ch/            | GitLab         |
 
 Additional configuration may be required (e.g. for restricted events).
 
