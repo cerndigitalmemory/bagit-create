@@ -1,3 +1,10 @@
+"""
+This is an example on how to harvest your entire codimd history
+Set the CODIMD_SESSION environment variable to the value of the `connect.sid_value`
+cookie from your codimd authenticated session
+To learn more about this: https://gitlab.cern.ch/digitalmemory/bagit-create#codimd
+"""
+
 import os
 import time
 
