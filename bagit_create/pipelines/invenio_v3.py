@@ -33,7 +33,7 @@ class InvenioV3Pipeline(base.BasePipeline):
         if token:
             self.headers["Authorization"] = f"Bearer {token}"
         else:
-            log.info("No Indico Invenio token passed. Running as unauthenticated.")
+            log.info("No Invenio token passed. Running as unauthenticated.")
 
         self.token = token
         self.response_type = "json"
@@ -91,14 +91,28 @@ class InvenioV3Pipeline(base.BasePipeline):
                     url = file_uri + "/" + filename
                 else:
                     url = self.get_file_uri(sourcefile)
+
+                # Sometimes we need to save the files with different names from upstream
+                # (e.g. when they have a /)
+                # The original value stays in origin/filename, and "cleaned up" one
+                # is saved as part of the local bag path.
+                if "/" in filename:
+                    log.warning("Filename with '/' detected. Replacing it with '-'..")
+                    bagpath_filename = filename.replace("/", "-")
+                else:
+                    bagpath_filename = filename
+
+                # Let's save all the details we have about the current file
+                # (and how we saved it in the bag)
                 file_obj = {
                     "origin": {"url": url, "filename": filename, "path": ""},
                     "downloaded": False,
                     "metadata": False,
-                    "bagpath": f"data/content/{filename}",
+                    "bagpath": f"data/content/{bagpath_filename}",
                     "checksum": sourcefile["checksum"],
                     "size": sourcefile["size"],
                 }
+
                 files_obj.append(file_obj)
 
             log.debug(f"Got {len(files)} files")
