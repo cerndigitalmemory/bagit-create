@@ -265,7 +265,13 @@ class BasePipeline:
             # Workaround to get a valid fetch.txt (/eos/ is a malformed URL)
             if param[:5] == "/eos/":
                 param = f"eos:/{param}"
-            line = f'{param} {file["size"]} {file["origin"]["path"]}{file["origin"]["filename"]}\n'
+
+            # Compose the final line
+            # We're using the bagpath as the "target" here as it may differ
+            # from the filename extracted from the URL
+            # (e.g. see how Invenio3 pipeline handles filenames with slashes)
+
+            line = f'{param} {file["size"]} {file["origin"]["path"]}{file["bagpath"]}\n'
             contents += line
         return contents
 
