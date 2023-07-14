@@ -73,6 +73,17 @@ def test_zenodo_pipeline():
     assert valid is True
 
 
+def test_zenodo_pipeline_slashes():
+    """
+    This tests a zenodo record with a file with / in the name
+    """
+    test_variables = {"source": "zenodo", "recid": 164952, "dry_run": False}
+    valid = pipeline_results(
+        test_variables["source"], test_variables["recid"], test_variables["dry_run"]
+    )
+    assert valid is True
+
+
 def test_cod_pipeline():
     test_variables = {"source": "cod", "recid": 10101, "dry_run": True}
     valid = pipeline_results(
@@ -124,7 +135,8 @@ def pipeline_results(source, recid, dry_run, token=None, loglevel=0):
             token=token,
         )
 
-        # Check inside the tmpdir1 for any folders. If it finds one, this will be the folder created by Bagit Create.
+        # Check inside the tmpdir1 for any folders. If it finds one, this will be the 
+        # folder created by Bagit Create.
         target_sip_list = os.listdir(tmpdir1)
 
         # Run validate_sip on the folder that was found
