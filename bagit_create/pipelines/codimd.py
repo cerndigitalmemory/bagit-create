@@ -35,7 +35,7 @@ class CodimdPipeline(base.BasePipeline):
             "origin": {
                 "filename": f"codimd-{self.recid}.json",
                 "path": "",
-                "url": "self.metadata_url",
+                "url": "",
             },
             "metadata": True,
             "downloaded": True,
@@ -74,6 +74,25 @@ class CodimdPipeline(base.BasePipeline):
                 if chunk:
                     f.write(chunk)
         files[0]["bagpath"] = f"data/content/{fname}"
+
+        r = requests.get(
+            f"https://codimd.web.cern.ch/{self.recid}/pdf",
+            stream=True,
+            cookies={"connect.sid": self.connect_sid_token},
+        )
+
+        with open(f"{base_path}/data/content/{fname[:-3]}.pdf", "wb") as f:
+            for chunk in r.raw.stream(1024, decode_content=False):
+                if chunk:
+                    f.write(chunk)
+
+        pdf_file_entry = {
+            "downloaded": True,
+            "bagpath": f"data/content/{fname[:-3]}.pdf",
+        }
+
+        files.append(pdf_file_entry)
+
         return files
 
     def create_manifests(self, files, base_path):
