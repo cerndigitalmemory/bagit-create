@@ -21,6 +21,9 @@ my_fs = open_fs("/")
 
 log = logging.getLogger("bic-basic-logger")
 
+ADDITIONAL_DELAY_PERCENTAGE = 5
+ADDITIONAL_DELAY_FLAT = 1
+
 
 class BasePipeline:
     def __init__(self) -> None:
@@ -142,11 +145,21 @@ class BasePipeline:
                     if chunk:  # filter out keep-alive new chunks
                         f.write(chunk)
             if "X-RateLimit-Remaining" and "X-RateLimit-Reset" in r.headers:
-                elapsed_time_to_reset = int(r.headers['X-RateLimit-Reset']) - int(time.time())
-                log.debug(f"Rate limits: {r.headers['X-RateLimit-Remaining']} remaining requests. Resetting in {elapsed_time_to_reset}s")
-                if int(r.headers['X-RateLimit-Remaining']) < 2:
-                    log.info(f"Hitting rate limits: waiting for {elapsed_time_to_reset}s..")
-                    time.sleep(elapsed_time_to_reset)
+                elapsed_time_to_reset = int(r.headers["X-RateLimit-Reset"]) - int(
+                    time.time()
+                )
+                log.debug(
+                    f"Rate limits: {r.headers['X-RateLimit-Remaining']} remaining requests. Resetting in {elapsed_time_to_reset}s"
+                )
+                if int(r.headers["X-RateLimit-Remaining"]) < 5:
+                    log.info(
+                        f"Hitting rate limits: waiting for {elapsed_time_to_reset}s.."
+                    )
+                    time.sleep(
+                        elapsed_time_to_reset +
+                        elapsed_time_to_reset / 100 * ADDITIONAL_DELAY_PERCENTAGE +
+                        ADDITIONAL_DELAY_FLAT
+                    )
         return True
 
     def add_bagit_txt(self, dest, version="0.97", encoding="UTF-8"):
