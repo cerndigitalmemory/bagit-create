@@ -1,4 +1,4 @@
 include *.py
 recursive-include bagit_create *.py
 include bagit_create/pipelines/invenio.ini
-global-exclude examples *.py
+global-exclude examples/*.py
