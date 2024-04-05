@@ -1,6 +1,8 @@
 from pathlib import PurePosixPath
 from urllib.parse import unquote, urlparse
 
+from bagit_create.pipelines.base import WrongInputException
+
 
 def parse_url(url):
     """
@@ -16,6 +18,8 @@ def parse_url(url):
         source = "cod"
     elif o.hostname == "zenodo.org":
         source = "zenodo"
+    elif o.hostname == "new-cds.cern.ch":
+        source = "cds-rdm"
     else:
         raise WrongInputException(
             "Unable to parse the given URL. Try manually passing the source and the record ID."
@@ -24,7 +28,7 @@ def parse_url(url):
     path_parts = PurePosixPath(unquote(urlparse(url).path)).parts
 
     # Ensures the path is in the form /record/<RECORD_ID>
-    if path_parts[0] == "/" and path_parts[1] == "record":
+    if path_parts[0] == "/" and (path_parts[1] == "record" or path_parts[1] == "records"):
         # The ID is the second part of the path
         recid = path_parts[2]
     else:

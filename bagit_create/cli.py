@@ -57,6 +57,7 @@ from .version import complete_version
             "codimd",
             "gitlab",
             "cds-rdm-sandbox",
+            "cds-rdm",
         ],
         case_sensitive=False,
     ),

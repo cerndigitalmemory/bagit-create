@@ -157,7 +157,7 @@ def process(
             )
         elif source == "cod":
             pipeline = opendata.OpenDataPipeline("http://opendata.cern.ch")
-        elif source == "zenodo" or source == "inveniordm" or source == "cds-rdm-sandbox":
+        elif source == "zenodo" or source == "inveniordm" or source == "cds-rdm-sandbox" or source == "cds-rdm":
             pipeline = invenio_v3.InvenioV3Pipeline(source, token=token)
         elif source == "indico":
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/", token=token)
@@ -168,6 +168,8 @@ def process(
             source_path = pipeline.get_abs_path(source_path)
             recid = pipeline.get_local_recid(source_path, author)
             params["recid"] = recid
+        else:
+            return {"status": 1, "errormsg": f"The given source {source} is not supported"}
 
         # Save job details (as audit step 0)
         audit = [
