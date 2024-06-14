@@ -55,6 +55,22 @@ def test_cds_pipeline():
     assert valid is True
 
 
+def test_cds_rdm_pipeline():
+    test_variables = {"source": "cds-rdm", "recid": "c2948-e8875", "dry_run": True}
+    valid = pipeline_results(
+        test_variables["source"], test_variables["recid"], test_variables["dry_run"]
+    )
+    assert valid is True
+
+
+def test_cds_rdm_sandbox_pipeline():
+    test_variables = {"source": "cds-rdm-sandbox", "recid": "pgexp-w7893", "dry_run": True}
+    valid = pipeline_results(
+        test_variables["source"], test_variables["recid"], test_variables["dry_run"]
+    )
+    assert valid is True
+
+
 """
 def test_cds_pipeline():
     test_variables = {"source": "ilcdoc", "recid": 62959, "dry_run": True}
