@@ -117,7 +117,7 @@ def process(
     log.info(f"BagIt Create tool {complete_version}")
     log.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
     log.debug(f"Set log level: {loglevels[loglevel]}")
-    log.debug(f"Parametrs: {params}")
+    log.debug(f"Parameters: {params}")
 
     if url:
         # If an URL is provided, parse it to get Source and Record ID
