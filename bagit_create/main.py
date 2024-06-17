@@ -64,6 +64,7 @@ def process(
         "bd_ssh_host": bd_ssh_host,
         "timestamp": timestamp,
         "cert": cert,
+        "token": token,
         "collection": collection,
         "embargo": embargo,
         "comment": comment,
