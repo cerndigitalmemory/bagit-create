@@ -58,7 +58,7 @@ class InvenioV3Pipeline(base.BasePipeline):
             log.error("No such Invenio instance: " + source)
 
     def get_metadata(self, recid, source):
-        res = requests.get(self.base_endpoint + str(recid), headers=self.headers)
+        res = requests.get(self.base_endpoint + str(recid), headers=self.headers, verify=False)
 
         if res.status_code != 200:
             raise Exception(f"Metadata request gave HTTP {res.status_code}.")
@@ -138,7 +138,7 @@ class InvenioV3Pipeline(base.BasePipeline):
 
         if self.config.getboolean("files_separately", fallback=False):
             url = self.base_endpoint + str(self.recid) + "/files"
-            res = requests.get(url, headers=self.headers)
+            res = requests.get(url, headers=self.headers, verify=False)
 
             if res.status_code != 200:
                 raise Exception(f"File list request gave HTTP {res.status_code}.")
