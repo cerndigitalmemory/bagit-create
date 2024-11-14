@@ -22,7 +22,7 @@ test:
 pypi:
   stage: Release
   script:
-    - pip install -U twine
+    - pip install -U setuptools twine
     - python setup.py sdist
     - twine upload dist/*
   only:
