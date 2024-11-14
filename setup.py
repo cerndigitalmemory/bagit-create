@@ -24,8 +24,8 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://gitlab.cern.ch/digitalmemory/bagit-create",
-    author="Antonio Vivace",
-    author_email="antonio.vivace@cern.ch",
+    author="Panna Liptak",
+    author_email="panna.georgina.liptak@cern.ch",
     license="GPLv3",
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
