@@ -93,14 +93,16 @@ class InvenioV3Pipeline(base.BasePipeline):
                     url = self.get_file_uri(sourcefile)
 
                 # Sometimes we need to save the files with different names from upstream
-                # (e.g. when they have a /)
+                # (e.g. when they have a /, or there is an issue with %0 in the filename)
                 # The original value stays in origin/filename, and "cleaned up" one
                 # is saved as part of the local bag path.
+                bagpath_filename = filename
                 if "/" in filename:
-                    log.warning("Filename with '/' detected. Replacing it with '-'..")
+                    log.warning("Filename with '/' detected. Replacing it with '-'.")
                     bagpath_filename = filename.replace("/", "-")
-                else:
-                    bagpath_filename = filename
+                if "%0" in filename:
+                    log.warning("Filename with '%0' detected. Replacing it with '-'.")
+                    bagpath_filename = filename.replace("%0", "-")
 
                 # Let's save all the details we have about the current file
                 # (and how we saved it in the bag)
@@ -138,11 +140,12 @@ class InvenioV3Pipeline(base.BasePipeline):
 
         if self.config.getboolean("files_separately", fallback=False):
             status_list = self.config["status"].split(",")
-            if get_dict_value(self.metadata, status_list) in [
+            status = get_dict_value(self.metadata, status_list)
+            if status in [
                 "metadata-only",
                 "embargoed",
             ]:
-                print("No files to download")
+                log.info(f"{status} record detected, has no available files.")
                 return None
             url = self.base_endpoint + str(self.recid) + "/files"
             res = requests.get(url, headers=self.headers)

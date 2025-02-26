@@ -206,7 +206,7 @@ class BasePipeline:
             # Check if there's the "checksum" value in the File
             if "checksum" in file:
                 # If it's a string create a single element list out of it
-                if type(file["checksum"]) == str:
+                if type(file["checksum"]) is str:
                     file["checksum"] = [file["checksum"]]
                 # For each available checksum
                 for avail_checksum in file["checksum"]:
