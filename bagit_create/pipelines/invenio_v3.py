@@ -137,6 +137,13 @@ class InvenioV3Pipeline(base.BasePipeline):
         key_list = self.config["files"].split(",")
 
         if self.config.getboolean("files_separately", fallback=False):
+            status_list = self.config["status"].split(",")
+            if get_dict_value(self.metadata, status_list) in [
+                "metadata-only",
+                "embargoed",
+            ]:
+                print("No files to download")
+                return None
             url = self.base_endpoint + str(self.recid) + "/files"
             res = requests.get(url, headers=self.headers)
 
@@ -144,7 +151,6 @@ class InvenioV3Pipeline(base.BasePipeline):
                 raise Exception(f"File list request gave HTTP {res.status_code}.")
 
             data = json.loads(res.text)
-            key_list = self.config["files"].split(",")
 
             return get_dict_value(data, key_list)
         else:
