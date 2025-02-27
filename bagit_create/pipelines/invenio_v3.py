@@ -6,6 +6,8 @@ import os
 import requests
 
 from . import base
+import re
+import urllib.parse
 
 log = logging.getLogger("bic-basic-logger")
 
@@ -93,16 +95,16 @@ class InvenioV3Pipeline(base.BasePipeline):
                     url = self.get_file_uri(sourcefile)
 
                 # Sometimes we need to save the files with different names from upstream
-                # (e.g. when they have a /, or there is an issue with %0 in the filename)
+                # (e.g. when they have a /, or there is an issue with control characters in the filename)
                 # The original value stays in origin/filename, and "cleaned up" one
                 # is saved as part of the local bag path.
-                bagpath_filename = filename
-                if "/" in filename:
+                bagpath_filename = urllib.parse.unquote(filename)
+                if "/" in bagpath_filename:
                     log.warning("Filename with '/' detected. Replacing it with '-'.")
-                    bagpath_filename = filename.replace("/", "-")
-                if "%0" in filename:
-                    log.warning("Filename with '%0' detected. Replacing it with '-'.")
-                    bagpath_filename = filename.replace("%0", "-")
+                    bagpath_filename = bagpath_filename.replace("/", "-")
+                if re.search(r'[\x00-\x1F]', bagpath_filename):
+                    log.warning("Filename with control characters detected. Replacing them with '-'.")
+                    bagpath_filename = re.sub(r'[\x00-\x1F]', '-', bagpath_filename)
 
                 # Let's save all the details we have about the current file
                 # (and how we saved it in the bag)
