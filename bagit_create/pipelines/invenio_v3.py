@@ -6,6 +6,8 @@ import os
 import requests
 
 from . import base
+import re
+import urllib.parse
 
 log = logging.getLogger("bic-basic-logger")
 
@@ -93,14 +95,16 @@ class InvenioV3Pipeline(base.BasePipeline):
                     url = self.get_file_uri(sourcefile)
 
                 # Sometimes we need to save the files with different names from upstream
-                # (e.g. when they have a /)
+                # (e.g. when they have a /, or there is an issue with control characters in the filename)
                 # The original value stays in origin/filename, and "cleaned up" one
                 # is saved as part of the local bag path.
-                if "/" in filename:
-                    log.warning("Filename with '/' detected. Replacing it with '-'..")
-                    bagpath_filename = filename.replace("/", "-")
-                else:
-                    bagpath_filename = filename
+                bagpath_filename = urllib.parse.unquote(filename)
+                if "/" in bagpath_filename:
+                    log.warning("Filename with '/' detected. Replacing it with '-'.")
+                    bagpath_filename = bagpath_filename.replace("/", "-")
+                if re.search(r'[\x00-\x1F]', bagpath_filename):
+                    log.warning("Filename with control characters detected. Replacing them with '-'.")
+                    bagpath_filename = re.sub(r'[\x00-\x1F]', '-', bagpath_filename)
 
                 # Let's save all the details we have about the current file
                 # (and how we saved it in the bag)
@@ -137,6 +141,14 @@ class InvenioV3Pipeline(base.BasePipeline):
         key_list = self.config["files"].split(",")
 
         if self.config.getboolean("files_separately", fallback=False):
+            status_list = self.config["status"].split(",")
+            status = get_dict_value(self.metadata, status_list)
+            if status in [
+                "metadata-only",
+                "embargoed",
+            ]:
+                log.info(f"{status} record detected, has no available files.")
+                return None
             url = self.base_endpoint + str(self.recid) + "/files"
             res = requests.get(url, headers=self.headers)
 
@@ -144,7 +156,6 @@ class InvenioV3Pipeline(base.BasePipeline):
                 raise Exception(f"File list request gave HTTP {res.status_code}.")
 
             data = json.loads(res.text)
-            key_list = self.config["files"].split(",")
 
             return get_dict_value(data, key_list)
         else:
