@@ -12,7 +12,7 @@ test:
       - IMAGE: ["registry.cern.ch/docker.io/library/python:3.8", "registry.cern.ch/docker.io/library/python:3.9", "registry.cern.ch/docker.io/library/python:3.10", "registry.cern.ch/docker.io/library/python:3.11"]
   script:
     - pip install -e .
-    - pip install pytest oais_utils==0.0.3
+    - pip install pytest oais_utils==0.0.5
     - INDICO_KEY="$INDICO_KEY" GITLAB_KEY="$GITLAB_KEY" python -m pytest -s --junitxml=path
   artifacts:
     when: always
