@@ -27,9 +27,11 @@ def get_dict_value(dct, keys):
 
 class InvenioV3Pipeline(base.BasePipeline):
     def __init__(self, source, token=None):
-        # Set up atuh headers for requesting metadata
+        # Set up auth headers for requesting metadata
+        # add user-agent to exclude requests from stats
         self.headers = {
             "Content-Type": "application/json",
+            "User-Agent": "cern-bagit-create-bot",
         }
 
         if token:
