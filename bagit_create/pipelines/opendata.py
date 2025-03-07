@@ -93,14 +93,14 @@ class OpenDataPipeline(base.BasePipeline):
                 files.append(file)
         return files, {}
 
-    def download_files(self, files, temp_files_path):
-        log.info(f"Downloading {len(files)} files to {temp_files_path}..")
+    def download_files(self, files, base_path):
+        log.info(f"Downloading {len(files)} files to {base_path}..")
         skipped = 0
         for file in files:
             if file["metadata"] is False:
-                destination = f'{temp_files_path}/{file["origin"]["filename"]}'
+                destination = f'{base_path}/{file["bagpath"]}'
                 # If more than one URL is available, use the first one (HTTP)
-                if type(file["origin"]["url"]) == list:
+                if type(file["origin"]["url"]) is list:
                     download_url = file["origin"]["url"][0]
                 else:
                     download_url = file["origin"]["url"]
@@ -125,6 +125,7 @@ class OpenDataPipeline(base.BasePipeline):
                 f"{skipped} files were skipped. Checksums will be searched in metadata \
     but won't be computed locally."
             )
+        log.info("Finished downloading")
         return files
 
     def create_manifests(self, files, base_path):

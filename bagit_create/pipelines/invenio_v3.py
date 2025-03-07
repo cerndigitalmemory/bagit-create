@@ -27,9 +27,11 @@ def get_dict_value(dct, keys):
 
 class InvenioV3Pipeline(base.BasePipeline):
     def __init__(self, source, token=None):
-        # Set up atuh headers for requesting metadata
+        # Set up auth headers for requesting metadata
+        # add user-agent to exclude requests from stats
         self.headers = {
             "Content-Type": "application/json",
+            "User-Agent": "cern-digital-memory-bot",
         }
 
         if token:
@@ -174,7 +176,7 @@ class InvenioV3Pipeline(base.BasePipeline):
                 sourcefile["downloaded"] = self.download_file(
                     sourcefile["origin"]["url"],
                     destination,
-                    {"Authorization": f"Bearer {self.token}"},
+                    self.headers,
                 )
             else:
                 log.debug(
