@@ -31,7 +31,7 @@ class InvenioV3Pipeline(base.BasePipeline):
         # add user-agent to exclude requests from stats
         self.headers = {
             "Content-Type": "application/json",
-            "User-Agent": "cern-bagit-create-bot",
+            "User-Agent": "cern-digital-memory-bot",
         }
 
         if token:

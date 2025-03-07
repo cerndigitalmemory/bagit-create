@@ -18,7 +18,7 @@ def parse_url(url):
         source = "cod"
     elif o.hostname == "zenodo.org":
         source = "zenodo"
-    elif o.hostname == "new-cds.cern.ch":
+    elif o.hostname == "repository.cern":
         source = "cds-rdm"
     else:
         raise WrongInputException(
