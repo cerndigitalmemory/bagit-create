@@ -176,7 +176,7 @@ class InvenioV3Pipeline(base.BasePipeline):
                 sourcefile["downloaded"] = self.download_file(
                     sourcefile["origin"]["url"],
                     destination,
-                    {"Authorization": f"Bearer {self.token}"},
+                    self.headers,
                 )
             else:
                 log.debug(

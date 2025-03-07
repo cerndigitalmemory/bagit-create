@@ -158,7 +158,7 @@ def process(
             )
         elif source == "cod":
             pipeline = opendata.OpenDataPipeline("http://opendata.cern.ch")
-        elif source in ["zenodo", "inveniordm", "cds-rdm-sandbox", "cds-rdm", "dev-cds-rdm", "my-site"]:
+        elif source in ["zenodo", "inveniordm", "cds-rdm-sandbox", "cds-rdm", "dev-cds-rdm"]:
             pipeline = invenio_v3.InvenioV3Pipeline(source, token=token)
         elif source == "indico":
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/", token=token)

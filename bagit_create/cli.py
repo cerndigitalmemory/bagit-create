@@ -59,7 +59,6 @@ from .version import complete_version
             "cds-rdm-sandbox",
             "cds-rdm",
             "dev-cds-rdm",
-            "my-site",
         ],
         case_sensitive=False,
     ),
