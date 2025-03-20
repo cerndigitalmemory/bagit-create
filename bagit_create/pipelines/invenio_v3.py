@@ -143,19 +143,19 @@ class InvenioV3Pipeline(base.BasePipeline):
 
     def get_fileslist(self):
         key_list = self.config["files"].split(",")
-        status_list = self.config["status"].split(",")
-        status = get_dict_value(self.metadata, status_list)
-        if status == "embargoed":
-            log.info("Record is embargoed, access token required.")
-        elif status == "restricted":
-            log.info("Record is restricted, access token required.")
 
         if self.config.getboolean("files_separately", fallback=False):
             url = self.base_endpoint + str(self.recid) + "/files"
             res = requests.get(url, headers=self.headers)
 
             if res.status_code != 200:
-                raise Exception(f"File list request gave HTTP {res.status_code}.")
+                exception_message = f"File list request gave HTTP {res.status_code}."
+                if res.status_code == 403:
+                    status_list = self.config["status"].split(",")
+                    status = get_dict_value(self.metadata, status_list)
+                    if status:
+                        raise Exception(exception_message + f" Record status: {status}.")
+                raise Exception(exception_message)
 
             data = json.loads(res.text)
 
@@ -170,7 +170,7 @@ class InvenioV3Pipeline(base.BasePipeline):
             return get_dict_value(self.metadata, key_list)
 
     def download_files(self, files, base_path):
-        files_filtered = [file for file in files if not file['metadata']]
+        files_filtered = [file for file in files if not file["metadata"]]
         log.info(f"Number of files to download to {base_path}: {len(files_filtered)}")
         for sourcefile in files:
             destination = f'{base_path}/{sourcefile["bagpath"]}'
