@@ -170,27 +170,21 @@ class InvenioV3Pipeline(base.BasePipeline):
             return get_dict_value(self.metadata, key_list)
 
     def download_files(self, files, base_path):
-        file_count = len([file for file in files if not file['metadata']])
-        log.info(f"Number of files to download to {base_path}: {file_count}")
+        files_filtered = [file for file in files if not file['metadata']]
+        log.info(f"Number of files to download to {base_path}: {len(files_filtered)}")
         for sourcefile in files:
-            if sourcefile["metadata"] is False:
-                destination = f'{base_path}/{sourcefile["bagpath"]}'
+            destination = f'{base_path}/{sourcefile["bagpath"]}'
 
-                log.debug(
-                    f'Downloading {sourcefile["origin"]["filename"]} from '
-                    f'{sourcefile["origin"]["url"]}..'
-                )
+            log.debug(
+                f'Downloading {sourcefile["origin"]["filename"]} from '
+                f'{sourcefile["origin"]["url"]}..'
+            )
 
-                sourcefile["downloaded"] = self.download_file(
-                    sourcefile["origin"]["url"],
-                    destination,
-                    self.headers,
-                )
-            else:
-                log.debug(
-                    f'Skipped downloading of {sourcefile["origin"]["filename"]} from '
-                    f'{sourcefile["origin"]["url"]}..'
-                )
+            sourcefile["downloaded"] = self.download_file(
+                sourcefile["origin"]["url"],
+                destination,
+                self.headers,
+            )
 
         log.info("Finished downloading")
         return files
