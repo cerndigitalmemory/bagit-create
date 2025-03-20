@@ -104,9 +104,11 @@ class InvenioV3Pipeline(base.BasePipeline):
                 if "/" in bagpath_filename:
                     log.warning("Filename with '/' detected. Replacing it with '-'.")
                     bagpath_filename = bagpath_filename.replace("/", "-")
-                if re.search(r'[\x00-\x1F]', bagpath_filename):
-                    log.warning("Filename with control characters detected. Replacing them with '-'.")
-                    bagpath_filename = re.sub(r'[\x00-\x1F]', '-', bagpath_filename)
+                if re.search(r"[\x00-\x1F]", bagpath_filename):
+                    log.warning(
+                        "Filename with control characters detected. Replacing them with '-'."
+                    )
+                    bagpath_filename = re.sub(r"[\x00-\x1F]", "-", bagpath_filename)
 
                 # Let's save all the details we have about the current file
                 # (and how we saved it in the bag)
@@ -143,46 +145,46 @@ class InvenioV3Pipeline(base.BasePipeline):
         key_list = self.config["files"].split(",")
 
         if self.config.getboolean("files_separately", fallback=False):
-            status_list = self.config["status"].split(",")
-            status = get_dict_value(self.metadata, status_list)
-            if status in [
-                "metadata-only",
-                "embargoed",
-            ]:
-                log.info(f"{status} record detected, has no available files.")
-                return None
             url = self.base_endpoint + str(self.recid) + "/files"
             res = requests.get(url, headers=self.headers)
 
             if res.status_code != 200:
-                raise Exception(f"File list request gave HTTP {res.status_code}.")
+                exception_message = f"File list request gave HTTP {res.status_code}."
+                if res.status_code == 403:
+                    status_list = self.config["status"].split(",")
+                    status = get_dict_value(self.metadata, status_list)
+                    if status:
+                        raise Exception(exception_message + f" Record status: {status}.")
+                raise Exception(exception_message)
 
             data = json.loads(res.text)
+
+            files_enabled_list = self.config["files_enabled"].split(",")
+            enabled = get_dict_value(data, files_enabled_list)
+            if not enabled:
+                log.info("Files are not enabled for this record.")
+                return None
 
             return get_dict_value(data, key_list)
         else:
             return get_dict_value(self.metadata, key_list)
 
     def download_files(self, files, base_path):
-        log.info(f"Downloading {len(files)} files to {base_path}..")
+        files_filtered = [file for file in files if not file["metadata"]]
+        log.info(f"Number of files to download to {base_path}: {len(files_filtered)}")
         for sourcefile in files:
-            if sourcefile["metadata"] is False:
-                destination = f'{base_path}/{sourcefile["bagpath"]}'
+            destination = f'{base_path}/{sourcefile["bagpath"]}'
 
-                log.debug(
-                    f'Downloading {sourcefile["origin"]["filename"]} from {sourcefile["origin"]["url"]}..'
-                )
+            log.debug(
+                f'Downloading {sourcefile["origin"]["filename"]} from '
+                f'{sourcefile["origin"]["url"]}..'
+            )
 
-                sourcefile["downloaded"] = self.download_file(
-                    sourcefile["origin"]["url"],
-                    destination,
-                    self.headers,
-                )
-            else:
-                log.debug(
-                    f'Skipped downloading of {sourcefile["origin"]["filename"]} from \
-                    {sourcefile["origin"]["url"]}..'
-                )
+            sourcefile["downloaded"] = self.download_file(
+                sourcefile["origin"]["url"],
+                destination,
+                self.headers,
+            )
 
         log.info("Finished downloading")
         return files
