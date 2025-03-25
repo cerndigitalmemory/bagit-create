@@ -384,7 +384,7 @@ class BasePipeline:
     ):
         source = audit[0]["tool"]["params"]["source"]
         bic_meta = {
-            "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/blob/master/sip-schema-d1.json",
+            "$schema": "https://gitlab.cern.ch/digitalmemory/sip-spec/-/raw/main/versions/sip-schema-v1.json",
             "created_by": f"bagit-create {complete_version}",
             "audit": audit,
             "source": audit[0]["tool"]["params"]["source"],
