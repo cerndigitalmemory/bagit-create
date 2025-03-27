@@ -271,6 +271,7 @@ Some more advanced recipes can be found in the `examples/` folder.
 | Name                 | Source ID | URL                                | Pipeline       |
 | -------------------- | --------- | ---------------------------------- | -------------- |
 | CERN Document Server | cds       | https://cds.cern.ch/               | Invenio v1.x   |
+| NEW CERN Document Server| cds-rdm| https://repository.cern/           | Invenio v3.x   |
 | ILC Document Server  | ilcdoc    | http://ilcdoc.linearcollider.org   | Invenio v1.x   |
 | CERN Open Data       | cod       | https://opendata.cern.ch/          | CERN Open Data |
 | Zenodo               | zenodo    | https://zenodo.org/                | Invenio v3.x   |
