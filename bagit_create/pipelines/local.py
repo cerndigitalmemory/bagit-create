@@ -32,7 +32,7 @@ class LocalV1Pipeline(base.BasePipeline):
         if os.path.isfile(src):
             file = ntpath.basename(src)
             dirpath = ntpath.dirname(src)
-            obj = self.get_local_metadata(file, src, dirpath, isFile=True)
+            obj = self.get_local_metadata(file, src, dirpath, author, isFile=True)
             files.append(obj)
         elif len(listdir(src)) == 0:
             raise Exception("Given directory is empty.")
