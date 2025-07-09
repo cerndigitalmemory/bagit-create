@@ -1,7 +1,20 @@
 from pathlib import PurePosixPath
 from urllib.parse import unquote, urlparse
 
-from bagit_create.pipelines.base import WrongInputException
+from bagit_create.exceptions import WrongInputException
+
+# DEBUG, INFO, WARNING, ERROR log levels
+loglevels = [10, 20, 30, 40]
+
+
+def get_loglevel(index):
+    """
+    Returns the log level corresponding to the given index.
+    Index should be 0 (DEBUG), 1 (INFO), 2 (WARNING), or 3 (ERROR).
+    """
+    if not type(index) is int or index < 0 or index >= len(loglevels):
+        raise ValueError(f"Log level index out of range (0 to {len(loglevels)-1}).")
+    return loglevels[index]
 
 
 def parse_url(url):

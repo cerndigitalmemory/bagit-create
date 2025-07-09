@@ -5,6 +5,8 @@ import os
 
 import requests
 
+from bagit_create.exceptions import APIException, RecidException
+
 from . import base
 
 log = logging.getLogger("bic-basic-logger")
@@ -229,12 +231,3 @@ class IndicoV1Pipeline(base.BasePipeline):
 
         return bagpath
 
-
-class RecidException(Exception):
-    # This exception handles recid errors (incorrect recid or page not accessible)
-    pass
-
-
-class APIException(Exception):
-    # This exception handles API errors (wrong API key or wrong url)
-    pass

@@ -41,6 +41,7 @@ def process(
     collection=None,
     embargo=None,
     comment=None,
+    workdir=None,
 ):
     # Save timestamp
     timestamp = int(time.time())
@@ -68,6 +69,7 @@ def process(
         "collection": collection,
         "embargo": embargo,
         "comment": comment,
+        "workdir": workdir,
     }
 
     try:
@@ -82,14 +84,12 @@ def process(
             bd_ssh_host,
             token,
             loglevel,
+            workdir,
         )
     except WrongInputException as e:
         return {"status": 1, "errormsg": e}
 
     ## Setup log
-
-    # DEBUG, INFO, WARNING, ERROR log levels
-    loglevels = [10, 20, 30, 40]
     log = logging.getLogger("bic-basic-logger")
     log.setLevel(logging.DEBUG)
 
@@ -100,14 +100,18 @@ def process(
     # what has been requested by the user (-v or -vv)
     ch_formatter = logging.Formatter("%(message)s")
     ch = logging.StreamHandler()
-    ch.setLevel(loglevels[loglevel])
+    ch.setLevel(utils.get_loglevel(loglevel))
     ch.setFormatter(ch_formatter)
     log.addHandler(ch)
+
+    ## Setup workdir
+    if not workdir:
+        workdir = "/tmp"
 
     ## File Handler
     # create file handler logging everything
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    log_basepath = "/tmp"
+    log_basepath = workdir
     log_filename = f"biclog::{recid}::{source}::{timestamp}.tmp"
     log_fullpath = f"{log_basepath}/{log_filename}"
     fh = logging.FileHandler(log_fullpath)
@@ -117,7 +121,7 @@ def process(
 
     log.info(f"BagIt Create tool {complete_version}")
     log.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
-    log.debug(f"Set log level: {loglevels[loglevel]}")
+    log.debug(f"Set log level: {utils.get_loglevel(loglevel)}")
     log.debug(f"Parameters: {params}")
 
     if url:
@@ -158,7 +162,13 @@ def process(
             )
         elif source == "cod":
             pipeline = opendata.OpenDataPipeline("http://opendata.cern.ch")
-        elif source in ["zenodo", "inveniordm", "cds-rdm-sandbox", "cds-rdm", "dev-cds-rdm"]:
+        elif source in [
+            "zenodo",
+            "inveniordm",
+            "cds-rdm-sandbox",
+            "cds-rdm",
+            "dev-cds-rdm",
+        ]:
             pipeline = invenio_v3.InvenioV3Pipeline(source, token=token)
         elif source == "indico":
             pipeline = indico.IndicoV1Pipeline("https://indico.cern.ch/", token=token)
@@ -170,7 +180,10 @@ def process(
             recid = pipeline.get_local_recid(source_path, author)
             params["recid"] = recid
         else:
-            return {"status": 1, "errormsg": f"The given source {source} is not supported"}
+            return {
+                "status": 1,
+                "errormsg": f"The given source {source} is not supported",
+            }
 
         # Save job details (as audit step 0)
         audit = [
@@ -188,7 +201,7 @@ def process(
         ]
 
         # Prepare empty folders
-        base_path, name = pipeline.prepare_folders(source, recid, timestamp)
+        base_path, name = pipeline.prepare_folders(source, recid, timestamp, workdir)
 
         # Create bagit.txt
         pipeline.add_bagit_txt(f"{base_path}/bagit.txt")
