@@ -9,6 +9,8 @@ from urllib.parse import quote
 
 import requests
 
+from bagit_create.exceptions import APIException, GitlabException, ServerException
+
 from . import base
 from .local import LocalV1Pipeline
 
@@ -412,18 +414,3 @@ class GitlabPipeline(base.BasePipeline):
             content, files = self.generate_manifest(files, alg, base_path)
             self.write_file(content, f"{base_path}/manifest-{alg}.txt")
         return files
-
-
-class APIException(Exception):
-    # This exception handles API errors (wrong API key or wrong url)
-    pass
-
-
-class GitlabException(Exception):
-    # This exception handles internal gitlab errors when connection is successful
-    pass
-
-
-class ServerException(Exception):
-    # This exception handles server connection errors
-    pass

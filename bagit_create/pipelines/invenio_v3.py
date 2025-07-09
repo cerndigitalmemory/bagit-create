@@ -2,12 +2,12 @@ import configparser
 import json
 import logging
 import os
+import re
+import urllib.parse
 
 import requests
 
 from . import base
-import re
-import urllib.parse
 
 log = logging.getLogger("bic-basic-logger")
 

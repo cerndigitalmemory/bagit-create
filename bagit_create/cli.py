@@ -187,6 +187,16 @@ from .version import complete_version
     default=None,
     is_flag=False,
 )
+@click.option(
+    "--workdir",
+    "-wd",
+    help="""
+    Processing directory
+    """,
+    type=Text,
+    default=None,
+    is_flag=False,
+)
 def cli(
     recid,
     source,
@@ -207,6 +217,7 @@ def cli(
     collection,
     embargo,
     comment,
+    workdir,
 ):
     # Select the desired log level (default is 2, warning)
     if very_verbose:
@@ -237,6 +248,7 @@ def cli(
         collection,
         embargo,
         comment,
+        workdir,
     )
     print(f"Job result: {result}")
 

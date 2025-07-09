@@ -15,6 +15,9 @@ import requests
 from fs import open_fs
 from jsonschema import validate
 
+from bagit_create.exceptions import WrongInputException
+
+from ..utils import get_loglevel
 from ..version import complete_version
 
 my_fs = open_fs("/")
@@ -292,11 +295,7 @@ class BasePipeline:
         content = self.generate_fetch_txt(files, source)
         self.write_file(content, dest)
 
-    def prepare_folders(self, source, recid, timestamp, delimiter_str="::"):
-        # Sometimes we don't have write permissions on the cwd,
-        #  so let's prepare things in /tmp
-        path = "/tmp"
-
+    def prepare_folders(self, source, recid, timestamp, path, delimiter_str="::"):
         # Prepare the base folder for the BagIt export
         #  e.g. "bagitexport::cds::42::4320197"
         base_name = (
@@ -484,6 +483,7 @@ class BasePipeline:
         bd_ssh_host,
         token,
         loglevel,
+        workdir,
     ):
         """
         Checks if the combination of the parameters for the job make up for
@@ -533,7 +533,11 @@ class BasePipeline:
         if source == "gitlab" and not token:
             raise WrongInputException("Gitlab pipeline requires API token.")
 
+        if loglevel:
+            try:
+                get_loglevel(loglevel)
+            except Exception:
+                raise WrongInputException("Not a valid log level.")
 
-class WrongInputException(Exception):
-    # This exception handles wrong cli commands
-    pass
+        if workdir and not os.path.isdir(workdir) and os.access(workdir, os.R_OK | os.W_OK):
+            raise WrongInputException("Working directory not valid or no access.")
