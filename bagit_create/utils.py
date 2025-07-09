@@ -41,7 +41,9 @@ def parse_url(url):
     path_parts = PurePosixPath(unquote(urlparse(url).path)).parts
 
     # Ensures the path is in the form /record/<RECORD_ID>
-    if path_parts[0] == "/" and (path_parts[1] == "record" or path_parts[1] == "records"):
+    if path_parts[0] == "/" and (
+        path_parts[1] == "record" or path_parts[1] == "records"
+    ):
         # The ID is the second part of the path
         recid = path_parts[2]
     else:

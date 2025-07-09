@@ -152,9 +152,9 @@ class InvenioV1Pipeline(base.BasePipeline):
                 obj["origin"]["filename"] = ntpath.basename(obj["origin"]["url"])
                 # We suppose no folder structure
                 obj["origin"]["path"] = ""
-                obj[
-                    "bagpath"
-                ] = f"data/content/{obj['origin']['path']}{obj['origin']['filename']}"
+                obj["bagpath"] = (
+                    f"data/content/{obj['origin']['path']}{obj['origin']['filename']}"
+                )
 
             obj["metadata"] = False
             obj["downloaded"] = False
