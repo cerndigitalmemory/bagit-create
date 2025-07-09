@@ -159,9 +159,9 @@ class BasePipeline:
                         f"Hitting rate limits: waiting for {elapsed_time_to_reset}s.."
                     )
                     time.sleep(
-                        elapsed_time_to_reset +
-                        elapsed_time_to_reset / 100 * ADDITIONAL_DELAY_PERCENTAGE +
-                        ADDITIONAL_DELAY_FLAT
+                        elapsed_time_to_reset
+                        + elapsed_time_to_reset / 100 * ADDITIONAL_DELAY_PERCENTAGE
+                        + ADDITIONAL_DELAY_FLAT
                     )
         return True
 
@@ -539,5 +539,9 @@ class BasePipeline:
             except Exception:
                 raise WrongInputException("Not a valid log level.")
 
-        if workdir and not os.path.isdir(workdir) and os.access(workdir, os.R_OK | os.W_OK):
+        if (
+            workdir
+            and not os.path.isdir(workdir)
+            and os.access(workdir, os.R_OK | os.W_OK)
+        ):
             raise WrongInputException("Working directory not valid or no access.")

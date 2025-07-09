@@ -64,7 +64,11 @@ def test_cds_rdm_pipeline():
 
 
 def test_cds_rdm_sandbox_pipeline():
-    test_variables = {"source": "cds-rdm-sandbox", "recid": "pgexp-w7893", "dry_run": True}
+    test_variables = {
+        "source": "cds-rdm-sandbox",
+        "recid": "pgexp-w7893",
+        "dry_run": True,
+    }
     valid = pipeline_results(
         test_variables["source"], test_variables["recid"], test_variables["dry_run"]
     )
@@ -151,7 +155,7 @@ def pipeline_results(source, recid, dry_run, token=None, loglevel=0):
             token=token,
         )
 
-        # Check inside the tmpdir1 for any folders. If it finds one, this will be the 
+        # Check inside the tmpdir1 for any folders. If it finds one, this will be the
         # folder created by Bagit Create.
         target_sip_list = os.listdir(tmpdir1)
 
