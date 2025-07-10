@@ -272,13 +272,13 @@ Some more advanced recipes can be found in the `examples/` folder.
 | ----------------------- | --------- | ---------------------------------- | -------------- |
 | CERN Document Server    | cds       | https://cds.cern.ch/               | Invenio v1.x   |
 | NEW CERN Document Server| cds-rdm   | https://repository.cern/           | Invenio v3.x   |
-| ILC Document Server     | ilcdoc    | http://ilcdoc.linearcollider.org   | Invenio v1.x   |
 | CERN Open Data          | cod       | https://opendata.cern.ch/          | CERN Open Data |
-| Zenodo                  | zenodo    | https://zenodo.org/                | Invenio v3.x   |
+| CodiMD                  | codimd    | https://codimd.web.cern.ch/        | CodiMD         |
 | CERN Indico             | indico    | https://indico.cern.ch/            | Indico v3.0.x  |
 | ILC Agenda              | ilcagenda | https://agenda.linearcollider.org/ | Indico v3.0.x  |
-| CodiMD                  | codimd    | https://codimd.web.cern.ch/        | CodiMD         |
+| ILC Document Server     | ilcdoc    | http://ilcdoc.linearcollider.org   | Invenio v1.x   |
 | GitLab                  | gitlab    | https://gitlab.cern.ch/            | GitLab         |
+| Zenodo                  | zenodo    | https://zenodo.org/                | Invenio v3.x   |
 
 Additional configuration may be required (e.g. for restricted events).
 
