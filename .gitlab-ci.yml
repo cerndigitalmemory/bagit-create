@@ -1,5 +1,3 @@
-image: python:latest
-
 stages:
   - Format
   - Test
@@ -41,6 +39,7 @@ test:
 
 pypi:
   stage: Release
+  image: registry.cern.ch/docker.io/library/python:3.11
   script:
     - pip install -U setuptools twine
     - python setup.py sdist
