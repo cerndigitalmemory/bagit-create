@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import logging
 from typing import Text
 
 import click
@@ -219,13 +220,13 @@ def cli(
     comment,
     workdir,
 ):
-    # Select the desired log level (default is 2, warning)
+    # Select the desired log level (default is warning)
     if very_verbose:
-        loglevel = 0
+        loglevel = logging.DEBUG
     elif verbose:
-        loglevel = 1
+        loglevel = logging.INFO
     else:
-        loglevel = 2
+        loglevel = logging.WARNING
 
     # This "wrapper" method allows the main one to be called
     #  from python, ignoring the click CLI interface

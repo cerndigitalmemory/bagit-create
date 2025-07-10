@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 
@@ -33,7 +34,7 @@ def test_local_files():
                 main.process(
                     recid=None,
                     source="local",
-                    loglevel=0,
+                    loglevel=logging.DEBUG,
                     target=tmpdir3,
                     source_path=tmpdir1,
                     author="python-test",

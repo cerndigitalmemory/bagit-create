@@ -1,3 +1,4 @@
+import logging
 from urllib.parse import urlparse
 
 from sickle import Sickle
@@ -30,7 +31,7 @@ for recid in ids:
     sip = bagit_create.main.process(
         source="zenodo",
         recid=recid,
-        loglevel=0,
+        loglevel=logging.DEBUG,
         target="zenodo_user-tops",
     )
     if sip["status"] != 0:

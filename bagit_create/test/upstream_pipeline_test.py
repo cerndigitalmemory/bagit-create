@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 
@@ -119,7 +120,7 @@ def test_gitlab_pipeline():
         "recid": 121803,
         "dry_run": True,
         "token": token,
-        "loglevel": 0,
+        "loglevel": logging.DEBUG,
     }
     valid = pipeline_results(
         test_variables["source"],
@@ -141,7 +142,7 @@ def test_inveniordm_pipeline():
 """
 
 
-def pipeline_results(source, recid, dry_run, token=None, loglevel=0):
+def pipeline_results(source, recid, dry_run, token=None, loglevel=logging.DEBUG):
     # Prepare a temporary folder to save the results
     with tempfile.TemporaryDirectory() as tmpdir1:
         # Run Bagit Create with the following parameters:
