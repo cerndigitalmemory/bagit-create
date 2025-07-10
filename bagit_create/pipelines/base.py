@@ -17,7 +17,6 @@ from jsonschema import validate
 
 from bagit_create.exceptions import WrongInputException
 
-from ..utils import get_loglevel
 from ..version import complete_version
 
 my_fs = open_fs("/")
@@ -533,11 +532,13 @@ class BasePipeline:
         if source == "gitlab" and not token:
             raise WrongInputException("Gitlab pipeline requires API token.")
 
-        if loglevel:
-            try:
-                get_loglevel(loglevel)
-            except Exception:
-                raise WrongInputException("Not a valid log level.")
+        if loglevel and loglevel not in (
+            logging.DEBUG,
+            logging.INFO,
+            logging.WARNING,
+            logging.ERROR,
+        ):
+            raise WrongInputException("Not a valid log level.")
 
         if (
             workdir

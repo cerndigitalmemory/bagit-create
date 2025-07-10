@@ -5,6 +5,7 @@ cookie from your codimd authenticated session
 To learn more about this: https://gitlab.cern.ch/digitalmemory/bagit-create#codimd
 """
 
+import logging
 import os
 import time
 
@@ -31,7 +32,7 @@ for note in data:
         attempts += 1
         print(f"Creating SIP for {note['text']} ({note['id']})..")
         result = bagit_create.main.process(
-            source="codimd", recid=note["id"], token=session_id, loglevel=3
+            source="codimd", recid=note["id"], token=session_id, loglevel=logging.WARNING,
         )
         if result["status"] == 0:
             break

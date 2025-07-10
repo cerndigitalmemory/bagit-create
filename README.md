@@ -384,7 +384,7 @@ import bagit_create
 
 for i in range(2728246, 27282700):
     result = bagit_create.main.process(
-        source="cds", recid=i, loglevel=3
+        source="cds", recid=i, loglevel=logging.WARNING
     )
     if result["status"] == 0:
         print("Success")

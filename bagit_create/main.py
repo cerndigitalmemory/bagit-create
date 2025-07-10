@@ -100,7 +100,7 @@ def process(
     # what has been requested by the user (-v or -vv)
     ch_formatter = logging.Formatter("%(message)s")
     ch = logging.StreamHandler()
-    ch.setLevel(utils.get_loglevel(loglevel))
+    ch.setLevel(loglevel)
     ch.setFormatter(ch_formatter)
     log.addHandler(ch)
 
@@ -121,7 +121,7 @@ def process(
 
     log.info(f"BagIt Create tool {complete_version}")
     log.info(f"Starting job.. Resource ID: {recid}. Source: {source}")
-    log.debug(f"Set log level: {utils.get_loglevel(loglevel)}")
+    log.debug(f"Set log level: {loglevel}")
     log.debug(f"Parameters: {params}")
 
     if url:
