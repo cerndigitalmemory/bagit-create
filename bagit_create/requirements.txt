@@ -16,3 +16,4 @@ six==1.15.0
 urllib3==1.26.4
 bagit==1.8.1
 jsonschema==3.0.2
+certifi>=2024.8.30
