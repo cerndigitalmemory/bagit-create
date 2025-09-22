@@ -40,7 +40,7 @@ setup(
     install_requires=[
         "appdirs==1.4.4",
         "cernopendata-client==0.2.0",
-        "certifi==2020.12.5",
+        "certifi>=2024.8.30",
         "chardet==4.0.0",
         "click>=7",
         "flake8==3.9.0",
