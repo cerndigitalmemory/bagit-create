@@ -513,9 +513,6 @@ class BasePipeline:
                 "bd_ssh_host is a setting supported only when using bibdoc."
             )
 
-        if recid and source == "local":
-            raise WrongInputException("The local pipeline is not expecting a recid.")
-
         if source_path and source != "local":
             raise WrongInputException("This pipeline is not expecting a source_path.")
         if source == "local" and not author:

@@ -177,7 +177,8 @@ def process(
         elif source == "local":
             pipeline = local.LocalV1Pipeline(source_path)
             source_path = pipeline.get_abs_path(source_path)
-            recid = pipeline.get_local_recid(source_path, author)
+            if not recid:
+                recid = pipeline.get_local_recid(source_path, author)
             params["recid"] = recid
         else:
             return {
