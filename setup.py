@@ -49,7 +49,7 @@ setup(
         "mccabe==0.6.1",
         "pycodestyle==2.7.0",
         "pyflakes==2.3.0",
-        "pymarc==4.0.0",
+        "pymarc==4.2.2",
         "pytz==2021.3",
         "requests>=2.26",
         "six==1.15.0",
