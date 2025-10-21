@@ -78,12 +78,20 @@ class InvenioV1Pipeline(base.BasePipeline):
         payload = {"of": of}
 
         r = requests.get(
-            record_url, params=payload, cookies=self.cookies, verify=self.verifyssl
+            record_url,
+            params=payload,
+            cookies=self.cookies,
+            verify=self.verifyssl,
+            allow_redirects=False,
         )
 
         log.debug(f"Getting {r.url}")
 
-        if r.status_code != 200:
+        if r.status_code == 302:
+            raise Exception(
+                f"Metadata request was redirected to: {r.headers['Location']}. Try to harvest the redirected source."
+            )
+        elif r.status_code != 200:
             raise Exception(f"Metadata request gave HTTP {r.status_code}.")
 
         self.metadata_url = r.url
