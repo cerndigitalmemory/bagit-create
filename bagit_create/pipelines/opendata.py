@@ -1,5 +1,6 @@
 import json
 import logging
+from http import HTTPStatus
 
 import requests
 from cernopendata_client import searcher
@@ -21,7 +22,7 @@ class OpenDataPipeline(base.BasePipeline):
             metadata = searcher.get_record_as_json(
                 server=self.SERVER_HTTP_URI, recid=recid
             )
-            status_code = 200
+            status_code = HTTPStatus.OK
 
         metadata_url = f"https://opendata.cern.ch/api/records/{recid}"
         metadata_filename = "metadata.json"

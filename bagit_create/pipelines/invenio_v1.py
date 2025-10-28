@@ -1,6 +1,7 @@
 import logging
 import ntpath
 import re
+from http import HTTPStatus
 
 import cern_sso
 import requests
@@ -87,11 +88,11 @@ class InvenioV1Pipeline(base.BasePipeline):
 
         log.debug(f"Getting {r.url}")
 
-        if r.status_code == 302:
+        if r.status_code == HTTPStatus.FOUND:
             raise Exception(
                 f"Metadata request was redirected to: {r.headers['Location']}. Try to harvest the redirected source."
             )
-        elif r.status_code != 200:
+        elif r.status_code != HTTPStatus.OK:
             raise Exception(f"Metadata request gave HTTP {r.status_code}.")
 
         self.metadata_url = r.url

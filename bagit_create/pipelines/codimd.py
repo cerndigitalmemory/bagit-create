@@ -1,6 +1,7 @@
 import logging
 import re
 import urllib.parse
+from http import HTTPStatus
 
 import requests
 from slugify import slugify
@@ -21,7 +22,7 @@ class CodimdPipeline(base.BasePipeline):
         return (
             {"record_id": record_id},
             "none",
-            200,
+            HTTPStatus.OK,
             f"codimd-{record_id}.json",
         )
 
@@ -51,9 +52,9 @@ class CodimdPipeline(base.BasePipeline):
             cookies={"connect.sid": self.connect_sid_token},
         )
 
-        if r.status_code == 404:
+        if r.status_code == HTTPStatus.NOT_FOUND:
             raise Exception("Note not found (404)")
-        if r.status_code != 200:
+        if r.status_code != HTTPStatus.OK:
             raise Exception("Connection Error to CodiMD")
         if "Content-Disposition" in r.headers.keys():
             downloaded_file_name = re.findall(

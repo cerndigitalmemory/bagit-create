@@ -2,6 +2,7 @@ import json
 import logging
 import ntpath
 import os
+from http import HTTPStatus
 
 import requests
 
@@ -46,7 +47,7 @@ class IndicoV1Pipeline(base.BasePipeline):
 
         log.debug(f"Getting {r.url}")
 
-        if r.status_code != 200:
+        if r.status_code != HTTPStatus.OK:
             raise APIException(
                 f"Metadata request gave HTTP {r.status_code}. Check the Indico API key."
             )
