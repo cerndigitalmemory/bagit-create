@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import urllib.parse
+from http import HTTPStatus
 
 import requests
 
@@ -64,7 +65,7 @@ class InvenioV3Pipeline(base.BasePipeline):
     def get_metadata(self, recid, source):
         res = requests.get(self.base_endpoint + str(recid), headers=self.headers)
 
-        if res.status_code != 200:
+        if res.status_code != HTTPStatus.OK:
             raise Exception(f"Metadata request gave HTTP {res.status_code}.")
 
         self.recid = recid
@@ -148,9 +149,9 @@ class InvenioV3Pipeline(base.BasePipeline):
             url = self.base_endpoint + str(self.recid) + "/files"
             res = requests.get(url, headers=self.headers)
 
-            if res.status_code != 200:
+            if res.status_code != HTTPStatus.OK:
                 exception_message = f"File list request gave HTTP {res.status_code}."
-                if res.status_code == 403:
+                if res.status_code == HTTPStatus.FORBIDDEN:
                     status_list = self.config["status"].split(",")
                     status = get_dict_value(self.metadata, status_list)
                     if status:
