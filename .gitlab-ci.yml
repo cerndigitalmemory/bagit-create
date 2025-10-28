@@ -27,7 +27,7 @@ test:
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ["registry.cern.ch/docker.io/library/python:3.8", "registry.cern.ch/docker.io/library/python:3.9", "registry.cern.ch/docker.io/library/python:3.10", "registry.cern.ch/docker.io/library/python:3.11"]
+      - IMAGE: ["registry.cern.ch/docker.io/library/python:3.9", "registry.cern.ch/docker.io/library/python:3.10", "registry.cern.ch/docker.io/library/python:3.11"]
   script:
     - pip install -e .
     - pip install pytest oais_utils==0.0.6
