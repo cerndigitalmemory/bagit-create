@@ -543,3 +543,15 @@ class BasePipeline:
             and os.access(workdir, os.R_OK | os.W_OK)
         ):
             raise WrongInputException("Working directory not valid or no access.")
+
+    def convert_to_utf8mb3(self, filename):
+        """
+        Converts a filename to UTF-8-MB3 by replacing invalid characters with �.
+        Archivematica throws an error when encountering 4 byte UTF-8 characters.
+        """
+        filename_utf8mb3 = filename.encode("utf-8").decode("utf-8", errors="replace")
+        if filename != filename_utf8mb3:
+            log.warning(
+                "Filename with invalid UTF-8 characters detected. Replacing them with �."
+            )
+        return filename_utf8mb3

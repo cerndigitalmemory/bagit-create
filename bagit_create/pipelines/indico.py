@@ -176,9 +176,8 @@ class IndicoV1Pipeline(base.BasePipeline):
             )
             self.filename1 = ntpath.basename(file_object["origin"]["url"])
             file_object["origin"]["path"] = ""
-            file_object["bagpath"] = (
-                f"data/content/{file_object['origin']['path']}{file_object['origin']['filename']}"
-            )
+            bagpath_filename = self.convert_to_utf8mb3(file_object["origin"]["filename"])
+            file_object["bagpath"] = f"data/content/{bagpath_filename}"
         if "title" in att:
             file_object["origin"]["title"] = att["title"]
 

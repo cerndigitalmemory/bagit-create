@@ -110,6 +110,7 @@ class InvenioV3Pipeline(base.BasePipeline):
                         "Filename with control characters detected. Replacing them with '-'."
                     )
                     bagpath_filename = re.sub(r"[\x00-\x1F]", "-", bagpath_filename)
+                bagpath_filename = self.convert_to_utf8mb3(bagpath_filename)
 
                 # Let's save all the details we have about the current file
                 # (and how we saved it in the bag)
