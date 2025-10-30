@@ -14,6 +14,7 @@ import fs
 import requests
 from fs import open_fs
 from jsonschema import validate
+import urllib
 
 from bagit_create.exceptions import WrongInputException
 
@@ -544,14 +545,13 @@ class BasePipeline:
         ):
             raise WrongInputException("Working directory not valid or no access.")
 
-    def convert_to_utf8mb3(self, filename):
+    def sanitize_filename(self, filename):
         """
-        Converts a filename to UTF-8-MB3 by replacing invalid characters with �.
-        Archivematica throws an error when encountering 4 byte UTF-8 characters.
+        Converts filename to be able to be safely processed in the pipeline (like Archivematica).
         """
-        filename_utf8mb3 = filename.encode("utf-8").decode("utf-8", errors="replace")
-        if filename != filename_utf8mb3:
-            log.warning(
-                "Filename with invalid UTF-8 characters detected. Replacing them with �."
-            )
-        return filename_utf8mb3
+        filename = urllib.parse.unquote(filename)
+        if re.search(r"[/\x00-\x1F\U00010000-\U0010FFFF]", filename):
+            log.warning("Filename with invalid characters detected. Sanitizing.")
+            filename = re.sub(r"[/\x00-\x1F]", "-", filename)
+            filename = re.sub(r"[^\u0000-\uFFFF]", "?", filename)
+        return filename

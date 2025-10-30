@@ -161,7 +161,7 @@ class InvenioV1Pipeline(base.BasePipeline):
                 obj["origin"]["filename"] = ntpath.basename(obj["origin"]["url"])
                 # We suppose no folder structure
                 obj["origin"]["path"] = ""
-                bagpath_filename = self.convert_to_utf8mb3(obj["origin"]["filename"])
+                bagpath_filename = self.sanitize_filename(obj["origin"]["filename"])
                 obj["bagpath"] = (
                     f"data/content/{obj['origin']['path']}{bagpath_filename}"
                 )
