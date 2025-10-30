@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 import time
+import urllib
 from datetime import date
 from itertools import chain
 from pathlib import Path
@@ -14,7 +15,6 @@ import fs
 import requests
 from fs import open_fs
 from jsonschema import validate
-import urllib
 
 from bagit_create.exceptions import WrongInputException
 
