@@ -2,8 +2,6 @@ import configparser
 import json
 import logging
 import os
-import re
-import urllib.parse
 from http import HTTPStatus
 
 import requests
@@ -97,19 +95,7 @@ class InvenioV3Pipeline(base.BasePipeline):
                 else:
                     url = self.get_file_uri(sourcefile)
 
-                # Sometimes we need to save the files with different names from upstream
-                # (e.g. when they have a /, or there is an issue with control characters in the filename)
-                # The original value stays in origin/filename, and "cleaned up" one
-                # is saved as part of the local bag path.
-                bagpath_filename = urllib.parse.unquote(filename)
-                if "/" in bagpath_filename:
-                    log.warning("Filename with '/' detected. Replacing it with '-'.")
-                    bagpath_filename = bagpath_filename.replace("/", "-")
-                if re.search(r"[\x00-\x1F]", bagpath_filename):
-                    log.warning(
-                        "Filename with control characters detected. Replacing them with '-'."
-                    )
-                    bagpath_filename = re.sub(r"[\x00-\x1F]", "-", bagpath_filename)
+                bagpath_filename = self.sanitize_filename(filename)
 
                 # Let's save all the details we have about the current file
                 # (and how we saved it in the bag)

@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 import time
+import urllib
 from datetime import date
 from itertools import chain
 from pathlib import Path
@@ -543,3 +544,14 @@ class BasePipeline:
             and os.access(workdir, os.R_OK | os.W_OK)
         ):
             raise WrongInputException("Working directory not valid or no access.")
+
+    def sanitize_filename(self, filename):
+        """
+        Converts filename to be able to be safely processed in the pipeline (like Archivematica).
+        """
+        filename = urllib.parse.unquote(filename)
+        if re.search(r"[/\x00-\x1F\U00010000-\U0010FFFF]", filename):
+            log.warning("Filename with invalid characters detected. Sanitizing.")
+            filename = re.sub(r"[/\x00-\x1F]", "-", filename)
+            filename = re.sub(r"[^\u0000-\uFFFF]", "?", filename)
+        return filename
