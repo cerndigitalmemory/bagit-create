@@ -257,12 +257,10 @@ class BasePipeline:
             try:
                 if source == "local":
                     param = file["origin"]["sourcePath"]
+                    # Adds the file:// so it can be validated by bagit.validate
+                    param = "file://" + param
 
-                    # Adds the file:/ so it can be validated by bagit.validate
-                    # TODO: We must use the file:// but this fails on bagit validate
-                    param = "file:/" + param
-
-                if source == "gitlab":
+                elif source == "gitlab":
                     origin = file["origin"]
                     if "sourcePath" in origin:
                         param = file["origin"]["sourcePath"]

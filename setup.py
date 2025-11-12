@@ -53,7 +53,7 @@ setup(
         "requests>=2.26",
         "six==1.15.0",
         "urllib3>=2.3.0",
-        "bagit==1.8.1",
+        "bagit==1.9.0",
         "checksumdir==1.2.0",
         "jsonschema>=3.0.2",
         "python-cern-sso==1.3.3",
