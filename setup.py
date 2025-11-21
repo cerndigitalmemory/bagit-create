@@ -58,6 +58,9 @@ setup(
         "jsonschema>=3.0.2",
         "python-cern-sso==1.3.3",
         "python-slugify==6.1.2",
+        "warcio==1.7.5",
+        "crawlee==1.1.0",
+        "beautifulsoup4==4.14.2",
     ],
     entry_points={
         "console_scripts": [
