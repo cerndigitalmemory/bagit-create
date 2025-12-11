@@ -52,7 +52,7 @@ setup(
         "requests>=2.26",
         "six==1.15.0",
         "urllib3>=2.3.0",
-        "bagit==1.9.0",
+        "bagit>=1.9.0,<2.0.0",
         "checksumdir==1.2.0",
         "jsonschema>=3.0.2",
         "python-cern-sso==1.3.3",
@@ -60,6 +60,7 @@ setup(
         "warcio==1.7.5",
         "crawlee==1.1.0",
         "beautifulsoup4==4.14.2",
+        "oais_utils>=0.3.0,<1.0.0",
     ],
     entry_points={
         "console_scripts": [

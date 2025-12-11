@@ -12,6 +12,11 @@ log = logging.getLogger("bic-basic-logger")
 
 class OpenDataPipeline(base.BasePipeline):
     def __init__(self, base_url):
+        super().__init__()
+        self.manifest_algorithms = ["adler32"]
+        log.warning(
+            "adler32 was selected because it's the only checksum available in CERN Open Data. This will create an invalid Bag, as adler32 is not supported."
+        )
         log.info(f"CERN Open Data pipeline initialised.\nBase URL: {base_url}")
         self.SERVER_HTTP_URI = base_url
 
@@ -127,16 +132,4 @@ class OpenDataPipeline(base.BasePipeline):
     but won't be computed locally."
             )
         log.info("Finished downloading")
-        return files
-
-    def create_manifests(self, files, base_path):
-        algs = ["adler32"]
-        log.warning(
-            "adler32 was selected because it's the only checksum available in CERN Open Data. This will create an invalid Bag, as adler32 is not supported."
-        )
-
-        for alg in algs:
-            log.info(f"Generating manifest {alg}..")
-            content, files = self.generate_manifest(files, alg, base_path)
-            self.write_file(content, f"{base_path}/manifest-{alg}.txt")
         return files

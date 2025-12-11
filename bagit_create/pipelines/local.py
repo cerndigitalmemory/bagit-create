@@ -13,6 +13,8 @@ log = logging.getLogger("bic-basic-logger")
 
 class LocalV1Pipeline(base.BasePipeline):
     def __init__(self, src):
+        super().__init__()
+        self.manifest_algorithms = ["md5", "sha1"]
         log.info(f"Local v1 pipeline initialised.\nLocal source: {src}")
         self.src = src
 
@@ -95,14 +97,6 @@ class LocalV1Pipeline(base.BasePipeline):
         else:
             lc_src = os.path.abspath(src)
             return lc_src
-
-    def create_manifests(self, files, base_path):
-        algs = ["md5", "sha1"]
-        for alg in algs:
-            log.info(f"Generating manifest {alg}..")
-            content, files = self.generate_manifest(files, alg, base_path)
-            self.write_file(content, f"{base_path}/manifest-{alg}.txt")
-        return files
 
     def get_local_metadata(self, file, src, dirpath, author, isFile):
         # Prepare the File object

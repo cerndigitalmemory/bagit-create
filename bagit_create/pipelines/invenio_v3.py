@@ -26,6 +26,7 @@ def get_dict_value(dct, keys):
 
 class InvenioV3Pipeline(base.BasePipeline):
     def __init__(self, source, token=None):
+        super().__init__()
         # Set up auth headers for requesting metadata
         # add user-agent to exclude requests from stats
         self.headers = {
@@ -71,13 +72,6 @@ class InvenioV3Pipeline(base.BasePipeline):
         self.metadata = json.loads(res.text)
         self.metadata_size = len(res.content)
         return self.metadata, self.metadata_url, res.status_code, "metadata.json"
-
-    def create_manifests(self, files, base_path):
-        alg = "md5"
-        log.info(f"Generating manifest {alg}..")
-        content, files = self.generate_manifest(files, alg, base_path)
-        self.write_file(content, f"{base_path}/manifest-{alg}.txt")
-        return files
 
     def parse_metadata(self, metadata_filename):
         log.debug("Parsing metadata..")

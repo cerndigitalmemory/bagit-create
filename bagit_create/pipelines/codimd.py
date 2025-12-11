@@ -13,6 +13,8 @@ log = logging.getLogger("bic-basic-logger")
 
 class CodimdPipeline(base.BasePipeline):
     def __init__(self, recid, token=None):
+        super().__init__()
+        self.manifest_algorithms = ["md5", "sha1"]
         self.connect_sid_token = token
         self.recid = recid
 
@@ -94,12 +96,4 @@ class CodimdPipeline(base.BasePipeline):
 
         files.append(pdf_file_entry)
 
-        return files
-
-    def create_manifests(self, files, base_path):
-        algs = ["md5", "sha1"]
-        for alg in algs:
-            log.info(f"Generating manifest {alg}..")
-            content, files = self.generate_manifest(files, alg, base_path)
-            self.write_file(content, f"{base_path}/manifest-{alg}.txt")
         return files

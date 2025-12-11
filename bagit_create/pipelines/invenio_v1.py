@@ -15,6 +15,7 @@ log = logging.getLogger("bic-basic-logger")
 
 class InvenioV1Pipeline(base.BasePipeline):
     def __init__(self, base_url, recid, cert_path=None, token=None, skipssl=False):
+        super().__init__()
         log.info(f"Invenio v1 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
         self.verifyssl = not skipssl
@@ -189,14 +190,6 @@ class InvenioV1Pipeline(base.BasePipeline):
         files.append(meta_file_entry)
 
         return files, meta_file_entry
-
-    def create_manifests(self, files, base_path):
-        algs = ["md5"]
-        for alg in algs:
-            log.info(f"Generating manifest {alg}..")
-            content, files = self.generate_manifest(files, alg, base_path)
-            self.write_file(content, f"{base_path}/manifest-{alg}.txt")
-        return files
 
     def download_files(self, files, base_path):
         """

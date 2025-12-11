@@ -15,6 +15,8 @@ log = logging.getLogger("bic-basic-logger")
 
 class IndicoV1Pipeline(base.BasePipeline):
     def __init__(self, base_url, token=None):
+        super().__init__()
+        self.manifest_algorithms = ["md5", "sha1"]
         log.info(f"Indico v3 pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
         self.source = "indico"
@@ -91,14 +93,6 @@ class IndicoV1Pipeline(base.BasePipeline):
                 )
             else:
                 log.debug("Skipped downloading..")
-        return files
-
-    def create_manifests(self, files, base_path):
-        algs = ["md5", "sha1"]
-        for alg in algs:
-            log.info(f"Generating manifest {alg}..")
-            content, files = self.generate_manifest(files, alg, base_path)
-            self.write_file(content, f"{base_path}/manifest-{alg}.txt")
         return files
 
     def parse_metadata(self, metadata_filename):

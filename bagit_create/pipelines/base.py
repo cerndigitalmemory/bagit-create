@@ -8,13 +8,13 @@ import urllib
 from datetime import date
 from itertools import chain
 from pathlib import Path
-from zlib import adler32
 
 import bagit
 import fs
 import requests
 from fs import open_fs
 from jsonschema import validate
+from oais_utils.validate import compute_hash
 
 from bagit_create.exceptions import WrongInputException
 
@@ -30,7 +30,7 @@ ADDITIONAL_DELAY_FLAT = 1
 
 class BasePipeline:
     def __init__(self) -> None:
-        pass
+        self.manifest_algorithms = ["md5"]
 
     def add_bag_info(self, path, dest):
         """
@@ -80,20 +80,6 @@ class BasePipeline:
         except (FileNotFoundError, fs.errors.ResourceNotFound):
             log.debug(f"  Path '{src}' not found. Skipping file. ")
             return False
-
-    def adler32sum(self, filepath):
-        """
-        Compute adler32 of given file
-        """
-        BLOCKSIZE = 256 * 1024 * 1024
-        asum = 1
-        with open(filepath, "rb") as f:
-            while True:
-                data = f.read(BLOCKSIZE)
-                if not data:
-                    break
-                asum = adler32(data, asum)
-        return hex(asum)[2:10].zfill(8).lower()
 
     def merge_lists(self, a, b, keyname):
         output = []
@@ -177,17 +163,6 @@ class BasePipeline:
         bag = bagit.Bag(base_path)
         return bag.is_valid()
 
-    def compute_hash(self, filename, alg="md5"):
-        """
-        Compute hash of a given file
-        """
-        if alg == "adler32":
-            computedhash = self.adler32sum(filename)
-        else:
-            computedhash = my_fs.hash(filename, alg)
-
-        return computedhash
-
     def generate_manifest(self, files, algorithm, basepath):
         """
         Given an array of File objects (with `filename` and optionally `checksum`
@@ -225,7 +200,7 @@ class BasePipeline:
             #  compute it
             if not checksum and file["downloaded"]:
                 path = f"{basepath}/{file['bagpath']}"
-                checksum = self.compute_hash(path, algorithm)
+                checksum = compute_hash(path, algorithm)
                 # Add the newly computed checksum to the SIP metadata
                 if "checksum" in files[idx]:
                     files[idx]["checksum"].append(f"{algorithm}:{checksum}")
@@ -332,7 +307,7 @@ class BasePipeline:
         # Copy each file from the temp folder to the AIU folders
         for idx, file in enumerate(files):
             if file["downloaded"] and file["metadata"] is False:
-                filehash = self.compute_hash(f"{temp_relpath}/{file['filename']}")
+                filehash = compute_hash(f"{temp_relpath}/{file['filename']}")
                 aiufoldername = f"{base_path}/data/{recid}{delimiter_str}{filehash}"
                 try:
                     os.mkdir(aiufoldername)
@@ -553,3 +528,10 @@ class BasePipeline:
             filename = re.sub(r"[/\x00-\x1F]", "-", filename)
             filename = re.sub(r"[^\u0000-\uFFFF]", "?", filename)
         return filename
+
+    def create_manifests(self, files, base_path):
+        for alg in self.manifest_algorithms:
+            log.info(f"Generating manifest {alg}..")
+            content, files = self.generate_manifest(files, alg, base_path)
+            self.write_file(content, f"{base_path}/manifest-{alg}.txt")
+        return files

@@ -19,6 +19,7 @@ log = logging.getLogger("bic-basic-logger")
 
 class GitlabPipeline(base.BasePipeline):
     def __init__(self, base_url, recid, token=None):
+        super().__init__()
         log.info(f"Gitlab pipeline initialised.\nBase URL: {base_url}")
         self.base_url = base_url
         self.source = "gitlab"
@@ -31,7 +32,7 @@ class GitlabPipeline(base.BasePipeline):
             600  # Repeated requests should not run for more than 600 seconds (10 mins)
         )
         self.metadata_filename = f"metadata-{self.source}-{self.recid}.json"
-
+        self.manifest_algorithms = ["sha256"]
         # Prepare call Gitlab API
         # Authenticate with API Key
         if token:
@@ -405,12 +406,4 @@ class GitlabPipeline(base.BasePipeline):
                         file_from_get_metadata.pop("rawstat")
                     files.append(file_from_clone)
 
-        return files
-
-    def create_manifests(self, files, base_path):
-        algs = ["sha256"]
-        for alg in algs:
-            log.info(f"Generating manifest {alg}..")
-            content, files = self.generate_manifest(files, alg, base_path)
-            self.write_file(content, f"{base_path}/manifest-{alg}.txt")
         return files
