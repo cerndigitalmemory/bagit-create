@@ -5,6 +5,8 @@ from typing import Text
 
 import click
 
+from bagit_create.utils import load_sources
+
 from .main import process
 from .version import complete_version
 
@@ -46,21 +48,7 @@ from .version import complete_version
     "--source",
     help="Select source pipeline from the supported ones.",
     type=click.Choice(
-        [
-            "cds",
-            "ilcdoc",
-            "cod",
-            "zenodo",
-            "inveniordm",
-            "indico",
-            "local",
-            "ilcagenda",
-            "codimd",
-            "gitlab",
-            "cds-rdm-sandbox",
-            "cds-rdm",
-            "dev-cds-rdm",
-        ],
+        load_sources(),
         case_sensitive=False,
     ),
 )
@@ -135,7 +123,7 @@ from .version import complete_version
 )
 @click.option(
     "--author",
-    "-u",
+    "-au",
     help="[Local source ONLY] Specify the Author of data.",
     type=Text,
     default=None,

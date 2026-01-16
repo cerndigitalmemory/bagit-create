@@ -1,7 +1,21 @@
+import configparser
+import os
 from pathlib import PurePosixPath
 from urllib.parse import unquote, urlparse
 
 from bagit_create.exceptions import WrongInputException
+
+
+def load_sources(invenio_only=False):
+    sources = (
+        []
+        if invenio_only
+        else ["cds", "ilcdoc", "cod", "indico", "local", "ilcagenda", "codimd", "gitlab"]
+    )
+    config_file = configparser.ConfigParser()
+    config_file.read(os.path.join(os.path.dirname(__file__), "pipelines/invenio.ini"))
+    sources.extend(config_file.sections())
+    return sources
 
 
 def parse_url(url):
