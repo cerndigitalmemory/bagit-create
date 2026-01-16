@@ -522,7 +522,7 @@ class BasePipeline:
         """
         Converts filename to be able to be safely processed in the pipeline (like Archivematica).
         """
-        filename = urllib.parse.unquote(filename)
+        filename = urllib.parse.unquote(filename).strip()
         if re.search(r"[/\x00-\x1F\U00010000-\U0010FFFF]", filename):
             log.warning("Filename with invalid characters detected. Sanitizing.")
             filename = re.sub(r"[/\x00-\x1F]", "-", filename)
