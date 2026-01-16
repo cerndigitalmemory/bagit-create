@@ -15,6 +15,8 @@ def get_commit_hash():
     """
     try:
         bagit_base_path = os.path.dirname(__file__)
+        if not os.path.isdir(os.path.join(bagit_base_path, ".git")):
+            return None
         git_output = subprocess.check_output(
             ["git", "rev-parse", "--short", "HEAD"], cwd=bagit_base_path
         )
