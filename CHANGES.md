@@ -1,5 +1,10 @@
 # Changes
 
+## Version 1.3.0 (released 2026-01-21)
+- Sanitize filenames: remove leading and trailing spaces
+- Invenio V3: optimize adding a new instance
+- Versioning: fixed git hash retrieving on released instance
+
 ## Version 1.2.0 (released 2025-12-16)
 - Moving the checksum to oais_utils
 - Removing support for python3.9 (EOL: 31 October 2025)
