@@ -60,7 +60,7 @@ setup(
         "warcio==1.7.5",
         "crawlee==1.1.0",
         "beautifulsoup4==4.14.2",
-        "oais_utils>=0.3.0,<1.0.0",
+        "oais_utils>=0.4.0,<1.0.0",
     ],
     entry_points={
         "console_scripts": [
