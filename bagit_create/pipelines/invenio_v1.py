@@ -5,6 +5,7 @@ from http import HTTPStatus
 
 import cern_sso
 import requests
+from oais_utils.sanitization import sanitize_filename
 from pymarc import marcxml
 
 from .. import bibdocfile, cds
@@ -162,7 +163,7 @@ class InvenioV1Pipeline(base.BasePipeline):
                 obj["origin"]["filename"] = ntpath.basename(obj["origin"]["url"])
                 # We suppose no folder structure
                 obj["origin"]["path"] = ""
-                bagpath_filename = self.sanitize_filename(obj["origin"]["filename"])
+                bagpath_filename = sanitize_filename(obj["origin"]["filename"], log=log)
                 obj["bagpath"] = (
                     f"data/content/{obj['origin']['path']}{bagpath_filename}"
                 )

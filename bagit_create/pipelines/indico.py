@@ -5,6 +5,7 @@ import os
 from http import HTTPStatus
 
 import requests
+from oais_utils.sanitization import sanitize_filename
 
 from bagit_create.exceptions import APIException, RecidException
 
@@ -170,7 +171,9 @@ class IndicoV1Pipeline(base.BasePipeline):
             )
             self.filename1 = ntpath.basename(file_object["origin"]["url"])
             file_object["origin"]["path"] = ""
-            bagpath_filename = self.sanitize_filename(file_object["origin"]["filename"])
+            bagpath_filename = sanitize_filename(
+                file_object["origin"]["filename"], log=log
+            )
             file_object["bagpath"] = (
                 f"data/content/{file_object['origin']['path']}{bagpath_filename}"
             )

@@ -5,6 +5,7 @@ import os
 from http import HTTPStatus
 
 import requests
+from oais_utils.sanitization import sanitize_filename
 
 from . import base
 
@@ -89,7 +90,7 @@ class InvenioV3Pipeline(base.BasePipeline):
                 else:
                     url = self.get_file_uri(sourcefile)
 
-                bagpath_filename = self.sanitize_filename(filename)
+                bagpath_filename = sanitize_filename(filename, log=log)
 
                 # Let's save all the details we have about the current file
                 # (and how we saved it in the bag)
