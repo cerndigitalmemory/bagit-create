@@ -1,5 +1,8 @@
 # Changes
 
+## Version 1.4.0 (released 2026-01-23)
+- Sanitize filename: moved to oais_utils
+
 ## Version 1.3.0 (released 2026-01-21)
 - Sanitize filenames: remove leading and trailing spaces
 - Invenio V3: optimize adding a new instance
