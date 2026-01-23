@@ -14,7 +14,7 @@ def get_commit_hash():
     None otherwise (e.g. when installing a released version from PyPi)
     """
     try:
-        bagit_base_path = os.path.dirname(__file__)
+        bagit_base_path = os.path.dirname(os.path.dirname(__file__))
         if not os.path.isdir(os.path.join(bagit_base_path, ".git")):
             return None
         git_output = subprocess.check_output(
