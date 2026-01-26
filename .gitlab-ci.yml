@@ -36,6 +36,26 @@ test:
     reports:
       junit: ./report.xml
 
+create-tag:
+  stage: Release
+  image: registry.cern.ch/docker.io/library/python:3.11
+  variables:
+    PRIVATE_TOKEN: "$PRIVATE_TOKEN"
+    BRANCH: "$CI_COMMIT_REF_NAME"
+    PROJECT_ID: "$CI_PROJECT_ID"
+  script:
+  - |
+      export VERSION=$(grep -m 1 "__version__" bagit_create/version.py | cut -d'"' -f2)
+      echo Version: $VERSION
+      curl -f -o gitlab_tags.py "https://gitlab.cern.ch/digitalmemory/oais-platform/-/raw/main/scripts/gitlab_tags.py"
+      pip install python-gitlab
+      python gitlab_tags.py
+  rules:
+    # When pushed commit has the version.py file changed (and it is not a tag)
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TAG == null
+      changes:
+        - bagit_create/version.py
+
 pypi:
   stage: Release
   image: registry.cern.ch/docker.io/library/python:3.11
@@ -43,5 +63,6 @@ pypi:
     - pip install -U setuptools twine
     - python setup.py sdist
     - twine upload dist/*
-  only:
-    - tags
+  rules:
+    - if: $CI_COMMIT_TAG
+  when: manual
