@@ -47,6 +47,7 @@ create-tag:
   - |
       export VERSION=$(grep -m 1 "__version__" bagit_create/version.py | cut -d'"' -f2)
       echo Version: $VERSION
+      echo Project ID: $PROJECT_ID
       curl -f -o gitlab_tags.py "https://gitlab.cern.ch/digitalmemory/oais-platform/-/raw/main/scripts/gitlab_tags.py"
       pip install python-gitlab
       python gitlab_tags.py
