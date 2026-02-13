@@ -21,3 +21,8 @@ class ServerException(Exception):
 class WrongInputException(Exception):
     # This exception handles wrong cli commands
     pass
+
+
+class RestrictedContentException(Exception):
+    # This exception handles restrcited content
+    pass

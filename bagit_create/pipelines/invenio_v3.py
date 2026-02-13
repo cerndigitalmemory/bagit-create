@@ -5,6 +5,7 @@ import os
 from http import HTTPStatus
 
 import requests
+from bagit_create.exceptions import RestrictedContentException
 from oais_utils.sanitization import sanitize_filename
 
 from . import base
@@ -136,7 +137,9 @@ class InvenioV3Pipeline(base.BasePipeline):
                     status_list = self.config["status"].split(",")
                     status = get_dict_value(self.metadata, status_list)
                     if status:
-                        raise Exception(exception_message + f" Record status: {status}.")
+                        raise RestrictedContentException(
+                            exception_message + f" Record status: {status}."
+                        )
                 raise Exception(exception_message)
 
             data = json.loads(res.text)

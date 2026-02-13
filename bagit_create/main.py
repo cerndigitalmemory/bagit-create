@@ -2,6 +2,7 @@ import logging
 import os
 import time
 
+from bagit_create.exceptions import RestrictedContentException
 import fs
 from fs import open_fs
 
@@ -324,7 +325,10 @@ def process(
     # For any other error, print details about what happened and clean up
     #  any created file and folder
     except Exception as e:
-        log.error(f"Job failed with error: {e}")
+        if isinstance(e, RestrictedContentException):
+            log.warning(f"Job failed with error: {e}")
+        else:
+            log.error(f"Job failed with error: {e}")
 
         if pipeline:
             # Try to delete the created folder so we don't
@@ -339,7 +343,7 @@ def process(
             log_filename,
         )
 
-        log.error(f"Saved log of the failed job at {target}/{log_filename}")
+        log.warning(f"Saved log of the failed job at {target}/{log_filename}")
 
         # Clear up logging handlers so subsequent executions in the same python thread
         #  won't stack up
