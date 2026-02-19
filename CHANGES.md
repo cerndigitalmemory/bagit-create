@@ -1,5 +1,8 @@
 # Changes
 
+## Version 1.4.1 (released 2026-02-19)
+- Logs: change restricted content log level to warning
+
 ## Version 1.4.0 (released 2026-01-23)
 - Sanitize filename: moved to oais_utils
 
