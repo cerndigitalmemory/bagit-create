@@ -1,5 +1,8 @@
 # Changes
 
+## Version 1.4.2 (released 2026-02-19)
+- Zenodo file uri key updated to fix checksum mismatch
+
 ## Version 1.4.1 (released 2026-02-19)
 - Logs: change restricted content log level to warning
 
