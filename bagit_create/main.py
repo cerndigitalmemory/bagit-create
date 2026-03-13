@@ -298,7 +298,7 @@ def process(
             pipeline.delete_folder(base_path, silent_failure=False)
         except FileExistsError as e:
             # If the move fails, the original folder is deleted
-            log.error(f"Job failed with error: {e}")
+            log.warning(f"Job failed with error: {e}")
             pipeline.delete_folder(base_path)
 
             return {"status": 1, "errormsg": e}
@@ -314,7 +314,7 @@ def process(
 
     # Folder exists, gracefully stop
     except FileExistsError as e:
-        log.error(f"Job failed with error: {e}")
+        log.warning(f"Job failed with error: {e}")
 
         # Clear up logging handlers so subsequent executions in the same python thread
         #  won't stack up
@@ -326,10 +326,7 @@ def process(
     # For any other error, print details about what happened and clean up
     #  any created file and folder
     except Exception as e:
-        if isinstance(e, RestrictedContentException):
-            log.warning(f"Job failed with error: {e}")
-        else:
-            log.error(f"Job failed with error: {e}")
+        log.warning(f"Job failed with error: {e}")
 
         if pipeline:
             # Try to delete the created folder so we don't
