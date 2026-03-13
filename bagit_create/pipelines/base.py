@@ -425,7 +425,7 @@ class BasePipeline:
         try:
             valid = bag.validate()
         except bagit.BagValidationError as err:
-            log.error(f"Bag validation failed: {err}")
+            raise Exception(f"Bag validation failed {err}")
         if valid:
             log.info("Bag successfully validated")
         log.info("--\n")
