@@ -1,5 +1,8 @@
 # Changes
 
+## Version 1.4.3 (released 2026-03-18)
+- Update error logging
+
 ## Version 1.4.2 (released 2026-02-19)
 - Zenodo file uri key updated to fix checksum mismatch
 
