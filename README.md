@@ -296,7 +296,7 @@ Some pipelines require additional configuration (e.g. to authenticate).
 
 ## Indico
 
-To use any Indico pipeline you need an API Token. From your browser, login to the Indico instance, go to "Preferences" and then "API Token". Create new token, name can be anything. Select (at least) `Everything (all methods)` and `Classic API (read only)` as scopes. Note down the token and set the `INDICO_KEY` environement variable to it.
+To use any Indico pipeline you need an API Token. From your browser, login to the Indico instance, go to "Preferences" and then "API Token". Create new token, name can be anything. Select (at least) `Everything (only GET)` and `Classic API (read only)` as scopes. Note down the token and set the `INDICO_KEY` environement variable to it.
 
 ```bash
 export INDICO_KEY=<INDICO_API_TOKEN>
