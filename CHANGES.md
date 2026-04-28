@@ -1,5 +1,8 @@
 # Changes
 
+## Version 1.4.4 (released 2026-04-28)
+- Dependencies: bump oais-utils
+
 ## Version 1.4.3 (released 2026-03-18)
 - Update error logging
 
