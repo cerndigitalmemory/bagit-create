@@ -112,6 +112,13 @@ def test_cod_pipeline():
     )
     assert valid is True
 
+def test_cds_videos_pipeline():
+    test_variables = {"source": "cds-videos", "recid": 2298642, "dry_run": True}
+    valid = pipeline_results(
+        test_variables["source"], test_variables["recid"], test_variables["dry_run"]
+    )
+    assert valid is True
+
 
 """
 def test_gitlab_pipeline():
