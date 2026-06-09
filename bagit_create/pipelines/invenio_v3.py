@@ -135,12 +135,14 @@ class InvenioV3Pipeline(base.BasePipeline):
             if res.status_code != HTTPStatus.OK:
                 exception_message = f"File list request gave HTTP {res.status_code}."
                 if res.status_code == HTTPStatus.FORBIDDEN:
-                    status_list = self.config["status"].split(",")
-                    status = get_dict_value(self.metadata, status_list)
-                    if status:
-                        raise RestrictedContentException(
-                            exception_message + f" Record status: {status}."
-                        )
+                    status_list = self.config.get("status", "").split(",")
+                    status = (
+                        get_dict_value(self.metadata, status_list) if status else None
+                    )
+                    raise RestrictedContentException(
+                        exception_message
+                        + f" Record status: {status if status else 'not found'}."
+                    )
                 raise Exception(exception_message)
 
             data = json.loads(res.text)
