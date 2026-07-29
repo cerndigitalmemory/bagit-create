@@ -250,9 +250,11 @@ def process(
         # no events after this point will be logged to the file
 
         # Close the stream and release the lock on the log file
-        log.handlers[1].stream.close()
         # Remove the FileHandler (this allows to keep logging to the shell)
-        log.removeHandler(log.handlers[1])
+        for handler in log.handlers[:]:
+            if isinstance(handler, logging.FileHandler):
+                log.removeHandler(handler)
+                handler.close()
 
         # Copy log file inside the meta folder
         fs.copy.copy_file(

@@ -1,5 +1,9 @@
 # Changes
 
+## Version 1.5.0 (released 2026-07-29)
+- Sources: adding CDS Videos prod and sandbox
+- Fix: loghandler removal
+
 ## Version 1.4.4 (released 2026-04-28)
 - Dependencies: bump oais-utils
 

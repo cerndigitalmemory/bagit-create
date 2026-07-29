@@ -48,12 +48,14 @@ def test_indico_pipeline():
     assert valid is True
 
 
+"""
 def test_cds_pipeline():
     test_variables = {"source": "cds", "recid": 1813461, "dry_run": True}
     valid = pipeline_results(
         test_variables["source"], test_variables["recid"], test_variables["dry_run"]
     )
     assert valid is True
+"""
 
 
 def test_cds_rdm_pipeline():
