@@ -26,3 +26,8 @@ class WrongInputException(Exception):
 class RestrictedContentException(Exception):
     # This exception handles restricted content
     pass
+
+
+class FileURLNotFoundException(Exception):
+    # This exception handles if no file URL was found
+    pass

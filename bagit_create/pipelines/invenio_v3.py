@@ -7,7 +7,7 @@ from http import HTTPStatus
 import requests
 from oais_utils.sanitization import sanitize_filename
 
-from bagit_create.exceptions import RestrictedContentException
+from bagit_create.exceptions import FileURLNotFoundException, RestrictedContentException
 
 from . import base
 
@@ -188,6 +188,8 @@ class InvenioV3Pipeline(base.BasePipeline):
     def get_file_uri(self, file):
         key_list = self.config["file_uri"].split(",")
         file["url"] = get_dict_value(file, key_list)
+        if not file["url"]:
+            raise FileURLNotFoundException(f"No file URL under {key_list}")
 
         # If the uri is nested than unnest it (Zenodo's case)
         if key_list[0] != "url":
