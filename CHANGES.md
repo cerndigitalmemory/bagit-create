@@ -1,5 +1,8 @@
 # Changes
 
+## Version 1.5.1 (released 2026-08-04)
+- Bug: Handle no file URL found
+
 ## Version 1.5.0 (released 2026-07-29)
 - Sources: adding CDS Videos prod and sandbox
 - Fix: loghandler removal
