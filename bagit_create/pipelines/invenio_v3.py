@@ -137,7 +137,9 @@ class InvenioV3Pipeline(base.BasePipeline):
                 if res.status_code == HTTPStatus.FORBIDDEN:
                     status_list = self.config.get("status", "").split(",")
                     status = (
-                        get_dict_value(self.metadata, status_list) if status else None
+                        get_dict_value(self.metadata, status_list)
+                        if any(status_list)
+                        else None
                     )
                     raise RestrictedContentException(
                         exception_message
