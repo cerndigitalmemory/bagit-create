@@ -3,7 +3,7 @@ import subprocess
 
 # Change this when releasing a new version
 # The version setuptools will read
-__version__ = "1.5.1"
+__version__ = "1.5.2"
 
 
 def get_commit_hash():

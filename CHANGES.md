@@ -1,5 +1,8 @@
 # Changes
 
+## Version 1.5.2 (released 2026-08-12)
+- Bug: Handle records with no status value
+
 ## Version 1.5.1 (released 2026-08-04)
 - Bug: Handle no file URL found
 
