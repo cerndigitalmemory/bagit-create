@@ -70,10 +70,19 @@ class InvenioV3Pipeline(base.BasePipeline):
         if res.status_code != HTTPStatus.OK:
             raise Exception(f"Metadata request gave HTTP {res.status_code}.")
 
+        try:
+            self.metadata = res.json()
+        except requests.exceptions.JSONDecodeError:
+            content_type = res.headers.get("Content-Type", "unknown")
+            raise Exception(
+                f"Metadata request did not return valid JSON "
+                f"(Content-Type: {content_type})."
+            )
+
         self.recid = recid
         self.metadata_url = res.url
-        self.metadata = json.loads(res.text)
         self.metadata_size = len(res.content)
+
         return self.metadata, self.metadata_url, res.status_code, "metadata.json"
 
     def parse_metadata(self, metadata_filename):
