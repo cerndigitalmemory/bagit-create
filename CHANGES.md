@@ -1,5 +1,8 @@
 # Changes
 
+## Version 1.5.3 (released 2026-08-21)
+- Invenio V3: Verify JSON response 
+
 ## Version 1.5.2 (released 2026-08-12)
 - Bug: Handle records with no status value
 
