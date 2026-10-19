@@ -114,7 +114,7 @@ def process(
     # create file handler logging everything
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     log_basepath = workdir
-    log_filename = f"biclog::{recid}::{source}::{timestamp}.tmp"
+    log_filename = f"biclog__{recid}__{source}__{timestamp}.tmp"
     log_fullpath = f"{log_basepath}/{log_filename}"
     fh = logging.FileHandler(log_fullpath)
     fh.setLevel(10)

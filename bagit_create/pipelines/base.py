@@ -27,6 +27,10 @@ ADDITIONAL_DELAY_PERCENTAGE = 5
 ADDITIONAL_DELAY_FLAT = 1
 
 
+def remove_colons(value):
+    return str(value).replace(":", "_")
+
+
 class BasePipeline:
     def __init__(self) -> None:
         self.manifest_algorithms = ["md5"]
@@ -267,9 +271,11 @@ class BasePipeline:
         content = self.generate_fetch_txt(files, source)
         self.write_file(content, dest)
 
-    def prepare_folders(self, source, recid, timestamp, path, delimiter_str="::"):
+    def prepare_folders(self, source, recid, timestamp, path, delimiter_str="__"):
         # Prepare the base folder for the BagIt export
-        #  e.g. "bagitexport::cds::42::4320197"
+        #  e.g. "sip__cds__42__4320197"
+        source = remove_colons(source)
+        recid = remove_colons(recid)
         base_name = (
             f"sip{delimiter_str}{source}{delimiter_str}{recid}{delimiter_str}{timestamp}"
         )
@@ -288,8 +294,9 @@ class BasePipeline:
 
         return base_path, base_name
 
-    def prepare_AIC(self, base_path, recid, timestamp=0, delimiter_str="::"):
+    def prepare_AIC(self, base_path, recid, timestamp=0, delimiter_str="__"):
         log.info("Creating AIC..")
+        recid = remove_colons(recid)
         # Set timestamp to now if 0 is passed
         if timestamp == 0:
             log.debug("No timestamp provided. Using 'now'")
@@ -301,8 +308,9 @@ class BasePipeline:
         return aic_path, aic_name
 
     def move_files_to_aius(
-        self, files, base_path, temp_relpath, recid, delimiter_str="::"
+        self, files, base_path, temp_relpath, recid, delimiter_str="__"
     ):
+        recid = remove_colons(recid)
         # Copy each file from the temp folder to the AIU folders
         for idx, file in enumerate(files):
             if file["downloaded"] and file["metadata"] is False:
